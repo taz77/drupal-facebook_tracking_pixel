@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * @file facebook_tracking_pixel.module
+ * Facebook Tracking Module.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function facebook_tracking_pixel_menu() {
+  $items = array();
+
+  $items['admin/config/system/facebook_tracking_pixel'] = array(
+    'title' => 'Administer Facebook Tracking Pixel',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('facebook_tracking_pixel_settings_form'),
+    'access arguments' => array('administer facebook tracking pixels'),
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function facebook_tracking_pixel_permission() {
+  $permissions['administer facebook tracking pixels']['title'] = t('Administer Facebook Tracking Pixels.');
+
+  return $permissions;
+}
+
+/**
+ * Implements hook_page_build().
+ */
+function facebook_tracking_pixel_page_build(&$page) {
+  /*
+    // Optional weights.
+    $weight = variable_get('cpn_weight_js', JS_THEME);
+
+    // Only proceed if the 'agree' option was checked and if some code was
+    // actually saved.
+    $code = variable_get('cpn_global_' . $type, '');
+
+    if (!empty($code)) {
+      // Only proceed if either this is not an admin page or if the 'load on
+      // admin pages too' option was checked.
+      $page_is_admin = path_is_admin(current_path());
+      $force_on_admin = (bool) variable_get('cpn_global_' . $type . '_admin', FALSE);
+      if (!$page_is_admin || $force_on_admin) {
+        $file = variable_get('cpn_path', 'public://cpn') . '/global.' . $type;
+        $page['content']['#attached'][$type]['facebook_tracking_pixel'] = array(
+          'type' => 'file',
+          'group' => JS_THEME,
+          'weight' => $weight - 2,
+          'data' => $file,
+          'preprocess' => (bool) variable_get('cpn_aggregation_' . $type, FALSE),
+        );
+      }
+    }
+  */
+}
