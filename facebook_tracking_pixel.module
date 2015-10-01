@@ -17,6 +17,20 @@ function facebook_tracking_pixel_menu() {
     'page arguments' => array('facebook_tracking_pixel_settings_form'),
     'access arguments' => array('administer facebook tracking pixels'),
     'file' => 'facebook_tracking_pixel.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/config/system/facebook_tracking_pixel/default'] = array(
+    'title' => 'Administer Facebook Tracking Pixel',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => 0,
+  );
+  $items['admin/config/system/facebook_tracking_pixel/path'] = array(
+    'title' => 'Pixels by Path',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('facebook_tracking_pixel_track_by_path_form'),
+    'access arguments' => array('administer facebook tracking pixels'),
+    'file' => 'facebook_tracking_pixel.admin.inc',
+    'type' => MENU_LOCAL_TASK,
   );
   return $items;
 }
@@ -81,7 +95,7 @@ function facebook_tracking_pixel_page_build(&$page) {
 function facebook_tracking_pixel_delete_file() {
   $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
 
-  if (!$files = file_scan_directory($path, '/.*\.js$/')) {
+  if (!$files = file_scan_directory($path, '/.*\.global.js$/')) {
     foreach ($files as $key => $value) {
       file_unmanaged_delete($path . '/' . $key);
     }
