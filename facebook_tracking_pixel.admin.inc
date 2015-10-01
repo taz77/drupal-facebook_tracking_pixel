@@ -7,25 +7,29 @@
 use UnitedPrototype\GoogleAnalytics\Exception;
 
 /**
- * Form builder.
+ * Form builder for global tracking.
  */
 function facebook_tracking_pixel_settings_form($form, &$form_state) {
   $form_state['storage']['facebook_tracking_pixel_tracking_codes'] = isset($form_state['storage']['facebook_tracking_pixel_tracking_codes']) ? $form_state['storage']['facebook_tracking_pixel_tracking_codes'] : 0;
   $form['intro_0'] = array(
     '#markup' => '<p>' . t('Global Facebook Tracking Pixel Codes.') . '</p>',
   );
+
   $form['intro_1'] = array(
     '#markup' => '<p>' . t('Do not put code into this module from an untrusted source. These inputs are') . ' <strong>' . t('NOT') . '</strong> ' . t('santized!') . '</p>',
   );
+
   $form['facebook_tracking_pixel_global_agree'] = array(
     '#type' => 'checkbox',
     '#title' => t('I accept full responsibility for what this code may do to my site.'),
     '#default_value' => variable_get('facebook_tracking_pixel_global_agree', 0),
   );
+
   $form['aggregation'] = array(
     '#type' => 'fieldset',
     '#description' => t('Aggregation settings for the javascripts. Default setting is to allow aggregation. Uncheck to disable aggregation of the tracking javascript codes.')
   );
+
   $form['aggregation']['facebook_tracking_pixel_aggregation'] = array(
     '#type' => 'checkbox',
     '#title' => 'JS Aggregation',
@@ -72,26 +76,6 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
       '#type' => 'textarea',
     );
     $form['facebook_tracking_pixel_tracking_codes']['code'][$i]['#default_value'] = isset($existing_codes_value[$i]) ? $existing_codes_value[$i] : '';
-  }
-  $form['facebook_tracking_pixel_tracking_codes']['add_name'] = array(
-    '#type' => 'submit',
-    '#value' => t('Add one more'),
-    '#submit' => array('facebook_tracking_pixel_add_more_add_one'),
-    '#ajax' => array(
-      'callback' => 'facebook_tracking_pixel_add_more_callback',
-      'wrapper' => 'tracking-codes-wrapper',
-    ),
-  );
-  if ($form_state['num_names'] > 1) {
-    $form['facebook_tracking_pixel_tracking_codes']['remove_name'] = array(
-      '#type' => 'submit',
-      '#value' => t('Remove one'),
-      '#submit' => array('facebook_tracking_pixel_add_more_remove_one'),
-      '#ajax' => array(
-        'callback' => 'facebook_tracking_pixel_add_more_callback',
-        'wrapper' => 'tracking-codes-wrapper',
-      ),
-    );
   }
   $form['facebook_tracking_pixel_tracking_codes']['add_name'] = array(
     '#type' => 'submit',
@@ -175,18 +159,20 @@ function facebook_tracking_pixel_settings_submit($form, &$form_state) {
     $fb_script = array();
     $fb_noscript = array();
     foreach ($form_state['values']['facebook_tracking_pixel_tracking_codes']['code'] as $script) {
-      $script = filter_xss($script);
-      $domd = new DOMDocument();
-      libxml_use_internal_errors(TRUE);
-      $domd->loadHTML($script);
-      libxml_use_internal_errors(FALSE);
-      $items = $domd->getElementsByTagName('script');
-      foreach ($items as $item) {
-        $fb_script[] = $domd->saveHTML($item->firstChild);
-      }
-      $items = $domd->getElementsByTagName('noscript');
-      foreach ($items as $item) {
-        $fb_noscript[] = $domd->saveHTML($item->firstChild);
+      if (!empty($script)) {
+        $script = filter_xss($script);
+        $domd = new DOMDocument();
+        libxml_use_internal_errors(TRUE);
+        $domd->loadHTML($script);
+        libxml_use_internal_errors(FALSE);
+        $items = $domd->getElementsByTagName('script');
+        foreach ($items as $item) {
+          $fb_script[] = $domd->saveHTML($item->firstChild);
+        }
+        $items = $domd->getElementsByTagName('noscript');
+        foreach ($items as $item) {
+          $fb_noscript[] = $domd->saveHTML($item->firstChild);
+        }
       }
     }
   }
@@ -199,11 +185,111 @@ function facebook_tracking_pixel_settings_submit($form, &$form_state) {
     return form_set_error('facebook_tracking_pixel_tracking_codes', 'Could not delete existing js files', NULL);
   };
   // Save the global js files for tracking pixel.
-  $i = 0;
-  foreach ($fb_script as $item) {
-    facebook_tracking_pixel_save_file($item, 'fb_tkpx.' . $i . '.js');
-    $i++;
+  if (!empty($fb_script)) {
+    $i = 0;
+    foreach ($fb_script as $item) {
+      facebook_tracking_pixel_save_file($item, 'fb_tkpx.' . $i . '.global.js');
+      $i++;
+    }
   }
-  variable_set('facebook_tracking_pixel_noscripts', $fb_noscript);
+  if (!empty($fb_noscript)) {
+    variable_set('facebook_tracking_pixel_noscripts', $fb_noscript);
+  }
 
+}
+
+/**
+ * Form builder for track by path
+ */
+function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
+  $form = array();
+
+  $form_state['storage']['facebook_tracking_pixel_tracking_codes_by_path'] = isset($form_state['storage']['facebook_tracking_pixel_tracking_codes_by_path']) ? $form_state['storage']['facebook_tracking_pixel_tracking_codes_by_path'] : 0;
+  $form['intro_0'] = array(
+    '#markup' => '<p>' . t('Facebook Tracking via path.') . '</p>',
+  );
+
+  $form['intro_1'] = array(
+    '#markup' => '<p>' . t('Do not put code into this module from an untrusted source. These inputs are') . ' <strong>' . t('NOT') . '</strong> ' . t('santized!') . '</p>',
+  );
+
+
+  $existing_codes = variable_get('facebook_tracking_pixel_tracking_codes_by_path', NULL);
+  if (!empty($existing_codes['code']) && is_array($existing_codes['code'])) {
+    // Number of existing codes.
+    if (empty($form_state['num_names'])) {
+      $form_state['num_names'] = count($existing_codes['code']);
+    }
+    foreach ($existing_codes['code'] as $key => $value) {
+      $existing_codes_value[$key] = $value;
+    }
+  }
+
+
+  $form['facebook_tracking_pixel_tracking_codes_by_path'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Facebook Tracking Codes'),
+    '#description' => t('Paste the tracking codes as they have been provided to you by Facebook either via email or by clicking "view code" gear icon in the pixel management page.'),
+    // Set up the wrapper so that AJAX will be able to replace the fieldset.
+    '#prefix' => '<div id="tracking-codes-wrapper-path">',
+    '#suffix' => '</div>',
+    '#tree' => TRUE,
+  );
+
+  // Build the fieldset with the proper number of names. We'll use
+  // $form_state['num_names'] to determine the number of textfields to build.
+  if (empty($form_state['num_names'])) {
+    $form_state['num_names'] = 1;
+  }
+  for ($i = 0; $i < $form_state['num_names']; $i++) {
+
+    $form['facebook_tracking_pixel_tracking_codes_by_path']['code'][$i]['path'] = array(
+      '#title' => t('Path'),
+      '#type' => 'textfield',
+    );
+    $form['facebook_tracking_pixel_tracking_codes_by_path']['code'][$i]['path']['#default_value'] = isset($existing_codes_value[$i]) ? $existing_codes_value[$i] : '';
+
+
+    $form['facebook_tracking_pixel_tracking_codes_by_path']['code'][$i]['code'] = array(
+      '#title' => t('Code'),
+      '#type' => 'textarea',
+    );
+    $form['facebook_tracking_pixel_tracking_codes_by_path']['code'][$i]['code']['#default_value'] = isset($existing_codes_value[$i]) ? $existing_codes_value[$i] : '';
+
+
+
+
+  }
+  $form['facebook_tracking_pixel_tracking_codes_by_path']['add_name'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add one more'),
+    '#submit' => array('facebook_tracking_pixel_add_more_add_one'),
+    '#ajax' => array(
+      'callback' => 'facebook_tracking_pixel_path_add_more_callback',
+      'wrapper' => 'tracking-codes-wrapper-path',
+    ),
+  );
+  if ($form_state['num_names'] > 1) {
+    $form['facebook_tracking_pixel_tracking_codes_by_path']['remove_name'] = array(
+      '#type' => 'submit',
+      '#value' => t('Remove one'),
+      '#submit' => array('facebook_tracking_pixel_add_more_remove_one'),
+      '#ajax' => array(
+        'callback' => 'facebook_tracking_pixel_path_add_more_callback',
+        'wrapper' => 'tracking-codes-wrapper-path',
+      ),
+    );
+  }
+
+
+  return system_settings_form($form);
+}
+
+/**
+ * Callback for both ajax-enabled buttons for path tracking.
+ *
+ * Selects and returns the fieldset with the names in it.
+ */
+function facebook_tracking_pixel_path_add_more_callback($form, $form_state) {
+  return $form['facebook_tracking_pixel_tracking_codes_by_path'];
 }
