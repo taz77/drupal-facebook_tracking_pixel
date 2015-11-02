@@ -1,0 +1,52 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for the Facebook Tracking Pixel module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function facebook_tracking_pixel_schema() {
+  $schema['facebook_tracking_pixel_events_path'] = [
+    'description' => t('Facebook Tracking Pixel Events'),
+    'fields' => [
+      'event_id' => [
+        'description' => 'The event id.',
+        'type' => 'serial',
+        'not null' => FALSE,
+      ],
+      'event_path' => [
+        'description' => 'The event path.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'not null' => FALSE,
+      ],
+      'event_type' => [
+        'description' => 'The event type.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'not null' => FALSE,
+      ],
+      'event_js_file' => [
+        'description' => 'The file path to the written JS file.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'not null' => FALSE,
+      ],
+    ],
+    'primary key' => ['event_id'],
+  ];
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function facebook_tracking_pixel_uninstall() {
+  db_drop_table('facebook_tracking_pixel_events_path');
+}
