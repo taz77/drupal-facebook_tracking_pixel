@@ -25,7 +25,7 @@ function facebook_tracking_pixel_menu() {
     'weight' => 0,
   );
   $items['admin/config/system/facebook_tracking_pixel/path'] = array(
-    'title' => 'Pixels by Path',
+    'title' => 'Events by Path',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('facebook_tracking_pixel_track_by_path_form'),
     'access arguments' => array('administer facebook tracking pixels'),
@@ -75,17 +75,12 @@ function facebook_tracking_pixel_page_build(&$page) {
       }
     }
     $noscripts = variable_get('facebook_tracking_pixel_noscripts', NULL);
-    if (!empty($noscripts)) {
-      $i = 0;
-      foreach ($noscripts as $item) {
-        $element = array(
-          '#type' => 'markup',
-          '#markup' => '<noscript>' . $item . '</noscript>',
-        );
-        drupal_add_html_head($element, 'facebook_tracking_pixel_' . $i);
-        $i++;
-      }
-    }
+    $element = array(
+      '#type' => 'markup',
+      '#markup' => '<noscript>' . $noscripts . '</noscript>',
+      '#weight' => 200,
+    );
+    drupal_add_html_head($element, 'facebook_tracking_pixel_noscript');
   }
 }
 
@@ -95,7 +90,7 @@ function facebook_tracking_pixel_page_build(&$page) {
 function facebook_tracking_pixel_delete_file() {
   $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
 
-  if (!$files = file_scan_directory($path, '/.*\.global.js$/')) {
+  if (!$files = file_scan_directory($path, '/.*\.js$/')) {
     foreach ($files as $key => $value) {
       file_unmanaged_delete($path . '/' . $key);
     }
@@ -124,3 +119,22 @@ function facebook_tracking_pixel_save_file($data, $filename) {
   return $file_saved;
 }
 
+/**
+ * Return keyed array of standard events.
+ *
+ * @return array
+ */
+
+function facebook_tracking_pixel_events(){
+  $events = [];
+  $events['pageview'] = ['name' => 'Key Page View', 'code' => 'fbq(\'track\', \'ViewContent\');'];
+  $events['search'] = ['name' => 'Search', 'code' => 'fbq(\'track\', \'Search\');'];
+  $events['addtocart'] = ['name' => 'Add to Cart', 'code' => 'fbq(\'track\', \'AddToCart\');'];
+  $events['addtowish'] = ['name' => 'Add to Wishlist', 'code' => 'fbq(\'track\', \'AddToWishlist\');'];
+  $events['checkoutstart'] = ['name' => 'Initiate checkout', 'code' => 'fbq(\'track\', \'InitiateCheckout\');'];
+  $events['addpayment'] = ['name' => 'Add Payment Info', 'code' => 'fbq(\'track\', \'AddPaymentInfo\')'];
+  $events['lead'] = ['name' => 'Lead', 'code' => 'fbq(\'track\', \'Lead\');'];
+  $events['registration'] = ['name' => 'Complete Registration', 'code' => 'fbq(\'track\', \'CompleteRegistration\');'];
+  return $events;
+
+}
