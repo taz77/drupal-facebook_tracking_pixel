@@ -16,7 +16,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
       'name' => t('Facebook Tracking Pixel tests'),
-      'description' => t('TODO: write me.'),
+      'description' => t('Place tracking pixel onto a site and control events.'),
       'group' => t('Facebook Tracking Pixel'),
     );
   }
@@ -28,14 +28,14 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     // Call the parent with an array of modules to enable for the test.
     parent::setUp(array('facebook_tracking_pixel'));
 
-    // TODO: perform additional setup tasks here if required.
+    // @TODO: perform additional setup tasks here if required.
   }
 
   /**
    * Test the module's functionality.
    */
   function testTodoChangeThisName() {
-    // TODO: write test!
+    // @TODO: write test!
   }
 
 }
