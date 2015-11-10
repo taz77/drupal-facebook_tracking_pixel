@@ -32,6 +32,30 @@ function facebook_tracking_pixel_menu() {
     'file' => 'facebook_tracking_pixel.admin.inc',
     'type' => MENU_LOCAL_TASK,
   );
+  $items['admin/config/system/facebook_tracking_pixel/path/add'] = array(
+    'title' => 'Add an event',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('facebook_tracking_pixel_path_add_form'),
+    'access arguments' => array('administer facebook tracking pixels'),
+    'file' => 'facebook_tracking_pixel.admin.path.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+  $items['admin/config/system/facebook_tracking_pixel/path/delete'] = array(
+    'title' => 'Delete an event',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('facebook_tracking_pixel_path_delete_form'),
+    'access arguments' => array('administer facebook tracking pixels'),
+    'file' => 'facebook_tracking_pixel.admin.path.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
+  $items['admin/config/system/facebook_tracking_pixel/path/edit'] = array(
+    'title' => 'Delete an event',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('facebook_tracking_pixel_path_edit_form'),
+    'access arguments' => array('administer facebook tracking pixels'),
+    'file' => 'facebook_tracking_pixel.admin.path.inc',
+    'type' => MENU_LOCAL_ACTION,
+  );
   return $items;
 }
 
