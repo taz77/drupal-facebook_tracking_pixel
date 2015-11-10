@@ -38,6 +38,13 @@ function facebook_tracking_pixel_schema() {
         'default' => '',
         'not null' => FALSE,
       ],
+      'weight' => [
+        'description' => 'The sortable weight for this item',
+        'type' => 'int',
+        'length' => 11,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
     ],
     'primary key' => ['event_id'],
   ];
@@ -49,4 +56,5 @@ function facebook_tracking_pixel_schema() {
  */
 function facebook_tracking_pixel_uninstall() {
   db_drop_table('facebook_tracking_pixel_events_path');
+  // @todo Remove variables.
 }
