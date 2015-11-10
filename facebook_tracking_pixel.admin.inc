@@ -57,38 +57,8 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
 }
 
 /**
- * Callback for both ajax-enabled buttons.
- *
- * Selects and returns the fieldset with the names in it.
- */
-function facebook_tracking_pixel_add_more_callback($form, $form_state) {
-  return $form['facebook_tracking_pixel_tracking_codes'];
-}
-
-/**
- * Submit handler for the "add-one-more" button.
- *
- * Increments the max counter and causes a rebuild.
- */
-function facebook_tracking_pixel_add_more_add_one($form, &$form_state) {
-  $form_state['num_names']++;
-  $form_state['rebuild'] = TRUE;
-}
-
-/**
- * Submit handler for the "remove one" button.
- *
- * Decrements the max counter and causes a form rebuild.
- */
-function facebook_tracking_pixel_add_more_remove_one($form, &$form_state) {
-  if ($form_state['num_names'] > 1) {
-    $form_state['num_names']--;
-  }
-  $form_state['rebuild'] = TRUE;
-}
-
-/**
  * Implements hook_submit().
+ *
  * Settings form - submit callback.
  */
 function facebook_tracking_pixel_settings_submit($form, &$form_state) {
@@ -147,12 +117,9 @@ function facebook_tracking_pixel_settings_submit($form, &$form_state) {
  */
 function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
   $form = [];
-
-  $form_state['storage']['facebook_tracking_pixel_tracking_codes_by_path'] = isset($form_state['storage']['facebook_tracking_pixel_tracking_codes_by_path']) ? $form_state['storage']['facebook_tracking_pixel_tracking_codes_by_path'] : 0;
   $form['intro_0'] = [
     '#markup' => '<p><h2>' . t('Facebook Event tracking via path') . '</h2></p>',
   ];
-
   $form['intro_1'] = [
     '#markup' => '<p>' . t('For more information regarding event tracking, read Facebook\'s') . ' ' . l('documentation.', 'https://www.facebook.com/business/help/402791146561655', [
         '#external' => TRUE,
@@ -160,113 +127,210 @@ function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
       ]) . '</p>',
   ];
 
+  // Identify that the elements in 'example_items' are a collection, to
+  // prevent Form API from flattening the array when submitted.
+  $form['facebook_tracking_pixel_tracking_codes_by_path']['#tree'] = TRUE;
 
-  $existing_codes = variable_get('facebook_tracking_pixel_tracking_codes_by_path', NULL);
-  if (!empty($existing_codes['code']) && is_array($existing_codes['code'])) {
-    // Number of existing codes.
-    if (empty($form_state['num_names'])) {
-      $form_state['num_names'] = count($existing_codes['code']);
-    }
-    foreach ($existing_codes['code'] as $key => $value) {
-      $existing_codes_value[$key] = $value;
-    }
+  // Fetch the example data from the database, ordered by weight ascending.
+  //
+  // This query excludes the last two tabledrag_example database rows, as
+  // they are intended only for the 'parent/child' tabledrag examples.
+  $result = db_query('SELECT event_id, event_path, event_type, event_js_file, weight FROM {facebook_tracking_pixel_events_path} ORDER BY weight ASC');
+  // Iterate through each database result.
+  foreach ($result as $item) {
+
+    // Create a form entry for this item.
+    //
+    // Each entry will be an array using the the unique id for that item as
+    // the array key, and an array of table row data as the value.
+    $form['facebook_tracking_pixel_tracking_codes_by_path'][$item->event_id] = array(
+
+      // We'll use a form element of type '#markup' to display the item name.
+      'name' => [
+        '#markup' => check_plain($item->event_type),
+      ],
+
+      // We'll use a form element of type '#textfield' to display the item
+      // description, which will allow the value to be changed via the form.
+      // We limit the input to 255 characters, which is the limit we set on
+      // the database field.
+      'path' => [
+        '#type' => 'textfield',
+        '#default_value' => check_plain($item->event_path),
+        '#size' => 20,
+        '#maxlength' => 255,
+      ],
+
+      // The 'weight' field will be manipulated as we move the items around in
+      // the table using the tabledrag activity.  We use the 'weight' element
+      // defined in Drupal's Form API.
+      'weight' => [
+        '#type' => 'weight',
+        '#title' => t('Weight'),
+        '#default_value' => $item->weight,
+        '#delta' => 10,
+        '#title_display' => 'invisible',
+      ],
+      'edit' => [
+
+      ],
+      'delete' => [
+
+      ],
+    );
+
   }
 
+  $form['add']['event_path'] = array(
+    '#type' => 'textfield',
+    '#size' => 24,
+    '#maxlength' => 255,
+  );
 
-  $form['facebook_tracking_pixel_tracking_codes_by_path'] = [
-    '#type' => 'fieldset',
-    '#title' => t('Facebook Event Tracking per path'),
-    '#description' => t('Designate the event to track and the path. Multiple events can be assigned to the same path. Checkout completion events are handled in another area of this module.'),
-    // Set up the wrapper so that AJAX will be able to replace the fieldset.
-    '#prefix' => '<div id="tracking-codes-wrapper-path">',
-    '#suffix' => '</div>',
-    '#tree' => TRUE,
-  ];
+  $form['add']['event_type'] = array(
+    '#type' => 'select',
+    '#options' => facebook_tracking_pixel_events(),
+    '#weight' => 3,
+    '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['type'] : 'textfield',
+  );
+  $form['add']['weight'] = array(
+    '#type' => 'textfield',
+    '#size' => 4,
+    '#delta' => count($node->webform['components']) > 10 ? count($node->webform['components']) : 10,
+  );
 
-  // Build the fieldset with the proper number of names. We'll use
-  // $form_state['num_names'] to determine the number of textfields to build.
-  if (empty($form_state['num_names'])) {
-    $form_state['num_names'] = 1;
-  }
-  for ($i = 0; $i < $form_state['num_names']; $i++) {
-    $form['facebook_tracking_pixel_tracking_codes_by_path']['code'][$i]['path'] = [
-      '#title' => t('Path Number #') . ' ' . $i,
-      '#type' => 'textfield',
-      '#description' => t('Drupal page path to track for this event.'),
-    ];
-    $form['facebook_tracking_pixel_tracking_codes_by_path']['code'][$i]['path']['#default_value'] = isset($existing_codes_value[$i]) ? $existing_codes_value[$i] : '';
-    $options = facebook_tracking_pixel_events();
-    foreach ($options as $key => $value) {
-      $selectoptions[$key] = $value['name'];
+  if (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) {
+    // Make the new component appear by default directly after the one that was
+    // just added.
+    $form['add']['weight']['#default_value'] = $node->webform['components'][$_GET['cid']]['weight'] + 1;
+    foreach (array_keys($node->webform['components']) as $cid) {
+      // Adjust all later components also, to make sure none of them have the
+      // same weight as the new component.
+      if ($form['components'][$cid]['weight']['#default_value'] >= $form['add']['weight']['#default_value']) {
+        $form['components'][$cid]['weight']['#default_value']++;
+      }
     }
-    $form['facebook_tracking_pixel_tracking_codes_by_path']['code'][$i]['event'] = [
-      '#title' => t('Event Number #') . ' ' . $i,
-      '#type' => 'select',
-      '#options' => $selectoptions,
-      '#description' => t('Select the event type.'),
-    ];
-    $form['facebook_tracking_pixel_tracking_codes_by_path']['code'][$i]['event']['#default_value'] = isset($existing_codes_value[$i]) ? $existing_codes_value[$i] : '';
   }
-  $form['facebook_tracking_pixel_tracking_codes_by_path']['add_name'] = [
+  else {
+    // If no component was just added, the new component should appear by
+    // default at the end of the list.
+    $form['add']['weight']['#default_value'] = isset($max_weight) ? $max_weight + 1 : 0;
+  }
+
+  $form['add']['add'] = array(
     '#type' => 'submit',
-    '#value' => t('Add one more'),
-    '#submit' => ['facebook_tracking_pixel_add_more_add_one'],
-    '#ajax' => [
-      'callback' => 'facebook_tracking_pixel_path_add_more_callback',
-      'wrapper' => 'tracking-codes-wrapper-path',
+    '#value' => t('Add'),
+    '#weight' => 45,
+    '#validate' => array('webform_components_form_add_validate', 'webform_components_form_validate'),
+    '#submit' => array('facebook_tracking_pixel_path_add_form'),
+  );
+
+
+
+
+
+
+
+
+
+
+
+
+  // Now we add our submit button, for submitting the form results.
+  //
+  // The 'actions' wrapper used here isn't strictly necessary for tabledrag,
+  // but is included as a Form API recommended practice.
+  $form['actions'] = array('#type' => 'actions');
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save Changes')
+  );
+  return $form;
+}
+
+/**
+ * Theme callback for the tabledrag_example_simple_form form.
+ */
+function theme_facebook_tracking_pixel_track_by_path_form($variables) {
+  $form = $variables['form'];
+
+  // Initialize the variable which will store our table rows.
+  $rows = [];
+
+  // Iterate over each element in our $form['example_items'] array.
+  foreach (element_children($form['facebook_tracking_pixel_tracking_codes_by_path']) as $id) {
+
+    // Before we add our 'weight' column to the row, we need to give the
+    // element a custom class so that it can be identified in the
+    // drupal_add_tabledrag call.
+    //
+    // This could also have been done during the form declaration by adding
+    // '#attributes' => array('class' => 'example-item-weight'),
+    // directy to the 'weight' element in tabledrag_example_simple_form().
+    $form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['weight']['#attributes']['class'] = ['facebook-tracking-pixel-path-weight'];
+
+    // We are now ready to add each element of our $form data to the $rows
+    // array, so that they end up as individual table cells when rendered
+    // in the final table.  We run each element through the drupal_render()
+    // function to generate the final html markup for that element.
+    $rows[] = [
+      'data' => [
+        // Add our 'name' column.
+        drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_type']),
+        // Add our 'description' column.
+        drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_path']),
+        // Add our 'weight' column.
+        drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['weight']),
+        l(t('Edit'), 'node/' . $node->nid . '/webform/components/', array('query' => drupal_get_destination())),
+        l(t('Delete'), 'node/' . $node->nid . '/webform/components/' . '/delete', array('query' => drupal_get_destination())),
+
+      ],
+      // To support the tabledrag behaviour, we need to assign each row of the
+      // table a class attribute of 'draggable'. This will add the 'draggable'
+      // class to the <tr> element for that row when the final table is
+      // rendered.
+      'class' => ['draggable'],
+    ];
+  }
+
+  // We now define the table header values.  Ensure that the 'header' count
+  // matches the final column count for your table.
+  //$header = array(t('Event Type'), t('Event Path'), t('Weight'));
+  $header = [
+    t('Event Type'),
+    t('Event Path'),
+    t('Weight'),
+    [
+      'data' => t('Operations'),
+      'colspan' => 3,
     ],
   ];
-  if ($form_state['num_names'] > 1) {
-    $form['facebook_tracking_pixel_tracking_codes_by_path']['remove_name'] = [
-      '#type' => 'submit',
-      '#value' => t('Remove one'),
-      '#submit' => ['facebook_tracking_pixel_add_more_remove_one'],
-      '#ajax' => [
-        'callback' => 'facebook_tracking_pixel_path_add_more_callback',
-        'wrapper' => 'tracking-codes-wrapper-path',
-      ],
-    ];
-  }
 
-  // Add a custom submission handler.
-  $form['#submit'][] = 'facebook_tracking_pixel_path_settings_submit';
-  return system_settings_form($form);
-}
+  // We also need to pass the drupal_add_tabledrag() function an id which will
+  // be used to identify the <table> element containing our tabledrag form.
+  // Because an element's 'id' should be unique on a page, make sure the value
+  // you select is NOT the same as the form ID used in your form declaration.
+  $table_id = 'facebook-tracking-pixel-path-items-table';
 
-/**
- * Callback for both ajax-enabled buttons for path tracking.
- *
- * Selects and returns the fieldset with the names in it.
- */
-function facebook_tracking_pixel_path_add_more_callback($form, $form_state) {
-  return $form['facebook_tracking_pixel_tracking_codes_by_path'];
-}
+  // We can render our tabledrag table for output.
+  $output = theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('id' => $table_id),
+  ));
 
+  // And then render any remaining form elements (such as our submit button).
+  $output .= drupal_render_children($form);
 
-/**
- * Implements hook_submit().
- * Settings form for tracking by path - submit callback.
- */
-function facebook_tracking_pixel_path_settings_submit($form, &$form_state) {
+  // We now call the drupal_add_tabledrag() function in order to add the
+  // tabledrag.js goodness onto our page.
+  //
+  // For a basic sortable table, we need to pass it:
+  // - the $table_id of our <table> element,
+  // - the $action to be performed on our form items ('order'),
+  // - a string describing where $action should be applied ('siblings'),
+  // - and the class of the element containing our 'weight' element.
+  drupal_add_tabledrag($table_id, 'order', 'sibling', 'example-item-weight');
 
-  // Get path set in main part of module.
-  $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel_path');
-
-  // The data from Facebook has to be parsed to extract the script and the
-  // noscript information. We use PHP DOM processing to make it easy.
-
-
-  if (!empty($form_state['values']['facebook_tracking_pixel_tracking_codes_by_path']['code']) && is_array($form_state['values']['facebook_tracking_pixel_tracking_codes_by_path']['code'])) {
-    $fb_event = [];
-    $fb_path = [];
-    foreach ($form_state['values']['facebook_tracking_pixel_tracking_codes_by_path']['code'] as $script) {
-      !empty($script['event']) ? $fb_event[] = $script['event'] : '';
-    }
-    if (!empty($script['path'])) {
-      $fb_path[] = $script['path'];
-    }
-    else {
-      //form_set_error()
-    }
-  }
+  return $output;
 }
