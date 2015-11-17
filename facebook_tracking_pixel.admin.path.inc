@@ -15,6 +15,7 @@ function facebook_tracking_pixel_path_add_form($form, &$form_state) {
   ];
 
   $form['event_path'] = [
+    '#title' => t('Path to track'),
     '#type' => 'textfield',
     '#size' => 24,
     '#maxlength' => 255,
@@ -22,17 +23,32 @@ function facebook_tracking_pixel_path_add_form($form, &$form_state) {
   ];
 
   $form['event_type'] = [
+    '#title' => t('Event type'),
     '#type' => 'select',
-    '#options' => facebook_tracking_pixel_events(),
-    '#description' => t('Event type'),
-    '#weight' => 3,
+    '#options' => facebook_tracking_pixel_events_options(),
+    '#description' => t('Event type to track on the supplied path.'),
     '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['type'] : 'textfield',
   ];
 
-  // Add a custom submission handler.
-  $form['#submit'][] = 'facebook_tracking_pixel_path_add_form_submit';
-  return system_settings_form($form);
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#submit' => array('facebook_tracking_pixel_path_add_form_submit'),
+  );
+
+  return $form;
 }
+
+/**
+ * Validate handler for facebook_tracking_pixel_track_by_path_form() when adding a new event path
+ */
+function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
+  // Check that the entered component name is valid.
+  if (drupal_strlen(trim($form_state['values']['add']['path'])) <= 0) {
+    form_error($form['add']['path'], t('When adding a new event, the path field is required.'));
+  }
+}
+
 
 /**
  * Submit handler to add a new path based event.
@@ -41,6 +57,7 @@ function facebook_tracking_pixel_path_add_form($form, &$form_state) {
  * @param $form_state
  */
 function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
+  kpr($form_state);
   // @todo handle the items and write them to the files system and update the db
   $global_fb_tracking_path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
   // We have to verify the global JS file is already setup

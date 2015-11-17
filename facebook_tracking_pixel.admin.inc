@@ -189,51 +189,43 @@ function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
 
   $form['add']['event_type'] = array(
     '#type' => 'select',
-    '#options' => facebook_tracking_pixel_events(),
+    '#options' => facebook_tracking_pixel_events_options(),
     '#weight' => 3,
     '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['type'] : 'textfield',
   );
   $form['add']['weight'] = array(
     '#type' => 'textfield',
     '#size' => 4,
-    '#delta' => count($node->webform['components']) > 10 ? count($node->webform['components']) : 10,
   );
-
-  if (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) {
-    // Make the new component appear by default directly after the one that was
-    // just added.
-    $form['add']['weight']['#default_value'] = $node->webform['components'][$_GET['cid']]['weight'] + 1;
-    foreach (array_keys($node->webform['components']) as $cid) {
-      // Adjust all later components also, to make sure none of them have the
-      // same weight as the new component.
-      if ($form['components'][$cid]['weight']['#default_value'] >= $form['add']['weight']['#default_value']) {
-        $form['components'][$cid]['weight']['#default_value']++;
+  /*
+    if (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) {
+      // Make the new component appear by default directly after the one that was
+      // just added.
+      $form['add']['weight']['#default_value'] = $node->webform['components'][$_GET['cid']]['weight'] + 1;
+      foreach (array_keys($node->webform['components']) as $cid) {
+        // Adjust all later components also, to make sure none of them have the
+        // same weight as the new component.
+        if ($form['components'][$cid]['weight']['#default_value'] >= $form['add']['weight']['#default_value']) {
+          $form['components'][$cid]['weight']['#default_value']++;
+        }
       }
     }
-  }
-  else {
-    // If no component was just added, the new component should appear by
-    // default at the end of the list.
-    $form['add']['weight']['#default_value'] = isset($max_weight) ? $max_weight + 1 : 0;
-  }
-
+    else {
+      // If no component was just added, the new component should appear by
+      // default at the end of the list.
+      $form['add']['weight']['#default_value'] = isset($max_weight) ? $max_weight + 1 : 0;
+    }
+  */
   $form['add']['add'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
     '#weight' => 45,
-    '#validate' => array('webform_components_form_add_validate', 'webform_components_form_validate'),
+    '#validate' => array(
+      'facebook_tracking_pixel_path_add_validate',
+      'webform_components_form_validate'
+    ),
     '#submit' => array('facebook_tracking_pixel_path_add_form'),
   );
-
-
-
-
-
-
-
-
-
-
 
 
   // Now we add our submit button, for submitting the form results.
