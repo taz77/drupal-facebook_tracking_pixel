@@ -151,14 +151,32 @@ function facebook_tracking_pixel_save_file($data, $filename) {
 
 function facebook_tracking_pixel_events(){
   $events = [];
-  $events['pageview'] = ['name' => 'Key Page View', 'code' => 'fbq(\'track\', \'ViewContent\');'];
-  $events['search'] = ['name' => 'Search', 'code' => 'fbq(\'track\', \'Search\');'];
-  $events['addtocart'] = ['name' => 'Add to Cart', 'code' => 'fbq(\'track\', \'AddToCart\');'];
-  $events['addtowish'] = ['name' => 'Add to Wishlist', 'code' => 'fbq(\'track\', \'AddToWishlist\');'];
-  $events['checkoutstart'] = ['name' => 'Initiate checkout', 'code' => 'fbq(\'track\', \'InitiateCheckout\');'];
-  $events['addpayment'] = ['name' => 'Add Payment Info', 'code' => 'fbq(\'track\', \'AddPaymentInfo\')'];
-  $events['lead'] = ['name' => 'Lead', 'code' => 'fbq(\'track\', \'Lead\');'];
-  $events['registration'] = ['name' => 'Complete Registration', 'code' => 'fbq(\'track\', \'CompleteRegistration\');'];
+  $events['pageview'] = ['name' => t('Key Page View'), 'code' => 'fbq(\'track\', \'ViewContent\');'];
+  $events['search'] = ['name' => t('Search'), 'code' => 'fbq(\'track\', \'Search\');'];
+  $events['addtocart'] = ['name' => t('Add to Cart'), 'code' => 'fbq(\'track\', \'AddToCart\');'];
+  $events['addtowish'] = ['name' => t('Add to Wishlist'), 'code' => 'fbq(\'track\', \'AddToWishlist\');'];
+  $events['checkoutstart'] = ['name' => t('Initiate checkout'), 'code' => 'fbq(\'track\', \'InitiateCheckout\');'];
+  $events['addpayment'] = ['name' => t('Add Payment Info'), 'code' => 'fbq(\'track\', \'AddPaymentInfo\')'];
+  $events['lead'] = ['name' => t('Lead'), 'code' => 'fbq(\'track\', \'Lead\');'];
+  $events['registration'] = ['name' => t('Complete Registration'), 'code' => 'fbq(\'track\', \'CompleteRegistration\');'];
   return $events;
+}
 
+/**
+ * Return keyed array of standard events in a format for select boxes.
+ *
+ * @return array
+ */
+
+function facebook_tracking_pixel_events_options(){
+  $events = [];
+  $events['pageview'] = t('Key Page View');
+  $events['search'] = t('Search');
+  $events['addtocart'] = t('Add to Cart');
+  $events['addtowish'] = t('Add to Wishlist');
+  $events['checkoutstart'] = t('Initiate checkout');
+  $events['addpayment'] = t('Add Payment Info');
+  $events['lead'] = t('Lead');
+  $events['registration'] = t('Complete Registration');
+  return $events;
 }
