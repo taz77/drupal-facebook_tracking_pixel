@@ -15,8 +15,14 @@ function facebook_tracking_pixel_schema() {
       'event_id' => [
         'description' => 'The event id.',
         'type' => 'serial',
-        'not null' => FALSE,
+        'not null' => TRUE,
       ],
+      'event_uid' => array(
+        'type' => 'varchar',
+        'length' => 200,
+        'description' => 'Unique ID number for the tracking item',
+        'disp-width' => '25',
+      ),
       'event_path' => [
         'description' => 'The event path.',
         'type' => 'varchar',
