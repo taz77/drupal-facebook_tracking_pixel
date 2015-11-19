@@ -71,7 +71,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
     $type = $form_state['values']['event_type'];
     $fb_events = facebook_tracking_pixel_events();
     $event_type = $fb_events[$type];
-    $contents .= "\r" . $event_type['code'];
+    $contents .= $event_type['code'];
     // Write out the new file for this tracking item.
     facebook_tracking_pixel_save_file($contents, $uid . '.js', $subdir);
     // Close the global file handler.
@@ -90,7 +90,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
         ]
       )
       ->execute();
-
+    drupal_set_message(t('Tracking entry added.'), 'status', FALSE);
   }
   else {
     // Return an error because there is no global JS file setup.
