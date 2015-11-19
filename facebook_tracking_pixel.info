@@ -3,4 +3,4 @@ description = Manage Facebook Tracking pixels
 core = 7.x
 files[] = tests/facebook_tracking_pixel.test
 package = Statistics
-configure = admin/config/system/facebooktrackingpixel
+configure = admin/config/system/facebook_tracking_pixel
