@@ -326,3 +326,45 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
 
   return $output;
 }
+
+
+/**
+ * Form builder for purge feature.
+ */
+function facebook_tracking_pixel_form_purge($form, &$form_state) {
+  $form['intro_0'] = [
+    '#markup' => '<p>' . t('Destroy all codes, records, and files.') . '</p>',
+  ];
+  $form['intro_1'] = [
+    '#markup' => '<p>' . t('This will purge the file system deleting all files and directories and purge the database of all configured paths. Use this function with caution.') . '</p>',
+  ];
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Purge All'),
+    '#submit' => array('facebook_tracking_pixel_form_purge_submit'),
+  );
+  return $form;
+}
+
+/**
+ * Submit handler for purge function of module.
+ */
+
+function facebook_tracking_pixel_form_purge_submit() {
+  $status = TRUE;
+  $sql = 'TRUNCATE {facebook_tracking_pixel_events_path}';
+  if (!db_query($sql)){
+   $status = FALSE;
+  }
+  $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
+  if (!file_unmanaged_delete_recursive($path)){
+    $status = FALSE;
+  }
+  if (!$status){
+    drupal_set_message(t('Purging failed check your PHP logs on your server.'), 'error', FALSE);
+  }
+  else{
+    drupal_set_message(t('Purging complete'), 'status', FALSE);
+  }
+  return $status;
+}
