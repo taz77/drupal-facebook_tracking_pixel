@@ -124,13 +124,16 @@ function facebook_tracking_pixel_delete_file() {
 }
 
 /**
- * Saves CSS & JavaScript in the file system (but only if not empty).
+ * Saves JavaScript in the file system (but only if not empty).
  */
-function facebook_tracking_pixel_save_file($data, $filename) {
+function facebook_tracking_pixel_save_file($data, $filename, $subdir) {
   if (!drupal_strlen(trim($data))) {
     return FALSE;
   }
   $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
+  if (!empty($subdir)){
+    $path = $path . '/' . $subdir;
+  }
   file_prepare_directory($path, FILE_CREATE_DIRECTORY);
   $file_saved = file_unmanaged_save_data($data, $path . '/' . $filename, FILE_EXISTS_REPLACE);
 
