@@ -35,7 +35,7 @@ function facebook_tracking_pixel_path_add_form($form, &$form_state) {
     '#value' => t('Save'),
     '#submit' => array('facebook_tracking_pixel_path_add_form_submit'),
   );
-
+  $form['#validate'][] = 'facebook_tracking_pixel_path_add_validate';
   return $form;
 }
 
@@ -44,8 +44,8 @@ function facebook_tracking_pixel_path_add_form($form, &$form_state) {
  */
 function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
   // Check that the entered component name is valid.
-  if (drupal_strlen(trim($form_state['values']['add']['path'])) <= 0) {
-    form_error($form['add']['path'], t('When adding a new event, the path field is required.'));
+  if (drupal_strlen(trim($form_state['values']['event_path'])) <= 0) {
+    form_set_error('event_path', t('When adding a new event, the path field is required.'));
   }
 }
 
@@ -76,6 +76,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
   }
   else {
     // Return an error because there is no global JS file setup.
+    drupal_set_message(t('Your addition could not be saved. Please check the logs'), 'warning', FALSE);
   }
 
 }
