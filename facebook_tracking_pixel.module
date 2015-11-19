@@ -24,6 +24,14 @@ function facebook_tracking_pixel_menu() {
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
   );
+  $items['admin/config/system/facebook_tracking_pixel/purge'] = array(
+    'title' => 'Purge',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('facebook_tracking_pixel_form_purge'),
+    'access arguments' => array('administer facebook tracking pixels'),
+    'file' => 'facebook_tracking_pixel.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
   $items['admin/config/system/facebook_tracking_pixel/path'] = array(
     'title' => 'Events by Path',
     'page callback' => 'drupal_get_form',
