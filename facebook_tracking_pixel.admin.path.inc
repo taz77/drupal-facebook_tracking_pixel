@@ -57,26 +57,44 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
  * @param $form_state
  */
 function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
-  kpr($form_state);
   // @todo handle the items and write them to the files system and update the db
   $global_fb_tracking_path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
+  $subdir = variable_get('facebook_tracking_pixel_path_subdir', 'pathtracking');
+  $uid = uniqid('', TRUE);
   // We have to verify the global JS file is already setup
   if (file_exists($global_fb_tracking_path . '/fb_tkpx.js')) {
     // Read the global file and append it.
     $filename = $global_fb_tracking_path . '/fb_tkpx.js';
     $handle = fopen($filename, 'r');
     $contents = fread($handle, filesize($filename));
-    $path = $form_state['event_path'];
-    $type = $form_state['event_type'];
+    $path = $form_state['values']['event_path'];
+    $type = $form_state['values']['event_type'];
     $fb_events = facebook_tracking_pixel_events();
-
-
+    $event_type = $fb_events[$type];
+    $contents .= "\r" . $event_type['code'];
+    // Write out the new file for this tracking item.
+    facebook_tracking_pixel_save_file($contents, $uid . '.js', $subdir);
+    // Close the global file handler.
     fclose($handle);
+
+    // Full path and filename.
+    $event_js = $global_fb_tracking_path . '/' . $subdir . '/' . $uid;
+    db_insert('facebook_tracking_pixel_events_path')
+      ->fields(
+        [
+          'event_path' => $path,
+          'event_type' => $type,
+          'event_js_file' => $event_js,
+          'event_uid' => $uid,
+          'weight' => 0
+        ]
+      )
+      ->execute();
 
   }
   else {
     // Return an error because there is no global JS file setup.
-    drupal_set_message(t('Your addition could not be saved. Please check the logs'), 'warning', FALSE);
+    drupal_set_message(t('Your addition could not be saved because there is no global pixel JS file. Please check the logs'), 'warning', FALSE);
   }
 
 }
