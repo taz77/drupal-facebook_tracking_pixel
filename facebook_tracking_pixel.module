@@ -54,15 +54,15 @@ function facebook_tracking_pixel_menu() {
     'page arguments' => array('facebook_tracking_pixel_path_delete_form'),
     'access arguments' => array('administer facebook tracking pixels'),
     'file' => 'facebook_tracking_pixel.admin.path.inc',
-    'type' => MENU_LOCAL_ACTION,
+    'type' => MENU_CONTEXT_NONE,
   );
   $items['admin/config/system/facebook_tracking_pixel/path/edit'] = array(
-    'title' => 'Delete an event',
+    'title' => 'Edit an event',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('facebook_tracking_pixel_path_edit_form'),
     'access arguments' => array('administer facebook tracking pixels'),
     'file' => 'facebook_tracking_pixel.admin.path.inc',
-    'type' => MENU_LOCAL_ACTION,
+    'type' => MENU_CONTEXT_NONE,
   );
   return $items;
 }
