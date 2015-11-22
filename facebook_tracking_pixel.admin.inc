@@ -39,7 +39,7 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
   $form['facebook_tracking_pixel_path'] = [
     '#title' => t('File storage path'),
     '#type' => 'textfield',
-    '#default_value' => variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel_path'),
+    '#default_value' => variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel'),
     '#description' => t('The subdirectory of the system files directory where Facebook Tracking Pixel will store its files. Note: changing this path will cause the old path to move to the new path, overwriting the new path, if it exists.'),
   ];
 
@@ -47,7 +47,7 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
     '#title' => t('Code'),
     '#description' => t('Paste the tracking codes as they have been provided to you by Facebook either via email or by clicking "view code" under the actions menu.'),
     '#type' => 'textarea',
-    '#default_value' => variable_get('facebook_tracking_pixel_tracking_code', TRUE),
+    '#default_value' => variable_get('facebook_tracking_pixel_tracking_code', ''),
   ];
 
 
