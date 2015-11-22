@@ -102,13 +102,23 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
 /**
  * Form builder for tracking path delete.
  */
-function facebook_tracking_pixel_path_delete_form($form, &$form_state) {
-
+function facebook_tracking_pixel_path_delete_form($form, &$form_state, $uid) {
+  // Remove the file from storage.
+  // Delete the entry from the database.
+  $status = db_delete('facebook_tracking_pixel_events_path')
+    ->condition('event_uid', $uid, '=')
+    ->execute();
 }
 
 /**
  * Form builder for tracking path edit.
  */
-function facebook_tracking_pixel_path_edit_form($form, &$form_state) {
+function facebook_tracking_pixel_path_edit_form($form, &$form_state, $uid) {
+
+  $result = db_select('facebook_tracking_pixel_events_path', 'e')
+    ->condition('event_uid', $uid, '=')
+    ->fields('e')
+    ->execute()
+    ->fetchAssoc();
 
 }
