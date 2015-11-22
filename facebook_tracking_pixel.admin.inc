@@ -241,7 +241,7 @@ function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
 }
 
 /**
- * Theme callback for the tabledrag_example_simple_form form.
+ * Theme callback for the facebook_tracking_pixel_track_by_path_form form.
  */
 function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   $form = $variables['form'];
@@ -267,14 +267,15 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
     // function to generate the final html markup for that element.
     $rows[] = [
       'data' => [
-        // Add our 'name' column.
+        // Add our 'event_type' column.
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_type']),
-        // Add our 'description' column.
+        // Add our 'event_path' column.
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_path']),
         // Add our 'weight' column.
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['weight']),
-        l(t('Edit'), 'node/' . $node->nid . '/webform/components/', array('query' => drupal_get_destination())),
-        l(t('Delete'), 'node/' . $node->nid . '/webform/components/' . '/delete', array('query' => drupal_get_destination())),
+        // Operations column for editing and deleting.
+        l(t('Edit'), 'admin/config/system/facebook_tracking_pixel/path/edit/' . $node->nid . '/webform/components/', array('query' => drupal_get_destination())),
+        l(t('Delete'), 'admin/config/system/facebook_tracking_pixel/path/delete/' . $node->nid . '/webform/components/' . '/delete', array('query' => drupal_get_destination())),
 
       ],
       // To support the tabledrag behaviour, we need to assign each row of the
