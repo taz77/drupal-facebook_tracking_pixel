@@ -11,59 +11,61 @@
 function facebook_tracking_pixel_menu() {
   $items = array();
 
-  $items['admin/config/system/facebook_tracking_pixel'] = array(
+  $items['admin/config/system/facebook_tracking_pixel'] = [
     'title' => 'Administer Facebook Tracking Pixel',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('facebook_tracking_pixel_settings_form'),
     'access arguments' => array('administer facebook tracking pixels'),
     'file' => 'facebook_tracking_pixel.admin.inc',
     'type' => MENU_NORMAL_ITEM,
-  );
-  $items['admin/config/system/facebook_tracking_pixel/default'] = array(
+  ];
+  $items['admin/config/system/facebook_tracking_pixel/default'] = [
     'title' => 'Administer Facebook Tracking Pixel',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
-  );
-  $items['admin/config/system/facebook_tracking_pixel/purge'] = array(
+  ];
+  $items['admin/config/system/facebook_tracking_pixel/purge'] = [
     'title' => 'Purge',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('facebook_tracking_pixel_form_purge'),
-    'access arguments' => array('administer facebook tracking pixels'),
+    'page arguments' => ['facebook_tracking_pixel_form_purge'],
+    'access arguments' => ['administer facebook tracking pixels'],
     'file' => 'facebook_tracking_pixel.admin.inc',
     'type' => MENU_LOCAL_TASK,
-  );
-  $items['admin/config/system/facebook_tracking_pixel/path'] = array(
+  ];
+  $items['admin/config/system/facebook_tracking_pixel/path'] = [
     'title' => 'Events by Path',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('facebook_tracking_pixel_track_by_path_form'),
-    'access arguments' => array('administer facebook tracking pixels'),
+    'page arguments' => ['facebook_tracking_pixel_track_by_path_form'],
+    'access arguments' => ['administer facebook tracking pixels'],
     'file' => 'facebook_tracking_pixel.admin.inc',
     'type' => MENU_LOCAL_TASK,
-  );
-  $items['admin/config/system/facebook_tracking_pixel/path/add'] = array(
+  ];
+  $items['admin/config/system/facebook_tracking_pixel/path/add'] = [
     'title' => 'Add an event',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('facebook_tracking_pixel_path_add_form'),
-    'access arguments' => array('administer facebook tracking pixels'),
+    'page arguments' => ['facebook_tracking_pixel_path_add_form'],
+    'access arguments' => ['administer facebook tracking pixels'],
     'file' => 'facebook_tracking_pixel.admin.path.inc',
     'type' => MENU_LOCAL_ACTION,
-  );
-  $items['admin/config/system/facebook_tracking_pixel/path/delete'] = array(
+  ];
+  $items['admin/config/system/facebook_tracking_pixel/path/delete/%tid'] = [
+    'load arguments' => [6],
     'title' => 'Delete an event',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('facebook_tracking_pixel_path_delete_form'),
-    'access arguments' => array('administer facebook tracking pixels'),
+    'page arguments' => ['facebook_tracking_pixel_path_delete_form'],
+    'access arguments' => ['administer facebook tracking pixels'],
     'file' => 'facebook_tracking_pixel.admin.path.inc',
     'type' => MENU_CONTEXT_NONE,
-  );
-  $items['admin/config/system/facebook_tracking_pixel/path/edit'] = array(
+  ];
+  $items['admin/config/system/facebook_tracking_pixel/path/edit/%tid'] = [
+    'load arguments' => [6],
     'title' => 'Edit an event',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('facebook_tracking_pixel_path_edit_form'),
-    'access arguments' => array('administer facebook tracking pixels'),
+    'page arguments' => ['facebook_tracking_pixel_path_edit_form'],
+    'access arguments' => ['administer facebook tracking pixels'],
     'file' => 'facebook_tracking_pixel.admin.path.inc',
     'type' => MENU_CONTEXT_NONE,
-  );
+  ];
   return $items;
 }
 
@@ -134,7 +136,7 @@ function facebook_tracking_pixel_delete_file() {
 /**
  * Saves JavaScript in the file system (but only if not empty).
  */
-function facebook_tracking_pixel_save_file($data, $filename, $subdir) {
+function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {
   if (!drupal_strlen(trim($data))) {
     return FALSE;
   }
