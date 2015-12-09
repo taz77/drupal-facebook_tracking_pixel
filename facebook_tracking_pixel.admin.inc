@@ -45,7 +45,7 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
 
   $form['facebook_tracking_pixel_tracking_code'] = [
     '#title' => t('Code'),
-    '#description' => t('Paste the tracking codes as they have been provided to you by Facebook either via email or by clicking "view code" under the actions menu.'),
+    '#description' => t('Paste the tracking codes as they have been provided to you by Facebook either via email or by clicking "view code" under the actions menu. This only supports one code.'),
     '#type' => 'textarea',
     '#default_value' => variable_get('facebook_tracking_pixel_tracking_code', ''),
   ];
@@ -135,51 +135,22 @@ function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
   //
   // This query excludes the last two tabledrag_example database rows, as
   // they are intended only for the 'parent/child' tabledrag examples.
-  $result = db_query('SELECT event_id, event_path, event_type, event_js_file, weight FROM {facebook_tracking_pixel_events_path} ORDER BY weight ASC');
+  $result = db_query('SELECT * FROM {facebook_tracking_pixel_events_path} ORDER BY weight ASC');
   // Iterate through each database result.
   foreach ($result as $item) {
-
-    // Create a form entry for this item.
-    //
-    // Each entry will be an array using the the unique id for that item as
-    // the array key, and an array of table row data as the value.
-    $form['facebook_tracking_pixel_tracking_codes_by_path'][$item->event_id] = array(
-
-      // We'll use a form element of type '#markup' to display the item name.
-      'name' => [
-        '#markup' => check_plain($item->event_type),
-      ],
-
-      // We'll use a form element of type '#textfield' to display the item
-      // description, which will allow the value to be changed via the form.
-      // We limit the input to 255 characters, which is the limit we set on
-      // the database field.
-      'path' => [
-        '#type' => 'textfield',
-        '#default_value' => check_plain($item->event_path),
-        '#size' => 20,
-        '#maxlength' => 255,
-      ],
-
-      // The 'weight' field will be manipulated as we move the items around in
-      // the table using the tabledrag activity.  We use the 'weight' element
-      // defined in Drupal's Form API.
-      'weight' => [
-        '#type' => 'weight',
-        '#title' => t('Weight'),
-        '#default_value' => $item->weight,
-        '#delta' => 10,
-        '#title_display' => 'invisible',
-      ],
-      'edit' => [
-
-      ],
-      'delete' => [
-
-      ],
-    );
-
+    $id = $item->event_id;
+    $form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_uid'] = [
+      '#type' => 'hidden',
+      '#default_value' => $item->event_uid,
+    ];
+    $form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['weight'] = [
+      '#type' => 'textfield',
+      '#size' => 4,
+      '#title' => t('Weight'),
+      '#default_value' => $item->weight,
+    ];
   }
+  kpr($form);
 
   $form['add']['event_path'] = array(
     '#type' => 'textfield',
@@ -246,8 +217,24 @@ function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
 function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   $form = $variables['form'];
 
+
+  // We now define the table header values.  Ensure that the 'header' count
+  // matches the final column count for your table.
+  //$header = array(t('Event Type'), t('Event Path'), t('Weight'));
+  $header = [
+    t('Event Type'),
+    t('Event Path'),
+    t('Weight'),
+    [
+      'data' => t('Operations'),
+      'colspan' => 3,
+    ],
+  ];
+
+
   // Initialize the variable which will store our table rows.
   $rows = [];
+
 
   // Iterate over each element in our $form['example_items'] array.
   foreach (element_children($form['facebook_tracking_pixel_tracking_codes_by_path']) as $id) {
@@ -286,18 +273,6 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
     ];
   }
 
-  // We now define the table header values.  Ensure that the 'header' count
-  // matches the final column count for your table.
-  //$header = array(t('Event Type'), t('Event Path'), t('Weight'));
-  $header = [
-    t('Event Type'),
-    t('Event Path'),
-    t('Weight'),
-    [
-      'data' => t('Operations'),
-      'colspan' => 3,
-    ],
-  ];
 
   // We also need to pass the drupal_add_tabledrag() function an id which will
   // be used to identify the <table> element containing our tabledrag form.
@@ -324,6 +299,15 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   // - a string describing where $action should be applied ('siblings'),
   // - and the class of the element containing our 'weight' element.
   drupal_add_tabledrag($table_id, 'order', 'sibling', 'example-item-weight');
+
+
+  $output = '';
+  $output .= theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('id' => 'webform-components')
+  ));
+  $output .= drupal_render_children($form);
 
   return $output;
 }
@@ -354,17 +338,17 @@ function facebook_tracking_pixel_form_purge($form, &$form_state) {
 function facebook_tracking_pixel_form_purge_submit() {
   $status = TRUE;
   $sql = 'TRUNCATE {facebook_tracking_pixel_events_path}';
-  if (!db_query($sql)){
-   $status = FALSE;
-  }
-  $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
-  if (!file_unmanaged_delete_recursive($path)){
+  if (!db_query($sql)) {
     $status = FALSE;
   }
-  if (!$status){
+  $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
+  if (!file_unmanaged_delete_recursive($path)) {
+    $status = FALSE;
+  }
+  if (!$status) {
     drupal_set_message(t('Purging failed check your PHP logs on your server.'), 'error', FALSE);
   }
-  else{
+  else {
     drupal_set_message(t('Purging complete'), 'status', FALSE);
   }
   return $status;
