@@ -3,6 +3,8 @@
 /**
  * @file
  * Install, update, and uninstall functions for the Facebook Tracking Pixel module.
+ *
+ *  @author Brady Owens <info@fastglass.net>
  */
 
 /**
