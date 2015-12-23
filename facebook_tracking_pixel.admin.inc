@@ -13,11 +13,6 @@
  */
 function facebook_tracking_pixel_settings_form($form, &$form_state) {
 
-  $form = [
-    '#tree' => TRUE,
-    'base_codes' => [],
-  ];
-
   $form['intro_0'] = [
     '#markup' => '<p>' . t('Global Facebook Tracking Pixel Codes.') . '</p>',
   ];
@@ -62,7 +57,10 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
     ->countQuery()
     ->execute()
     ->fetchField();
-
+  $form = [
+    '#tree' => TRUE,
+    'base_codes' => [],
+  ];
   // Iterate through each database result.
   if ($resultcount > 0) {
     foreach ($result as $item) {
@@ -88,6 +86,9 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
           '#default_value' => $item->weight,
           '#delta' => 10,
           '#title_display' => 'invisible',
+          '#attributes' => [
+            'class' => ['base-codes-weight'],
+          ]
         ],
       ];
       // Determine the maximum weight value to use below for the add line.
@@ -113,12 +114,15 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
     '#default_value' => 0,
     '#delta' => $resultcount > 10 ? $resultcount : 10,
     '#title_display' => 'invisible',
+    '#attributes' => [
+      'class' => ['base-codes-weight'],
+    ]
   ];
-
-  if (isset($_GET['cid'])) {
+  // @todo this does not work yet.
+  if (isset($_GET['bcid'])) {
     // Make the new component appear by default directly after the one that was
     // just added.
-    $form['add']['weight']['#default_value'] = $node->webform['components'][$_GET['cid']]['weight'] + 1;
+    $form['add']['weight']['#default_value'] = $result[$_GET['bcid']]->weight + 1;
     foreach (array_keys($node->webform['components']) as $cid) {
       // Adjust all later components also, to make sure none of them have the
       // same weight as the new component.
@@ -144,29 +148,6 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
     '#submit' => array('webform_components_form_add_submit'),
   );
 
-  /*
-    $form['facebook_tracking_pixel_tracking_codes']['add_name'] = [
-      '#type' => 'submit',
-      '#value' => t('Add one more'),
-      '#submit' => ['facebook_tracking_pixel_add_more_add_one'],
-      '#ajax' => [
-        'callback' => 'facebook_tracking_pixel_add_more_callback',
-        'wrapper' => 'tracking-codes-wrapper',
-      ],
-    ];
-    if ($form_state['num_names'] > 1) {
-      $form['facebook_tracking_pixel_tracking_codes']['remove_name'] = [
-        '#type' => 'submit',
-        '#value' => t('Remove one'),
-        '#submit' => ['facebook_tracking_pixel_add_more_remove_one'],
-        '#ajax' => [
-          'callback' => 'facebook_tracking_pixel_add_more_callback',
-          'wrapper' => 'tracking-codes-wrapper',
-        ],
-      ];
-    }
-  */
-
   // Add a custom submission handler.
   $form['#submit'][] = 'facebook_tracking_pixel_settings_submit';
   return system_settings_form($form);
@@ -178,14 +159,57 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
  * @param $variables
  * @return string
  */
-function theme123_123facebook_tracking_pixel_settings_form($variables) {
+function theme_facebook_tracking_pixel_settings_form($variables) {
   $form = $variables['form'];
 
   // Initialize the variable to hold the rows of the table.
   $rows = [];
-
   // Table header.
-  $header = [t('Name'), t('Facebook ID Number'), t('Weight')];
+  $header = [
+    t('Name'),
+    t('Facebook ID Number'),
+    t('Weight'),
+    ['data' => t('Operations'), 'colspan' => 2]
+  ];
+
+  // Add a row containing form elements for a new item.
+  unset($form['add']['name']['#title'], $form['add_type']['#description']);
+  $form['add']['name']['#attributes']['rel'] = t('New Tracking ID name');
+  $form['add']['name']['#attributes']['class'] = array('webform-default-value');
+  $form['add']['fbid']['#attributes']['class'] = array('base-code-fbid');
+  $form['add']['weight']['#attributes']['class'] = array('base-code-weight');
+  $row_data = array(
+    drupal_render($form['add']['name']),
+    drupal_render($form['add']['fbid']),
+    drupal_render($form['add']['bcid']) . drupal_render($form['add']['weight']),
+    array('colspan' => 2, 'data' => drupal_render($form['add']['add'])),
+  );
+  $add_form = array(
+    'data' => $row_data,
+    'class' => array('draggable', 'base-code-add-form')
+  );
+  $form_rendered = FALSE;
+
+  // Iterate over each element in our $form['base_codes'] array.
+  foreach (element_children($form['base_codes']) as $id) {
+    $rows[] = [
+      'data' => array(
+        // Add our 'name' column.
+        drupal_render($form['base_codes'][$id]['name']),
+        // Add our 'description' column.
+        drupal_render($form['base_codes'][$id]['fbid']),
+        // Add our 'weight' column.
+        drupal_render($form['base_codes'][$id]['weight']),
+      ),
+      // To support the tabledrag behaviour, we need to assign each row of the
+      // table a class attribute of 'draggable'. This will add the 'draggable'
+      // class to the <tr> element for that row when the final table is
+      // rendered.
+      'class' => array('draggable'),
+    ];
+
+  }
+
 
   $output = '';
   $output .= theme('table', array(
