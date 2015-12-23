@@ -33,9 +33,25 @@ function facebook_tracking_pixel_settings_form($form_state) {
     '#type' => 'textfield',
     '#default_value' => variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel'),
     '#description' => t('The subdirectory of the system files directory where Facebook Tracking Pixel will store its files. Note: changing this path will cause the old path to move to the new path, overwriting the new path, if it exists.'),
+    '#validate' => ['facebook_tracking_pixel_settings_form_validate'],
   ];
 
   return system_settings_form($form);
+}
+
+function facebook_tracking_pixel_settings_form_validate($form, &$form_state) {
+  // Trim slashes from the path.
+  $form_state['values']['facebook_tracking_pixel_path'] = trim($form_state['values']['facebook_tracking_pixel_path'], '/');
+
+  // If the path changed, notify that the folder must be moved.
+  $old_path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel_path');
+  if ($form_state['values']['facebook_tracking_pixel_path'] != $old_path and file_exists(drupal_realpath($old_path))) {
+    $base_path = variable_get('file_' . file_default_scheme() . '_path', conf_path() . '/files') . '/';
+    drupal_set_message(t('The file storage path has changed; thus, the contents of %old_path must manually be moved to %new_path.', array(
+      '%old_path' => $base_path . file_uri_target($old_path),
+      '%new_path' => $base_path . file_uri_target($form_state['values']['facebook_tracking_pixel_path']),
+    )), 'warning', FALSE);
+  }
 }
 
 /**
@@ -133,11 +149,8 @@ function facebook_tracking_pixel_base_codes_form($form_state) {
     '#type' => 'submit',
     '#value' => t('Add'),
     '#weight' => 45,
-    '#validate' => [
-      'webform_components_form_add_validate',
-      'webform_components_form_validate'
-    ],
-    '#submit' => ['facebook_tracking_pixel_settings_submit'],
+    '#submit' => ['facebook_tracking_pixel_base_codes_add_form_submit'],
+    '#validate' => ['facebook_tracking_pixel_base_codes_add_fbid_validate'],
   ];
 
   $form['actions'] = ['#type' => 'actions'];
@@ -223,23 +236,29 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
 }
 
 /**
- * Implements hook_submit().
- *
- * Settings form - submit callback.
+ * Validation function to make sure the FB Id is an integer.
+ * @param $form
+ * @param $form_state
  */
-function facebook_tracking_pixel_settings_submit($form, &$form_state) {
-  // Trim slashes from the path.
-  $form_state['values']['facebook_tracking_pixel_path'] = trim($form_state['values']['facebook_tracking_pixel_path'], '/');
-
-  // If the path changed, notify that the folder must be moved.
-  $old_path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel_path');
-  if ($form_state['values']['facebook_tracking_pixel_path'] != $old_path and file_exists(drupal_realpath($old_path))) {
-    $base_path = variable_get('file_' . file_default_scheme() . '_path', conf_path() . '/files') . '/';
-    drupal_set_message(t('The file storage path has changed; thus, the contents of %old_path must manually be moved to %new_path.', array(
-      '%old_path' => $base_path . file_uri_target($old_path),
-      '%new_path' => $base_path . file_uri_target($form_state['values']['facebook_tracking_pixel_path']),
-    )), 'warning', FALSE);
+function facebook_tracking_pixel_base_codes_add_fbid_validate($form, &$form_state) {
+  // Check that the entered component name is valid.
+  if (!is_int($form_state['values']['add']['fbid'])) {
+    form_error($form['add']['fbid'], t('Facebook ID numbers are numbers only.'));
   }
+}
+
+/**
+ * Submit handler for the new tracking id form.
+ * @param $form
+ * @param $form_state
+ * @return array
+ */
+function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state) {
+  /*
+    t('Name'),
+      t('Facebook ID Number'),
+      t('Weight'),*/
+
 
   $fb_script_src = [
     '<script>
@@ -256,19 +275,22 @@ function facebook_tracking_pixel_settings_submit($form, &$form_state) {
     '&ev=PageView&noscript=1"/></noscript>',
   ];
 
-  if (!empty($form_state['values']['facebook_tracking_pixel_tracking_codes']['code'])) {
+  if (!empty($form_state['values']['add']['name']) && !empty($form_state['values']['add']['fbid'])) {
+    // Construct our tracking codes.
+    $fb_base_code = $fb_script_src[0] . $form_state['values']['add']['fbid'] . $fb_script_src[1];
+    $fb_base_code_nojs = $fb_noscript_src[0] . $form_state['values']['add']['fbid'] . $fb_noscript_src[1];
 
-
-    // Remove existing file, if present.
+    /* Remove existing file, if present.
     try {
       facebook_tracking_pixel_delete_file();
     }
     catch (Exception $e) {
       watchdog('facebook_tracking_pixel', 'Failed deleting global JS files for Facebook Tracking Pixel. Error @error', array('@error' => $e), WATCHDOG_ERROR, NULL);
       return form_set_error('facebook_tracking_pixel_tracking_code', 'Could not delete existing js files', NULL);
-    };
+    };*/
+
     // Save the global js files for tracking pixel.
-    if (!empty($fb_script[0]) && !empty($fb_noscript[0])) {
+    if (!empty($fb_base_code) && !empty($fb_noscript[0])) {
       $success = facebook_tracking_pixel_save_file($fb_script[0], 'fb_tkpx.js');
       if (!$success) {
         watchdog('facebook_tracking_pixel', 'Failed writing global JS files for Facebook Tracking Pixel.', array(), WATCHDOG_ERROR, NULL);
