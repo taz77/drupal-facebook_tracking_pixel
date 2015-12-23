@@ -65,7 +65,7 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
     ->fields('c')
     ->orderBy('weight')
     ->execute()
-    ->fetchObject();
+    ->fetchAllAssoc('base_code_id');
 
   $resultcount = db_select('facebook_tracking_pixel_base_codes', 'c')
     ->fields('c')
@@ -76,7 +76,8 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
   // Iterate through each database result.
   if ($resultcount > 0) {
     foreach ($result as $item) {
-      $form['base_codes'][$item->base_code_id] = [
+      kpr($item);
+      $form['base_codes'][$item>base_code_id] = [
         'bcid' => [
           '#type' => 'hidden',
           '#value' => '',
