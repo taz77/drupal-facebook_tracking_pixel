@@ -33,6 +33,32 @@ function facebook_tracking_pixel_menu() {
     'file' => 'facebook_tracking_pixel.admin.inc',
     'type' => MENU_LOCAL_TASK,
   ];
+  $items['admin/config/system/facebook_tracking_pixel/base_codes/add'] = [
+    'title' => 'Add a Base Code',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['facebook_tracking_pixel_base_codes_add_form'],
+    'access arguments' => ['administer facebook tracking pixels'],
+    'file' => 'facebook_tracking_pixel.admin.path.inc',
+    'type' => MENU_LOCAL_ACTION,
+  ];
+  $items['admin/config/system/facebook_tracking_pixel/base_codes/delete/%tid'] = [
+    'load arguments' => [6],
+    'title' => 'Delete a Base Code',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['facebook_tracking_pixel_base_codes_delete_form'],
+    'access arguments' => ['administer facebook tracking pixels'],
+    'file' => 'facebook_tracking_pixel.admin.path.inc',
+    'type' => MENU_CONTEXT_NONE,
+  ];
+  $items['admin/config/system/facebook_tracking_pixel/base_codes/edit/%tid'] = [
+    'load arguments' => [6],
+    'title' => 'Edit a Base Code',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['facebook_tracking_pixel_base_codes_edit_form'],
+    'access arguments' => ['administer facebook tracking pixels'],
+    'file' => 'facebook_tracking_pixel.admin.path.inc',
+    'type' => MENU_CONTEXT_NONE,
+  ];
   $items['admin/config/system/facebook_tracking_pixel/purge'] = [
     'title' => 'Purge',
     'page callback' => 'drupal_get_form',
@@ -46,7 +72,7 @@ function facebook_tracking_pixel_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => ['facebook_tracking_pixel_track_by_path_form'],
     'access arguments' => ['administer facebook tracking pixels'],
-    'file' => 'facebook_tracking_pixel.admin.inc',
+    'file' => 'facebook_tracking_pixel.admin.path.inc',
     'type' => MENU_LOCAL_TASK,
   ];
   $items['admin/config/system/facebook_tracking_pixel/path/add'] = [
