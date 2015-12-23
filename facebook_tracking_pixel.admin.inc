@@ -10,7 +10,12 @@
  * Form builder for global tracking.
  */
 function facebook_tracking_pixel_settings_form($form, &$form_state) {
-  $form_state['storage']['facebook_tracking_pixel_tracking_codes'] = isset($form_state['storage']['facebook_tracking_pixel_tracking_codes']) ? $form_state['storage']['facebook_tracking_pixel_tracking_codes'] : 0;
+
+  $form = [
+    '#tree' => TRUE,
+    'base_codes' => [],
+  ];
+
   $form['intro_0'] = [
     '#markup' => '<p>' . t('Global Facebook Tracking Pixel Codes.') . '</p>',
   ];
@@ -43,17 +48,188 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
     '#description' => t('The subdirectory of the system files directory where Facebook Tracking Pixel will store its files. Note: changing this path will cause the old path to move to the new path, overwriting the new path, if it exists.'),
   ];
 
-  $form['facebook_tracking_pixel_tracking_code'] = [
-    '#title' => t('Code'),
-    '#description' => t('Paste the tracking codes as they have been provided to you by Facebook either via email or by clicking "view code" under the actions menu. This only supports one code.'),
-    '#type' => 'textarea',
-    '#default_value' => variable_get('facebook_tracking_pixel_tracking_code', ''),
+
+  $form['facebook_tracking_pixel_tracking_codes'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Facebook Tracking ID Numbers'),
+    '#description' => t('You may track more than one account ID. This module will allow you to add unlimited ID numbers. Note that per Facebook it is best to not exceed three. Your ID number is easily available on the right hand column of the pixel administration page under the pixel name.'),
+    // Set up the wrapper so that AJAX will be able to replace the fieldset.
+    '#prefix' => '<div id="tracking-codes-wrapper">',
+    '#suffix' => '</div>',
+    '#tree' => TRUE,
+  );
+
+  $result = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c')
+    ->orderBy('weight')
+    ->execute()
+    ->fetchObject();
+
+  $resultcount = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+
+  // Iterate through each database result.
+  if ($resultcount > 0) {
+    foreach ($result as $item) {
+      $form['base_codes'][$item->base_code_id] = [
+        'bcid' => [
+          '#type' => 'hidden',
+          '#value' => '',
+        ],
+        'name' => [
+          '#type' => 'textfield',
+          '#default_value' => check_plain($item->base_code_name),
+          '#size' => 20,
+          '#maxlength' => 255,
+        ],
+        'fbid' => [
+          '#type' => 'textfield',
+          '#default_value' => check_plain($item->base_code_fbid),
+          '#size' => 20,
+          '#maxlength' => 255,
+        ],
+        'weight' => [
+          '#type' => 'weight',
+          '#title' => t('Weight'),
+          '#default_value' => $item->weight,
+          '#delta' => 10,
+          '#title_display' => 'invisible',
+        ],
+      ];
+      // Determine the maximum weight value to use below for the add line.
+      if (!isset($max_weight) || $item->weight > $max_weight) {
+        $max_weight = $item->weight;
+      }
+    }
+  }
+
+  $form['add']['name'] = [
+    '#type' => 'textfield',
+    '#size' => 24,
+    '#maxlength' => 255,
+  ];
+  $form['add']['fbid'] = [
+    '#type' => 'textfield',
+    '#default_value' => '',
+    '#size' => 20,
+    '#maxlength' => 255,
+  ];
+  $form['add']['weight'] = [
+    '#type' => 'weight',
+    '#size' => 4,
+    '#delta' => $resultcount > 10 ? $resultcount : 10,
   ];
 
+  if (isset($_GET['cid'])) {
+    // Make the new component appear by default directly after the one that was
+    // just added.
+    $form['add']['weight']['#default_value'] = $node->webform['components'][$_GET['cid']]['weight'] + 1;
+    foreach (array_keys($node->webform['components']) as $cid) {
+      // Adjust all later components also, to make sure none of them have the
+      // same weight as the new component.
+      if ($form['base_codes'][$cid]['weight']['#default_value'] >= $form['add']['weight']['#default_value']) {
+        $form['base_codes'][$cid]['weight']['#default_value']++;
+      }
+    }
+  }
+  else {
+    // If no component was just added, the new component should appear by
+    // default at the end of the list.
+    $form['add']['weight']['#default_value'] = isset($max_weight) ? $max_weight + 1 : 0;
+  }
+
+  $form['add']['add'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add'),
+    '#weight' => 45,
+    '#validate' => array(
+      'webform_components_form_add_validate',
+      'webform_components_form_validate'
+    ),
+    '#submit' => array('webform_components_form_add_submit'),
+  );
+
+  /*
+    $form['facebook_tracking_pixel_tracking_codes']['add_name'] = [
+      '#type' => 'submit',
+      '#value' => t('Add one more'),
+      '#submit' => ['facebook_tracking_pixel_add_more_add_one'],
+      '#ajax' => [
+        'callback' => 'facebook_tracking_pixel_add_more_callback',
+        'wrapper' => 'tracking-codes-wrapper',
+      ],
+    ];
+    if ($form_state['num_names'] > 1) {
+      $form['facebook_tracking_pixel_tracking_codes']['remove_name'] = [
+        '#type' => 'submit',
+        '#value' => t('Remove one'),
+        '#submit' => ['facebook_tracking_pixel_add_more_remove_one'],
+        '#ajax' => [
+          'callback' => 'facebook_tracking_pixel_add_more_callback',
+          'wrapper' => 'tracking-codes-wrapper',
+        ],
+      ];
+    }
+  */
 
   // Add a custom submission handler.
   $form['#submit'][] = 'facebook_tracking_pixel_settings_submit';
   return system_settings_form($form);
+}
+
+/**
+ * Theme callback for the base code settings form.
+ *
+ * @param $variables
+ * @return string
+ */
+function theme_facebook_tracking_pixel_settings_form($variables) {
+  $form = $variables['form'];
+
+  // Initialize the variable to hold the rows of the table.
+  $rows = [];
+
+  // Table header.
+  $header = [t('Name'), t('Facebook ID Number'), t('Weight')];
+
+  $output = '';
+  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'facebook-base-tracking-ids')));
+  $output .= drupal_render_children($form);
+  return $output;
+}
+
+/**
+ * Callback for both ajax-enabled buttons.
+ *
+ * Selects and returns the fieldset with the names in it.
+ */
+function facebook_tracking_pixel_add_more_callback($form, $form_state) {
+  return $form['facebook_tracking_pixel_tracking_codes'];
+}
+
+/**
+ * Submit handler for the "add-one-more" button.
+ *
+ * Increments the max counter and causes a rebuild.
+ */
+function facebook_tracking_pixel_add_more_add_one($form, &$form_state) {
+  $form_state['num_names']++;
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Submit handler for the "remove one" button.
+ *
+ * Decrements the max counter and causes a form rebuild.
+ */
+function facebook_tracking_pixel_add_more_remove_one($form, &$form_state) {
+  if ($form_state['num_names'] > 1) {
+    $form_state['num_names']--;
+  }
+  $form_state['rebuild'] = TRUE;
 }
 
 /**
@@ -75,22 +251,23 @@ function facebook_tracking_pixel_settings_submit($form, &$form_state) {
     )), 'warning', FALSE);
   }
 
-  if (!empty($form_state['values']['facebook_tracking_pixel_tracking_code'])) {
-    // The data from Facebook has to be parsed to extract the script and the
-    // noscript information. We use PHP DOM processing to make it easy.
-    $script = $form_state['values']['facebook_tracking_pixel_tracking_code'];
-    $domd = new DOMDocument();
-    libxml_use_internal_errors(TRUE);
-    $domd->loadHTML($script);
-    libxml_use_internal_errors(FALSE);
-    $items = $domd->getElementsByTagName('script');
-    foreach ($items as $item) {
-      $fb_script[] = $domd->saveHTML($item->firstChild);
-    }
-    $items = $domd->getElementsByTagName('noscript');
-    foreach ($items as $item) {
-      $fb_noscript[] = $domd->saveHTML($item->firstChild);
-    }
+  $fb_script_src = [
+    '<script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version=\'2.0\';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,\'script\',\'//connect.facebook.net/en_US/fbevents.js\');',
+    '</script>',
+  ];
+  $fb_noscript_src = [
+    '<noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=',
+    '&ev=PageView&noscript=1"/></noscript>',
+  ];
+
+  if (!empty($form_state['values']['facebook_tracking_pixel_tracking_codes']['code'])) {
+
 
     // Remove existing file, if present.
     try {
