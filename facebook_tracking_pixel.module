@@ -16,8 +16,8 @@ function facebook_tracking_pixel_menu() {
   $items['admin/config/system/facebook_tracking_pixel'] = [
     'title' => 'Administer Facebook Tracking Pixel',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('facebook_tracking_pixel_settings_form'),
-    'access arguments' => array('administer facebook tracking pixels'),
+    'page arguments' => ['facebook_tracking_pixel_settings_form'],
+    'access arguments' => ['administer facebook tracking pixels'],
     'file' => 'facebook_tracking_pixel.admin.inc',
     'type' => MENU_NORMAL_ITEM,
   ];
@@ -25,6 +25,13 @@ function facebook_tracking_pixel_menu() {
     'title' => 'Administer Facebook Tracking Pixel',
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 0,
+  ];
+  $items['admin/config/system/facebook_tracking_pixel/base_codes'] = [
+    'title' => 'Base Tracking Codes',
+    'page arguments' => ['facebook_tracking_pixel_base_codes_form'],
+    'access arguments' => ['administer facebook tracking pixels'],
+    'file' => 'facebook_tracking_pixel.admin.inc',
+    'type' => MENU_LOCAL_TASK,
   ];
   $items['admin/config/system/facebook_tracking_pixel/purge'] = [
     'title' => 'Purge',
@@ -143,7 +150,7 @@ function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {
     return FALSE;
   }
   $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
-  if (!empty($subdir)){
+  if (!empty($subdir)) {
     $path = $path . '/' . $subdir;
   }
   file_prepare_directory($path, FILE_CREATE_DIRECTORY);
@@ -164,16 +171,40 @@ function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {
  * @return array
  */
 
-function facebook_tracking_pixel_events(){
+function facebook_tracking_pixel_events() {
   $events = [];
-  $events['pageview'] = ['name' => t('Key Page View'), 'code' => 'fbq(\'track\', \'ViewContent\');'];
-  $events['search'] = ['name' => t('Search'), 'code' => 'fbq(\'track\', \'Search\');'];
-  $events['addtocart'] = ['name' => t('Add to Cart'), 'code' => 'fbq(\'track\', \'AddToCart\');'];
-  $events['addtowish'] = ['name' => t('Add to Wishlist'), 'code' => 'fbq(\'track\', \'AddToWishlist\');'];
-  $events['checkoutstart'] = ['name' => t('Initiate checkout'), 'code' => 'fbq(\'track\', \'InitiateCheckout\');'];
-  $events['addpayment'] = ['name' => t('Add Payment Info'), 'code' => 'fbq(\'track\', \'AddPaymentInfo\')'];
-  $events['lead'] = ['name' => t('Lead'), 'code' => 'fbq(\'track\', \'Lead\');'];
-  $events['registration'] = ['name' => t('Complete Registration'), 'code' => 'fbq(\'track\', \'CompleteRegistration\');'];
+  $events['pageview'] = [
+    'name' => t('Key Page View'),
+    'code' => 'fbq(\'track\', \'ViewContent\');'
+  ];
+  $events['search'] = [
+    'name' => t('Search'),
+    'code' => 'fbq(\'track\', \'Search\');'
+  ];
+  $events['addtocart'] = [
+    'name' => t('Add to Cart'),
+    'code' => 'fbq(\'track\', \'AddToCart\');'
+  ];
+  $events['addtowish'] = [
+    'name' => t('Add to Wishlist'),
+    'code' => 'fbq(\'track\', \'AddToWishlist\');'
+  ];
+  $events['checkoutstart'] = [
+    'name' => t('Initiate checkout'),
+    'code' => 'fbq(\'track\', \'InitiateCheckout\');'
+  ];
+  $events['addpayment'] = [
+    'name' => t('Add Payment Info'),
+    'code' => 'fbq(\'track\', \'AddPaymentInfo\')'
+  ];
+  $events['lead'] = [
+    'name' => t('Lead'),
+    'code' => 'fbq(\'track\', \'Lead\');'
+  ];
+  $events['registration'] = [
+    'name' => t('Complete Registration'),
+    'code' => 'fbq(\'track\', \'CompleteRegistration\');'
+  ];
   return $events;
 }
 
@@ -183,7 +214,7 @@ function facebook_tracking_pixel_events(){
  * @return array
  */
 
-function facebook_tracking_pixel_events_options(){
+function facebook_tracking_pixel_events_options() {
   $events = [];
   $events['pageview'] = t('Key Page View');
   $events['search'] = t('Search');
@@ -194,4 +225,16 @@ function facebook_tracking_pixel_events_options(){
   $events['lead'] = t('Lead');
   $events['registration'] = t('Complete Registration');
   return $events;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function facebook_tracking_pixel_theme() {
+  return [
+    'facebook_tracking_pixel_base_codes_form' => [
+      'render element' => 'form',
+      'file' => 'facebook_tracking_pixel.admin.inc',
+    ],
+  ];
 }
