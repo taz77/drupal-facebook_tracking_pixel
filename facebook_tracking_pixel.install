@@ -96,5 +96,6 @@ function facebook_tracking_pixel_schema() {
 function facebook_tracking_pixel_uninstall() {
   db_drop_table('facebook_tracking_pixel_events_path');
   db_drop_table('facebook_tracking_pixel_base_codes');
-  // @todo Remove variables.
+  variable_del('facebook_tracking_pixel_path');
+  variable_del('facebook_tracking_pixel_aggregation');
 }
