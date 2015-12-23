@@ -11,7 +11,7 @@
  * Form builder for core modules settings.
  */
 
-function facebook_tracking_pixel_settings_form($form_state){
+function facebook_tracking_pixel_settings_form($form_state) {
   $form = [];
   $form['intro_0'] = [
     '#markup' => '<p>' . t('Global Facebook Tracking Pixel Codes.') . '</p>',
@@ -536,6 +536,10 @@ function facebook_tracking_pixel_form_purge($form, &$form_state) {
 function facebook_tracking_pixel_form_purge_submit() {
   $status = TRUE;
   $sql = 'TRUNCATE {facebook_tracking_pixel_events_path}';
+  if (!db_query($sql)) {
+    $status = FALSE;
+  }
+  $sql = 'TRUNCATE {facebook_tracking_pixel_base_codes}';
   if (!db_query($sql)) {
     $status = FALSE;
   }
