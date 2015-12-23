@@ -54,6 +54,37 @@ function facebook_tracking_pixel_schema() {
     ],
     'primary key' => ['event_id'],
   ];
+  $schema['facebook_tracking_pixel_base_codes'] = [
+    'description' => t('Facebook Tracking Pixel Events'),
+    'fields' => [
+      'base_code_id' => [
+        'description' => 'Base Code ID.',
+        'type' => 'serial',
+        'not null' => TRUE,
+      ],
+      'base_code_name' => [
+        'description' => 'Base Code Name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+      ],
+      'base_code_fbid' => [
+        'description' => 'Base Code ID.',
+        'type' => 'varchar',
+        'length' => 200,
+        'not null' => TRUE,
+      ],
+      'weight' => [
+        'description' => 'The sortable weight for this item.',
+        'type' => 'int',
+        'length' => 11,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['base_code_id'],
+  ];
   return $schema;
 }
 
@@ -62,5 +93,6 @@ function facebook_tracking_pixel_schema() {
  */
 function facebook_tracking_pixel_uninstall() {
   db_drop_table('facebook_tracking_pixel_events_path');
+  db_drop_table('facebook_tracking_pixel_base_codes');
   // @todo Remove variables.
 }
