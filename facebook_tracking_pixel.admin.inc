@@ -4,7 +4,7 @@
  * @file facebook_tracking_pixel.admin.inc
  * Admin pages.
  *
- *  @author Brady Owens <info@fastglass.net>
+ * @author Brady Owens <info@fastglass.net>
  */
 
 
@@ -20,16 +20,6 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
 
   $form['intro_0'] = [
     '#markup' => '<p>' . t('Global Facebook Tracking Pixel Codes.') . '</p>',
-  ];
-
-  $form['intro_1'] = [
-    '#markup' => '<p>' . t('Do not put code into this module from an untrusted source. These inputs are') . ' <strong>' . t('NOT') . '</strong> ' . t('santized!') . '</p>',
-  ];
-
-  $form['facebook_tracking_pixel_global_agree'] = [
-    '#type' => 'checkbox',
-    '#title' => t('I accept full responsibility for what this code may do to my site.'),
-    '#default_value' => variable_get('facebook_tracking_pixel_global_agree', 0),
   ];
 
   $form['aggregation'] = [
@@ -76,11 +66,10 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
   // Iterate through each database result.
   if ($resultcount > 0) {
     foreach ($result as $item) {
-      kpr($item);
-      $form['base_codes'][$item>base_code_id] = [
+      $form['base_codes'][$item->base_code_id] = [
         'bcid' => [
           '#type' => 'hidden',
-          '#value' => '',
+          '#value' => $item->base_code_id,
         ],
         'name' => [
           '#type' => 'textfield',
@@ -96,7 +85,6 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
         ],
         'weight' => [
           '#type' => 'weight',
-          '#title' => t('Weight'),
           '#default_value' => $item->weight,
           '#delta' => 10,
           '#title_display' => 'invisible',
@@ -122,8 +110,9 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
   ];
   $form['add']['weight'] = [
     '#type' => 'weight',
-    '#size' => 4,
+    '#default_value' => 0,
     '#delta' => $resultcount > 10 ? $resultcount : 10,
+    '#title_display' => 'invisible',
   ];
 
   if (isset($_GET['cid'])) {
@@ -189,7 +178,7 @@ function facebook_tracking_pixel_settings_form($form, &$form_state) {
  * @param $variables
  * @return string
  */
-function theme_facebook_tracking_pixel_settings_form($variables) {
+function theme123_123facebook_tracking_pixel_settings_form($variables) {
   $form = $variables['form'];
 
   // Initialize the variable to hold the rows of the table.
@@ -199,7 +188,11 @@ function theme_facebook_tracking_pixel_settings_form($variables) {
   $header = [t('Name'), t('Facebook ID Number'), t('Weight')];
 
   $output = '';
-  $output .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'facebook-base-tracking-ids')));
+  $output .= theme('table', array(
+    'header' => $header,
+    'rows' => $rows,
+    'attributes' => array('id' => 'facebook-base-tracking-ids')
+  ));
   $output .= drupal_render_children($form);
   return $output;
 }
