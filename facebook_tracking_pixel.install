@@ -94,6 +94,8 @@ function facebook_tracking_pixel_schema() {
  * Implements hook_uninstall().
  */
 function facebook_tracking_pixel_uninstall() {
+  $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
+  file_unmanaged_delete_recursive($path);
   db_drop_table('facebook_tracking_pixel_events_path');
   db_drop_table('facebook_tracking_pixel_base_codes');
   variable_del('facebook_tracking_pixel_path');
