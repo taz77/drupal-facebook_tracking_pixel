@@ -171,15 +171,23 @@ function facebook_tracking_pixel_page_build(&$page) {
 }
 
 /**
- * Deletes CSS & JavaScript from the file system (but only if it exists).
+ * Deletes all CSS & JavaScript from the file system or a single file.
+ *
+ * @param null $filename
+ * @return bool
  */
-function facebook_tracking_pixel_delete_file() {
+function facebook_tracking_pixel_delete_file($filename = NULL) {
   $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
-
-  if (!$files = file_scan_directory($path, '/.*\.js$/')) {
-    foreach ($files as $key => $value) {
-      file_unmanaged_delete($path . '/' . $key);
+  // Calling the function without a file name will delete everything.
+  if ($filename == NULL) {
+    if (!$files = file_scan_directory($path, '/.*\.js$/')) {
+      foreach ($files as $key => $value) {
+        file_unmanaged_delete($path . '/' . $key);
+      }
+      return TRUE;
     }
+  } else {
+    file_unmanaged_delete($path . '/' . $filename);
     return TRUE;
   }
   return FALSE;
@@ -187,6 +195,11 @@ function facebook_tracking_pixel_delete_file() {
 
 /**
  * Saves JavaScript in the file system (but only if not empty).
+ *
+ * @param $data
+ * @param $filename
+ * @param null $subdir
+ * @return bool|null|string
  */
 function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {
   if (!drupal_strlen(trim($data))) {
