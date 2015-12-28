@@ -274,14 +274,8 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
     // Construct our tracking codes.
     $fb_base_code = $fb_script_src[0] . $id . $fb_script_src[1];
 
-    /* Remove existing file, if present.
-    try {
-      facebook_tracking_pixel_delete_file();
-    }
-    catch (Exception $e) {
-      watchdog('facebook_tracking_pixel', 'Failed deleting global JS files for Facebook Tracking Pixel. Error @error', array('@error' => $e), WATCHDOG_ERROR, NULL);
-      return form_set_error('facebook_tracking_pixel_tracking_code', 'Could not delete existing js files', NULL);
-    };*/
+    // Remove existing file, if present.
+    facebook_tracking_pixel_delete_file($filename);
 
     // Save the global js files for tracking pixel.
     if (!empty($fb_base_code)) {
