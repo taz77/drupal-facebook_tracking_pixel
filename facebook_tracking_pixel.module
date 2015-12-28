@@ -15,6 +15,7 @@ function facebook_tracking_pixel_menu() {
 
   $items['admin/config/system/facebook_tracking_pixel'] = [
     'title' => 'Administer Facebook Tracking Pixel',
+    'description' => 'Facebook Tracking pixel module.',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['facebook_tracking_pixel_settings_form'],
     'access arguments' => ['administer facebook tracking pixels'],
@@ -155,15 +156,16 @@ function facebook_tracking_pixel_page_build(&$page) {
       '<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=',
       '&ev=PageView&noscript=1"/></noscript>',
     ];
-
-    foreach ($result as $element) {
-      // Assemble code.
-      $fb_base_code_nojs = $fb_noscript_src[0] . $element->base_code_fbid . $fb_noscript_src[1];
-      drupal_add_html_head([
-        '#type' => 'markup',
-        '#markup' => $fb_base_code_nojs,
-        '#weight' => 200
-      ], 'facebook_tracking_pixel_noscript');
+    if ($result) {
+      foreach ($result as $element) {
+        // Assemble code.
+        $fb_base_code_nojs = $fb_noscript_src[0] . $element->base_code_fbid . $fb_noscript_src[1];
+        drupal_add_html_head([
+          '#type' => 'markup',
+          '#markup' => $fb_base_code_nojs,
+          '#weight' => 200
+        ], 'facebook_tracking_pixel_noscript');
+      }
     }
   }
 }
