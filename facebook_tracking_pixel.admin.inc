@@ -242,43 +242,37 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
  */
 function facebook_tracking_pixel_base_codes_add_fbid_validate($form, &$form_state) {
   // Check that the entered component name is valid.
-  if (!is_int($form_state['values']['add']['fbid'])) {
+  if (!ctype_digit($form_state['values']['fbid'])) {
     form_error($form['add']['fbid'], t('Facebook ID numbers are numbers only.'));
   }
 }
 
 /**
- * Submit handler for the new tracking id form.
+ * Submit handler for the new base code tracking id form.
  * @param $form
  * @param $form_state
  * @return array
  */
 function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state) {
-  /*
-    t('Name'),
-      t('Facebook ID Number'),
-      t('Weight'),*/
-
-
   $fb_script_src = [
     '<script>
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
     n.push=n;n.loaded=!0;n.version=\'2.0\';n.queue=[];t=b.createElement(e);t.async=!0;
     t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-    document,\'script\',\'//connect.facebook.net/en_US/fbevents.js\');',
-    '</script>',
-  ];
-  $fb_noscript_src = [
-    '<noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=',
-    '&ev=PageView&noscript=1"/></noscript>',
+    document,\'script\',\'//connect.facebook.net/en_US/fbevents.js\');
+    fbq(\'init\', \'',
+    '\');fbq(\'track\', "PageView");</script>',
   ];
 
-  if (!empty($form_state['values']['add']['name']) && !empty($form_state['values']['add']['fbid'])) {
+
+  if (!empty($form_state['values']['name']) && !empty($form_state['values']['fbid'])) {
+    $name = check_plain($form_state['values']['name']);
+    $id = check_plain($form_state['values']['fbid']);
+    $weight = check_plain($form_state['values']['weight']);
+    $filename = 'fb_tkpx.' . $id . '.js';
     // Construct our tracking codes.
-    $fb_base_code = $fb_script_src[0] . $form_state['values']['add']['fbid'] . $fb_script_src[1];
-    $fb_base_code_nojs = $fb_noscript_src[0] . $form_state['values']['add']['fbid'] . $fb_noscript_src[1];
+    $fb_base_code = $fb_script_src[0] . $id . $fb_script_src[1];
 
     /* Remove existing file, if present.
     try {
@@ -290,14 +284,23 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
     };*/
 
     // Save the global js files for tracking pixel.
-    if (!empty($fb_base_code) && !empty($fb_noscript[0])) {
-      $success = facebook_tracking_pixel_save_file($fb_script[0], 'fb_tkpx.js');
-      if (!$success) {
+    if (!empty($fb_base_code)) {
+      // FBID to create the file name because the ID numbers will be unique.
+      $success = facebook_tracking_pixel_save_file($fb_base_code, $filename);
+      if ($success == FALSE) {
         watchdog('facebook_tracking_pixel', 'Failed writing global JS files for Facebook Tracking Pixel.', array(), WATCHDOG_ERROR, NULL);
-        return form_set_error('facebook_tracking_pixel_tracking_code', 'Could not save the JS file. Check the Drupal and PHP logs.', NULL);;
+        return form_set_error(NULL, 'Could not save the JS file. Check the Drupal and PHP logs.', NULL);;
       }
-      variable_set('facebook_tracking_pixel_noscripts', $fb_noscript[0]);
+      // Write new base code to DB.
+      db_insert('facebook_tracking_pixel_base_codes')
+        ->fields([
+          'base_code_name' => $name,
+          'base_code_fbid' => $id,
+          'weight' => $weight,
+        ])
+        ->execute();
     }
+
   }
 }
 
