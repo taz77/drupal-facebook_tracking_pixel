@@ -57,7 +57,7 @@ function facebook_tracking_pixel_settings_form_validate($form, &$form_state) {
 /**
  * Form builder for base tracking codes.
  */
-function facebook_tracking_pixel_base_codes_form($form_state) {
+function facebook_tracking_pixel_base_codes_form() {
 
   $result = db_select('facebook_tracking_pixel_base_codes', 'c')
     ->fields('c')
@@ -208,8 +208,8 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
         drupal_render($form['base_codes'][$id]['fbid']),
         // Add our 'weight' column.
         drupal_render($form['base_codes'][$id]['weight']),
-        l(t('Edit'), 'admin/config/system/facebook_tracking_pixel/path/edit/' . $form['base_codes'][$id]['bcid']['#value'], array('query' => drupal_get_destination())),
-        l(t('Delete'), 'admin/config/system/facebook_tracking_pixel/path/delete/' . $form['base_codes'][$id]['bcid']['#value'] . '/delete', array('query' => drupal_get_destination())),
+        l(t('Edit'), 'admin/config/system/facebook_tracking_pixel/base_codes/edit/' . $form['base_codes'][$id]['bcid']['#value'], array('query' => drupal_get_destination())),
+        l(t('Delete'), 'admin/config/system/facebook_tracking_pixel/base_codes/delete/' . $form['base_codes'][$id]['bcid']['#value'], array('query' => drupal_get_destination())),
       ],
       // To support the tabledrag behaviour, we need to assign each row of the
       // table a class attribute of 'draggable'. This will add the 'draggable'
@@ -274,16 +274,13 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
     // Construct our tracking codes.
     $fb_base_code = $fb_script_src[0] . $id . $fb_script_src[1];
 
-    // Remove existing file, if present.
-    facebook_tracking_pixel_delete_file($filename);
-
     // Save the global js files for tracking pixel.
     if (!empty($fb_base_code)) {
       // FBID to create the file name because the ID numbers will be unique.
       $success = facebook_tracking_pixel_save_file($fb_base_code, $filename);
       if ($success == FALSE) {
         watchdog('facebook_tracking_pixel', 'Failed writing global JS files for Facebook Tracking Pixel.', array(), WATCHDOG_ERROR, NULL);
-        return form_set_error(NULL, 'Could not save the JS file. Check the Drupal and PHP logs.', NULL);;
+        return form_set_error(NULL, 'Could not save the JS file. Check the Drupal and PHP logs.', NULL);
       }
       // Write new base code to DB.
       db_insert('facebook_tracking_pixel_base_codes')
@@ -293,13 +290,69 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
           'weight' => $weight,
         ])
         ->execute();
+      return TRUE;
     }
+    return FALSE;
 
+  }
+  return FALSE;
+}
+
+/**
+ * Form for deleting a base code.
+ * @return array
+ */
+function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid) {
+  $id = check_plain($tid);
+  $result = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c', ['base_code_fbid'])
+    ->orderBy('weight')
+    ->condition('base_code_id', $id, '=')
+    ->execute()
+    ->fetchField();
+  $form = [];
+  $form['tid'] = [
+    '#type' => 'hidden',
+    '#value' => $id,
+  ];
+  $form['fbid'] = [
+    '#type' => 'hidden',
+    '#value' => $result,
+  ];
+  $form['confirmation'] = [
+    '#markup' => t('You are about to delete the base code with ID number ' . $result),
+  ];
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Delete'),
+    '#weight' => 50,
+    '#submit' => ['facebook_tracking_pixel_base_codes_delete_form_submit'],
+  ];
+
+  return $form;
+}
+
+/**
+ * Submit handler to delete a base code.
+ *
+ * @param $form_state
+ * @return bool
+ */
+function facebook_tracking_pixel_base_codes_delete_form_submit($form, &$form_state) {
+
+  if (facebook_tracking_pixel_base_code_delete($form_state['values']['tid'], $form_state['values']['fbid'])) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
   }
 }
 
 /**
  * Form builder for purge feature.
+ * @param $form
+ * @param $form_state
+ * @return array
  */
 function facebook_tracking_pixel_form_purge($form, &$form_state) {
   $form['intro_0'] = [
@@ -318,6 +371,8 @@ function facebook_tracking_pixel_form_purge($form, &$form_state) {
 
 /**
  * Submit handler for purge function of module.
+ *
+ * @return bool
  */
 
 function facebook_tracking_pixel_form_purge_submit() {
