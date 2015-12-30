@@ -34,31 +34,21 @@ function facebook_tracking_pixel_menu() {
     'file' => 'facebook_tracking_pixel.admin.inc',
     'type' => MENU_LOCAL_TASK,
   ];
-  $items['admin/config/system/facebook_tracking_pixel/base_codes/add'] = [
-    'title' => 'Add a Base Code',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['facebook_tracking_pixel_base_codes_add_form'],
-    'access arguments' => ['administer facebook tracking pixels'],
-    'file' => 'facebook_tracking_pixel.admin.path.inc',
-    'type' => MENU_LOCAL_ACTION,
-  ];
-  $items['admin/config/system/facebook_tracking_pixel/base_codes/delete/%tid'] = [
-    'load arguments' => [6],
+  $items['admin/config/system/facebook_tracking_pixel/base_codes/delete/%'] = [
     'title' => 'Delete a Base Code',
     'page callback' => 'drupal_get_form',
-    'page arguments' => ['facebook_tracking_pixel_base_codes_delete_form'],
+    'page arguments' => ['facebook_tracking_pixel_base_codes_delete_form', 6],
     'access arguments' => ['administer facebook tracking pixels'],
-    'file' => 'facebook_tracking_pixel.admin.path.inc',
-    'type' => MENU_CONTEXT_NONE,
+    'file' => 'facebook_tracking_pixel.admin.inc',
+    'type' => MENU_CALLBACK,
   ];
-  $items['admin/config/system/facebook_tracking_pixel/base_codes/edit/%tid'] = [
-    'load arguments' => [6],
+  $items['admin/config/system/facebook_tracking_pixel/base_codes/edit/%'] = [
     'title' => 'Edit a Base Code',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => ['facebook_tracking_pixel_base_codes_edit_form'],
+    'page callback' => 'facebook_tracking_pixel_base_codes_edit_form',
     'access arguments' => ['administer facebook tracking pixels'],
-    'file' => 'facebook_tracking_pixel.admin.path.inc',
-    'type' => MENU_CONTEXT_NONE,
+    'file' => 'facebook_tracking_pixel.admin.inc',
+    'page arguments' => [6],
+    'type' => MENU_CALLBACK,
   ];
   $items['admin/config/system/facebook_tracking_pixel/purge'] = [
     'title' => 'Purge',
@@ -85,7 +75,6 @@ function facebook_tracking_pixel_menu() {
     'type' => MENU_LOCAL_ACTION,
   ];
   $items['admin/config/system/facebook_tracking_pixel/path/delete/%tid'] = [
-    'load arguments' => [6],
     'title' => 'Delete an event',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['facebook_tracking_pixel_path_delete_form'],
@@ -94,7 +83,6 @@ function facebook_tracking_pixel_menu() {
     'type' => MENU_CONTEXT_NONE,
   ];
   $items['admin/config/system/facebook_tracking_pixel/path/edit/%tid'] = [
-    'load arguments' => [6],
     'title' => 'Edit an event',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['facebook_tracking_pixel_path_edit_form'],
@@ -186,7 +174,8 @@ function facebook_tracking_pixel_delete_file($filename = NULL) {
       }
       return TRUE;
     }
-  } else {
+  }
+  else {
     file_unmanaged_delete($path . '/' . $filename);
     return TRUE;
   }
@@ -219,6 +208,43 @@ function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {
   }
 
   return $file_saved;
+}
+
+/**
+ * Remove a base code by the FBID number
+ * @param int $tid
+ * @param int $fbid
+ * @return bool
+ */
+function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
+  $status = TRUE;
+  // Remove JS file.
+  $filename = 'fb_tkpx.' . $fbid . '.js';
+  if (!facebook_tracking_pixel_delete_file($filename)) {
+    $status = FALSE;
+  }
+  if (!$status) {
+    drupal_set_message(t('Failed to delete base code file.'), 'error', FALSE);
+  }
+  // Remove base code from database.
+  if (!db_delete('facebook_tracking_pixel_base_codes')
+    ->condition('base_code_id', $tid, '=')
+    ->execute()
+  ) {
+    $status = FALSE;
+  }
+
+  if (!$status) {
+    drupal_set_message(t('Failed to remove base code from database.'), 'error', FALSE);
+  }
+
+  if (!$status) {
+    drupal_set_message(t('Check your PHP server logs.'), 'error', FALSE);
+  }
+  else {
+    drupal_set_message(t('Base code deleted.'), 'status', FALSE);
+  }
+  return $status;
 }
 
 /**
