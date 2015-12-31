@@ -163,6 +163,25 @@ function facebook_tracking_pixel_base_codes_form() {
 }
 
 /**
+ * Submit callback for the Facebook Base Codes.
+ *
+ * Saves the weights of the items.
+ * @param $form
+ * @param $form_state
+ */
+function facebook_tracking_pixel_base_codes_form_submit($form, &$form_state) {
+  // Because the form elements were keyed with the item ids from the database,
+  // we can simply iterate through the submitted values.
+  foreach ($form_state['values']['base_codes'] as $id => $item) {
+    db_query(
+      "UPDATE {facebook_tracking_pixel_base_codes} SET weight = :weight WHERE base_code_id = :id",
+      array(':weight' => $item['weight'], ':id' => $id)
+    );
+  }
+}
+
+
+/**
  * Theme callback for the base code settings form.
  *
  * @param $variables
