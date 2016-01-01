@@ -44,10 +44,10 @@ function facebook_tracking_pixel_menu() {
   ];
   $items['admin/config/system/facebook_tracking_pixel/base_codes/edit/%'] = [
     'title' => 'Edit a Base Code',
-    'page callback' => 'facebook_tracking_pixel_base_codes_edit_form',
+    'page callback' => 'drupal_get_form',
     'access arguments' => ['administer facebook tracking pixels'],
     'file' => 'facebook_tracking_pixel.admin.inc',
-    'page arguments' => [6],
+    'page arguments' => ['facebook_tracking_pixel_base_codes_edit_form',6],
     'type' => MENU_CALLBACK,
   ];
   $items['admin/config/system/facebook_tracking_pixel/purge'] = [
