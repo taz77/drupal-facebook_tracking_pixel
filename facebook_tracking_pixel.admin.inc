@@ -81,16 +81,10 @@ function facebook_tracking_pixel_base_codes_form() {
           '#value' => $item->base_code_id,
         ],
         'name' => [
-          '#type' => 'textfield',
-          '#default_value' => check_plain($item->base_code_name),
-          '#size' => 20,
-          '#maxlength' => 255,
+          '#markup' => check_plain($item->base_code_name),
         ],
         'fbid' => [
-          '#type' => 'textfield',
-          '#default_value' => check_plain($item->base_code_fbid),
-          '#size' => 20,
-          '#maxlength' => 255,
+          '#markup' => check_plain($item->base_code_fbid),
         ],
         'weight' => [
           '#type' => 'weight',
