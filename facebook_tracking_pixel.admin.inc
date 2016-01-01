@@ -313,6 +313,10 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
 
 /**
  * Form for deleting a base code.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $tid
  * @return array
  */
 function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid) {
@@ -358,6 +362,90 @@ function facebook_tracking_pixel_base_codes_delete_form_submit($form, &$form_sta
   }
   else {
     return FALSE;
+  }
+}
+
+/**
+ * Form builder for the base code edit function.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $tid
+ * @return array
+ */
+function facebook_tracking_pixel_base_codes_edit_form($form, $form_state, $tid) {
+  $id = check_plain($tid);
+  $result = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c')
+    ->orderBy('weight')
+    ->condition('base_code_id', $id, '=')
+    ->execute()
+    ->fetchAssoc();
+  $form = [];
+  $form['name'] = [
+    '#type' => 'textfield',
+    '#title' => 'Base Code Given Name',
+    '#default_value' => $result['base_code_name'],
+  ];
+  $form['fbid'] = [
+    '#type' => 'textfield',
+    '#title' => 'ID Number',
+    '#description' => t('The Facebook provided ID number.'),
+    '#default_value' => $result['base_code_fbid'],
+  ];
+  $form['fbidold'] = [
+    '#type' => 'hidden',
+    '#value' => $result['base_code_fbid'],
+  ];
+  $form['tid'] = [
+    '#type' => 'hidden',
+    '#value' => $result['base_code_id'],
+  ];
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+    '#submit' => ['facebook_tracking_pixel_base_codes_edit_form_submit'],
+    '#validate' => ['facebook_tracking_pixel_base_codes_edit_form_validate'],
+  ];
+
+  return $form;
+}
+
+/**
+ * Submit handler for the base code edit form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function facebook_tracking_pixel_base_codes_edit_form_submit($form, &$form_state) {
+  $fbid = check_plain($form_state['values']['fbid']);
+  $name = check_plain($form_state['values']['name']);
+  $tid = check_plain($form_state['values']['tid']);
+  $fbidold = check_plain($form_state['values']['fbidold']);
+  // @todo must delete JS file and recredte it.
+  if (db_update('facebook_tracking_pixel_base_codes')
+    ->fields(['base_code_name' => $name, 'base_code_fbid' => $fbid])
+    ->condition('base_code_id', $tid, '=')
+    ->execute()
+  ) {
+    drupal_set_message(t('Base Code Updated'), 'status', FALSE);
+  }
+  else {
+    drupal_set_message(t('Base Code Not Updated'), 'warning', FALSE);
+  }
+}
+
+/**
+ * Validation function to make sure the FB Id is an integer for the base
+ * code edit form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function facebook_tracking_pixel_base_codes_edit_form_validate($form, &$form_state) {
+  // Check that the entered component name is valid.
+  if (!ctype_digit($form_state['values']['fbid'])) {
+    form_error($form['fbid'], t('Facebook ID numbers are numbers only.'));
   }
 }
 
