@@ -98,7 +98,6 @@ function facebook_tracking_pixel_menu() {
  */
 function facebook_tracking_pixel_permission() {
   $permissions['administer facebook tracking pixels']['title'] = t('Administer Facebook Tracking Pixels.');
-
   return $permissions;
 }
 
