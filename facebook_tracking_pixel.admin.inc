@@ -500,5 +500,6 @@ function facebook_tracking_pixel_form_purge_submit() {
   else {
     drupal_set_message(t('Purging complete'), 'status', FALSE);
   }
+  drupal_flush_all_caches();
   return $status;
 }
