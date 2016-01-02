@@ -47,7 +47,7 @@ function facebook_tracking_pixel_menu() {
     'page callback' => 'drupal_get_form',
     'access arguments' => ['administer facebook tracking pixels'],
     'file' => 'facebook_tracking_pixel.admin.inc',
-    'page arguments' => ['facebook_tracking_pixel_base_codes_edit_form',6],
+    'page arguments' => ['facebook_tracking_pixel_base_codes_edit_form', 6],
     'type' => MENU_CALLBACK,
   ];
   $items['admin/config/system/facebook_tracking_pixel/purge'] = [
@@ -191,7 +191,8 @@ function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {
     module_load_include('inc', 'advagg', 'advagg.cache');
     advagg_push_new_changes();
   }
-
+  // Clear JS cache.
+  drupal_clear_js_cache();
   return $file_saved;
 }
 
@@ -229,6 +230,13 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
   else {
     drupal_set_message(t('Base code deleted.'), 'status', FALSE);
   }
+  // Trigger reloading the CSS and JS file cache in AdvAgg, if available.
+  if ($file_saved && module_exists('advagg')) {
+    module_load_include('inc', 'advagg', 'advagg.cache');
+    advagg_push_new_changes();
+  }
+  // Clear JS cache.
+  drupal_clear_js_cache();
   return $status;
 }
 
@@ -304,4 +312,24 @@ function facebook_tracking_pixel_theme() {
       'file' => 'facebook_tracking_pixel.admin.inc',
     ],
   ];
+}
+
+/**
+ * Returns the pieces of the FB tracking JS script.
+ * @return array
+ */
+
+function facebook_tracking_pixel_base_code_js() {
+  $fb_script_src = [];
+  $fb_script_src = [
+    '<script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+    n.push=n;n.loaded=!0;n.version=\'2.0\';n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+    document,\'script\',\'//connect.facebook.net/en_US/fbevents.js\');
+    fbq(\'init\', \'',
+    '\');fbq(\'track\', "PageView");</script>',
+  ];
+  return $fb_script_src;
 }
