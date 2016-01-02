@@ -267,17 +267,7 @@ function facebook_tracking_pixel_base_codes_add_fbid_validate($form, &$form_stat
  * @return array
  */
 function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state) {
-  $fb_script_src = [
-    '<script>
-  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-    n.push=n;n.loaded=!0;n.version=\'2.0\';n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-    document,\'script\',\'//connect.facebook.net/en_US/fbevents.js\');
-    fbq(\'init\', \'',
-    '\');fbq(\'track\', "PageView");</script>',
-  ];
-
+  $fb_script_src = facebook_tracking_pixel_base_code_js();
 
   if (!empty($form_state['values']['name']) && !empty($form_state['values']['fbid'])) {
     $name = check_plain($form_state['values']['name']);
@@ -356,7 +346,6 @@ function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid
  * @return bool
  */
 function facebook_tracking_pixel_base_codes_delete_form_submit($form, &$form_state) {
-
   if (facebook_tracking_pixel_base_code_delete($form_state['values']['tid'], $form_state['values']['fbid'])) {
     return TRUE;
   }
@@ -416,13 +405,27 @@ function facebook_tracking_pixel_base_codes_edit_form($form, $form_state, $tid) 
  *
  * @param $form
  * @param $form_state
+ * @return bool
  */
 function facebook_tracking_pixel_base_codes_edit_form_submit($form, &$form_state) {
   $fbid = check_plain($form_state['values']['fbid']);
   $name = check_plain($form_state['values']['name']);
   $tid = check_plain($form_state['values']['tid']);
   $fbidold = check_plain($form_state['values']['fbidold']);
-  // @todo must delete JS file and recredte it.
+  $filename = 'fb_tkpx.' . $fbid . '.js';
+  $filenameold = 'fb_tkpx.' . $fbidold . '.js';
+  // Delete old file
+  if (!facebook_tracking_pixel_delete_file($filenameold)) {
+    watchdog('facebook_tracking_pixel', 'Failed to delete previous JS file before adding new file on edit of base code.', [], WATCHDOG_ERROR, NULL);
+    return FALSE;
+  }
+  // Get the JS code.
+  $fb_script_js = facebook_tracking_pixel_base_code_js();
+  // Attempt to save the new code.
+  if(!facebook_tracking_pixel_save_file($fb_script_js[0] . $fbid . $fb_script_js[1], $filename)){
+    watchdog('facebook_tracking_pixel', 'Failed to save new JS file in the base code edit function.', [], WATCHDOG_ERROR, NULL);
+  }
+  // Now to update the database with the new tracking information.
   if (db_update('facebook_tracking_pixel_base_codes')
     ->fields(['base_code_name' => $name, 'base_code_fbid' => $fbid])
     ->condition('base_code_id', $tid, '=')
@@ -451,6 +454,7 @@ function facebook_tracking_pixel_base_codes_edit_form_validate($form, &$form_sta
 
 /**
  * Form builder for purge feature.
+ *
  * @param $form
  * @param $form_state
  * @return array
