@@ -254,6 +254,10 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
  * @param $form_state
  */
 function facebook_tracking_pixel_base_codes_add_fbid_validate($form, &$form_state) {
+  // Throw an error if no name has been provided.
+  if (empty($form_state['values']['name'])) {
+    form_error($form['add']['name'], t('Please supply a human readable name.'));
+  }
   // Check that the entered component name is valid.
   if (!ctype_digit($form_state['values']['fbid'])) {
     form_error($form['add']['fbid'], t('Facebook ID numbers are numbers only.'));
@@ -446,6 +450,10 @@ function facebook_tracking_pixel_base_codes_edit_form_submit($form, &$form_state
  * @param $form_state
  */
 function facebook_tracking_pixel_base_codes_edit_form_validate($form, &$form_state) {
+  // Throw an error if no name has been provided.
+  if (empty($form_state['values']['name'])) {
+    form_error($form['name'], t('Please supply a human readable name.'));
+  }
   // Check that the entered component name is valid.
   if (!ctype_digit($form_state['values']['fbid'])) {
     form_error($form['fbid'], t('Facebook ID numbers are numbers only.'));
