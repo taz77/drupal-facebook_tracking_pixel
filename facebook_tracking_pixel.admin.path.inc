@@ -64,25 +64,6 @@ function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
     '#type' => 'textfield',
     '#size' => 4,
   );
-  /*
-    if (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) {
-      // Make the new component appear by default directly after the one that was
-      // just added.
-      $form['add']['weight']['#default_value'] = $node->webform['components'][$_GET['cid']]['weight'] + 1;
-      foreach (array_keys($node->webform['components']) as $cid) {
-        // Adjust all later components also, to make sure none of them have the
-        // same weight as the new component.
-        if ($form['components'][$cid]['weight']['#default_value'] >= $form['add']['weight']['#default_value']) {
-          $form['components'][$cid]['weight']['#default_value']++;
-        }
-      }
-    }
-    else {
-      // If no component was just added, the new component should appear by
-      // default at the end of the list.
-      $form['add']['weight']['#default_value'] = isset($max_weight) ? $max_weight + 1 : 0;
-    }
-  */
   $form['add']['add'] = array(
     '#type' => 'submit',
     '#value' => t('Add'),
