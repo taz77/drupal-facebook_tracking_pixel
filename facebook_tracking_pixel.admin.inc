@@ -93,7 +93,7 @@ function facebook_tracking_pixel_base_codes_form() {
           '#title_display' => 'invisible',
           '#attributes' => [
             'class' => ['base-codes-weight'],
-          ]
+          ],
         ],
       ];
       // Determine the maximum weight value to use below for the add line.
