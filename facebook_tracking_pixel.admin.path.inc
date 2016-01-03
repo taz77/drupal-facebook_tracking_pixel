@@ -206,40 +206,6 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   return $output;
 }
 
-
-/**
- * Form builder for tracking path add.
- */
-function facebook_tracking_pixel_path_add_form($form, &$form_state) {
-  $form['intro_0'] = [
-    '#markup' => '<p>' . t('Global Facebook Tracking Pixel Codes.') . '</p>',
-  ];
-
-  $form['event_path'] = [
-    '#title' => t('Path to track'),
-    '#type' => 'textfield',
-    '#size' => 24,
-    '#maxlength' => 255,
-    '#description' => t('The relative path to have this event to take place.'),
-  ];
-
-  $form['event_type'] = [
-    '#title' => t('Event type'),
-    '#type' => 'select',
-    '#options' => facebook_tracking_pixel_events_options(),
-    '#description' => t('Event type to track on the supplied path.'),
-    '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['type'] : 'textfield',
-  ];
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-    '#submit' => array('facebook_tracking_pixel_path_add_form_submit'),
-  );
-  $form['#validate'][] = 'facebook_tracking_pixel_path_add_validate';
-  return $form;
-}
-
 /**
  * Validate handler for facebook_tracking_pixel_track_by_path_form() when adding a new event path
  */
