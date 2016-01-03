@@ -14,15 +14,46 @@
  * @return array
  */
 function facebook_tracking_pixel_track_by_path_form() {
+  //Check to see if there are base codes.
+  $resultcountbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+  if ($resultcountbasecode == 0) {
+    $form['emptyset'] = [
+      '#type' => 'hidden',
+      '#value' => TRUE,
+    ];
+    $form['notice'] = [
+      '#markup' => t('You must first set a base code for tracking.'),
+    ];
+    return $form;
+  }
+  else {
+    // If we have results then build an array to use as an option drop down for
+    // the path items.
+    $resultbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
+      ->fields('c')
+      ->orderBy('weight')
+      ->execute()
+      ->fetchAllAssoc('base_code_id');
+    $basecodes = [];
+    foreach ($resultbasecode as $item){
+      $basecodes[$item->base_code_id] = $item->base_code_fbid;
+    }
+  }
   $form = [];
   $form['intro_0'] = [
     '#markup' => '<p><h2>' . t('Facebook Event tracking via path') . '</h2></p>',
+    '#weight' => -50,
   ];
   $form['intro_1'] = [
     '#markup' => '<p>' . t('For more information regarding event tracking, read Facebook\'s') . ' ' . l('documentation.', 'https://www.facebook.com/business/help/402791146561655', [
         '#external' => TRUE,
         'attributes' => ['target' => '_blank']
       ]) . '</p>',
+    '#weight' => -49,
   ];
   $result = db_select('facebook_tracking_pixel_events_path', 'c')
     ->fields('c')
@@ -117,6 +148,13 @@ function facebook_tracking_pixel_track_by_path_form() {
  */
 function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   $form = $variables['form'];
+
+  if ($form['emptyset'] == TRUE) {
+    $output = '';
+    $output .= drupal_render($form['notice']);
+    return $output;
+  }
+
   // Initialize the variable which will store our table rows.
   $rows = [];
   // We now define the table header values.  Ensure that the 'header' count
