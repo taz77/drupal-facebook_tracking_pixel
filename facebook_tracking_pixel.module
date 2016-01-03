@@ -136,7 +136,7 @@ function facebook_tracking_pixel_page_build(&$page) {
       drupal_add_html_head([
         '#type' => 'markup',
         '#markup' => $fb_base_code_nojs,
-        '#weight' => 200
+        '#weight' => 200 + $i,
       ], 'facebook_tracking_pixel_noscript_' . $i);
       $i++;
     }
