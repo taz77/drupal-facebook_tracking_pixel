@@ -11,8 +11,6 @@
 /**
  * Form builder for track by path.
  *
- * @param $form
- * @param $form_state
  * @return array
  */
 function facebook_tracking_pixel_track_by_path_form() {
@@ -302,10 +300,10 @@ function STUFFFFFFFFfacebook_tracking_pixel_path_add_form_submit($form, &$form_s
   $old_path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel_path');
   if ($form_state['values']['facebook_tracking_pixel_path'] != $old_path and file_exists(drupal_realpath($old_path))) {
     $base_path = variable_get('file_' . file_default_scheme() . '_path', conf_path() . '/files') . '/';
-    drupal_set_message(t('The file storage path has changed; thus, the contents of %old_path must manually be moved to %new_path.', array(
+    drupal_set_message(t('The file storage path has changed; thus, the contents of %old_path must manually be moved to %new_path.', [
       '%old_path' => $base_path . file_uri_target($old_path),
       '%new_path' => $base_path . file_uri_target($form_state['values']['facebook_tracking_pixel_path']),
-    )), 'warning', FALSE);
+    ]), 'warning', FALSE);
   }
 
   $fb_script_src = [
