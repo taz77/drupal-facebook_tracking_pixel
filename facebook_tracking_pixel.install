@@ -46,7 +46,7 @@ function facebook_tracking_pixel_schema() {
         'default' => '',
         'not null' => FALSE,
       ],
-      'event_base_id' => [
+      'event_base_code_id' => [
         'description' => 'Base code ID number.',
         'type' => 'int',
         'length' => 11,
