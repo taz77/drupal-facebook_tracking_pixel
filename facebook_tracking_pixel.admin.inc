@@ -47,10 +47,10 @@ function facebook_tracking_pixel_settings_form_validate($form, &$form_state) {
   $old_path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel_path');
   if ($form_state['values']['facebook_tracking_pixel_path'] != $old_path and file_exists(drupal_realpath($old_path))) {
     $base_path = variable_get('file_' . file_default_scheme() . '_path', conf_path() . '/files') . '/';
-    drupal_set_message(t('The file storage path has changed; thus, the contents of %old_path must manually be moved to %new_path.', array(
+    drupal_set_message(t('The file storage path has changed; thus, the contents of %old_path must manually be moved to %new_path.', [
       '%old_path' => $base_path . file_uri_target($old_path),
       '%new_path' => $base_path . file_uri_target($form_state['values']['facebook_tracking_pixel_path']),
-    )), 'warning', FALSE);
+    ]), 'warning', FALSE);
   }
 }
 
@@ -169,7 +169,7 @@ function facebook_tracking_pixel_base_codes_form_submit($form, &$form_state) {
   foreach ($form_state['values']['base_codes'] as $id => $item) {
     db_query(
       "UPDATE {facebook_tracking_pixel_base_codes} SET weight = :weight WHERE base_code_id = :id",
-      array(':weight' => $item['weight'], ':id' => $id)
+      [':weight' => $item['weight'], ':id' => $id]
     );
   }
 }
@@ -197,19 +197,19 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
   // Add a row containing form elements for a new item.
   unset($form['add']['name']['#title'], $form['add_type']['#description']);
   $form['add']['name']['#attributes']['rel'] = t('New Tracking ID name');
-  $form['add']['name']['#attributes']['class'] = array('base-code-name-default-value');
-  $form['add']['fbid']['#attributes']['class'] = array('base-code-fbid');
-  $form['add']['weight']['#attributes']['class'] = array('base-code-weight');
-  $row_data = array(
+  $form['add']['name']['#attributes']['class'] = ['base-code-name-default-value'];
+  $form['add']['fbid']['#attributes']['class'] = ['base-code-fbid'];
+  $form['add']['weight']['#attributes']['class'] = ['base-code-weight'];
+  $row_data = [
     drupal_render($form['add']['name']),
     drupal_render($form['add']['fbid']),
     drupal_render($form['add']['bcid']) . drupal_render($form['add']['weight']),
-    array('colspan' => 2, 'data' => drupal_render($form['add']['add'])),
-  );
-  $add_form = array(
+    ['colspan' => 2, 'data' => drupal_render($form['add']['add'])],
+  ];
+  $add_form = [
     'data' => $row_data,
-    'class' => array('draggable', 'base-code-add-form')
-  );
+    'class' => ['draggable', 'base-code-add-form']
+  ];
   $form_rendered = FALSE;
   // Iterate over each element in our $form['base_codes'] array.
   foreach (element_children($form['base_codes']) as $id) {
@@ -221,8 +221,8 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
         drupal_render($form['base_codes'][$id]['fbid']),
         // Add our 'weight' column.
         drupal_render($form['base_codes'][$id]['weight']),
-        l(t('Edit'), 'admin/config/system/facebook_tracking_pixel/base_codes/edit/' . $form['base_codes'][$id]['bcid']['#value'], array('query' => drupal_get_destination())),
-        l(t('Delete'), 'admin/config/system/facebook_tracking_pixel/base_codes/delete/' . $form['base_codes'][$id]['bcid']['#value'], array('query' => drupal_get_destination())),
+        l(t('Edit'), 'admin/config/system/facebook_tracking_pixel/base_codes/edit/' . $form['base_codes'][$id]['bcid']['#value'], ['query' => drupal_get_destination()]),
+        l(t('Delete'), 'admin/config/system/facebook_tracking_pixel/base_codes/delete/' . $form['base_codes'][$id]['bcid']['#value'], ['query' => drupal_get_destination()]),
       ],
       // To support the tabledrag behaviour, we need to assign each row of the
       // table a class attribute of 'draggable'. This will add the 'draggable'
@@ -238,11 +238,11 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
   }
 
   $output = '';
-  $output .= theme('table', array(
+  $output .= theme('table', [
     'header' => $header,
     'rows' => $rows,
-    'attributes' => array('id' => 'facebook-base-tracking-ids')
-  ));
+    'attributes' => ['id' => 'facebook-base-tracking-ids'],
+  ]);
   $output .= drupal_render_children($form);
   drupal_add_tabledrag('facebook-base-tracking-ids', 'order', 'sibling', 'base-codes-weight');
   return $output;
@@ -286,7 +286,7 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
       // FBID to create the file name because the ID numbers will be unique.
       $success = facebook_tracking_pixel_save_file($fb_base_code, $filename);
       if ($success == FALSE) {
-        watchdog('facebook_tracking_pixel', 'Failed writing global JS files for Facebook Tracking Pixel.', array(), WATCHDOG_ERROR, NULL);
+        watchdog('facebook_tracking_pixel', 'Failed writing global JS files for Facebook Tracking Pixel.', [], WATCHDOG_ERROR, NULL);
         return form_set_error(NULL, 'Could not save the JS file. Check the Drupal and PHP logs.', NULL);
       }
       // Write new base code to DB.
@@ -474,11 +474,11 @@ function facebook_tracking_pixel_form_purge($form, &$form_state) {
   $form['intro_1'] = [
     '#markup' => '<p>' . t('This will purge the file system deleting all files and directories and purge the database of all configured paths. Use this function with caution.') . '</p>',
   ];
-  $form['submit'] = array(
+  $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Purge All'),
-    '#submit' => array('facebook_tracking_pixel_form_purge_submit'),
-  );
+    '#submit' => ['facebook_tracking_pixel_form_purge_submit'],
+  ];
   return $form;
 }
 
