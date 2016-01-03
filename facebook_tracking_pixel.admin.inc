@@ -150,7 +150,7 @@ function facebook_tracking_pixel_base_codes_form() {
   $form['actions'] = ['#type' => 'actions'];
   $form['actions']['submit'] = [
     '#type' => 'submit',
-    '#value' => t('Save'),
+    '#value' => t('Save Arrangement'),
     '#weight' => 45,
   ];
   return $form;
@@ -166,14 +166,15 @@ function facebook_tracking_pixel_base_codes_form() {
 function facebook_tracking_pixel_base_codes_form_submit($form, &$form_state) {
   // Because the form elements were keyed with the item ids from the database,
   // we can simply iterate through the submitted values.
-  foreach ($form_state['values']['base_codes'] as $id => $item) {
-    db_query(
-      "UPDATE {facebook_tracking_pixel_base_codes} SET weight = :weight WHERE base_code_id = :id",
-      [':weight' => $item['weight'], ':id' => $id]
-    );
+  if (!empty($form_state['values']['base_codes'])) {
+    foreach ($form_state['values']['base_codes'] as $id => $item) {
+      db_query(
+        "UPDATE {facebook_tracking_pixel_base_codes} SET weight = :weight WHERE base_code_id = :id",
+        [':weight' => $item['weight'], ':id' => $id]
+      );
+    }
   }
 }
-
 
 /**
  * Theme callback for the base code settings form.
@@ -426,7 +427,7 @@ function facebook_tracking_pixel_base_codes_edit_form_submit($form, &$form_state
   // Get the JS code.
   $fb_script_js = facebook_tracking_pixel_base_code_js();
   // Attempt to save the new code.
-  if(!facebook_tracking_pixel_save_file($fb_script_js[0] . $fbid . $fb_script_js[1], $filename)){
+  if (!facebook_tracking_pixel_save_file($fb_script_js[0] . $fbid . $fb_script_js[1], $filename)) {
     watchdog('facebook_tracking_pixel', 'Failed to save new JS file in the base code edit function.', [], WATCHDOG_ERROR, NULL);
   }
   // Now to update the database with the new tracking information.
