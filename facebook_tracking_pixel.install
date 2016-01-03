@@ -46,6 +46,12 @@ function facebook_tracking_pixel_schema() {
         'default' => '',
         'not null' => FALSE,
       ],
+      'event_base_id' => [
+        'description' => 'Base code ID number.',
+        'type' => 'int',
+        'length' => 11,
+        'not null' > FALSE,
+      ],
       'weight' => [
         'description' => 'The sortable weight for this item',
         'type' => 'int',
