@@ -197,7 +197,8 @@ function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {
 }
 
 /**
- * Remove a base code by the FBID number
+ * Remove a base code by the FBID number.
+ *
  * @param int $tid
  * @param int $fbid
  * @return bool
@@ -206,7 +207,8 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
   $status = TRUE;
   // Remove JS file.
   $filename = 'fb_tkpx.' . $fbid . '.js';
-  if (!facebook_tracking_pixel_delete_file($filename)) {
+  $filedelete = facebook_tracking_pixel_delete_file($filename);
+  if (!$filedelete) {
     $status = FALSE;
   }
   if (!$status) {
@@ -231,12 +233,14 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
     drupal_set_message(t('Base code deleted.'), 'status', FALSE);
   }
   // Trigger reloading the CSS and JS file cache in AdvAgg, if available.
-  if ($file_saved && module_exists('advagg')) {
+  if ($filedelete && module_exists('advagg')) {
     module_load_include('inc', 'advagg', 'advagg.cache');
     advagg_push_new_changes();
   }
-  // Clear JS cache.
-  drupal_clear_js_cache();
+  elseif ($filedelete) {
+    // Clear JS cache.
+    drupal_clear_js_cache();
+  }
   return $status;
 }
 
