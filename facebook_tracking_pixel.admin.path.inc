@@ -9,9 +9,13 @@
 
 
 /**
- * Form builder for track by path
+ * Form builder for track by path.
+ *
+ * @param $form
+ * @param $form_state
+ * @return array
  */
-function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
+function facebook_tracking_pixel_track_by_path_form() {
   $form = [];
   $form['intro_0'] = [
     '#markup' => '<p><h2>' . t('Facebook Event tracking via path') . '</h2></p>',
@@ -22,69 +26,84 @@ function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
         'attributes' => ['target' => '_blank']
       ]) . '</p>',
   ];
+  $result = db_select('facebook_tracking_pixel_events_path', 'c')
+    ->fields('c')
+    ->orderBy('weight')
+    ->execute()
+    ->fetchAllAssoc('event_id');
 
+  $resultcount = db_select('facebook_tracking_pixel_events_path', 'c')
+    ->fields('c')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
   // Identify that the elements in 'example_items' are a collection, to
   // prevent Form API from flattening the array when submitted.
   $form['facebook_tracking_pixel_tracking_codes_by_path']['#tree'] = TRUE;
 
-  // Fetch the example data from the database, ordered by weight ascending.
-  //
-  // This query excludes the last two tabledrag_example database rows, as
-  // they are intended only for the 'parent/child' tabledrag examples.
-  $result = db_query('SELECT * FROM {facebook_tracking_pixel_events_path} ORDER BY weight ASC');
-  // Iterate through each database result.
-  foreach ($result as $item) {
-    $id = $item->event_id;
-    $form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_uid'] = [
-      '#type' => 'hidden',
-      '#default_value' => $item->event_uid,
-    ];
-    $form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['weight'] = [
-      '#type' => 'textfield',
-      '#size' => 4,
-      '#title' => t('Weight'),
-      '#default_value' => $item->weight,
-    ];
+  if ($resultcount > 0) {
+    // Iterate through each database result.
+    foreach ($result as $item) {
+      $form['facebook_tracking_pixel_tracking_codes_by_path'][$item->event_id] = [
+        'event_type' => [
+          '#markup' => $item->event_type,
+        ],
+        'event_path' => [
+          '#markup' => $item->event_path,
+        ],
+        'weight' => [
+          '#type' => 'weight',
+          '#size' => 4,
+          '#title' => t('Weight'),
+          '#default_value' => $item->weight,
+          '#delta' => 10,
+          '#title_display' => 'invisible',
+          '#attributes' => [
+            'class' => ['path-codes-weight'],
+          ],
+        ],
+        'event_uid' => [
+          '#type' => 'hidden',
+          '#value' => $item->event_uid,
+        ],
+        'event_id' => [
+          '#type' => 'hidden',
+          '#value' => $item->event_id,
+        ],
+      ];
+    }
   }
-  kpr($form);
-
-  $form['add']['event_path'] = array(
+  $form['add']['event_path'] = [
     '#type' => 'textfield',
     '#size' => 24,
     '#maxlength' => 255,
-  );
-
+  ];
   $form['add']['event_type'] = array(
     '#type' => 'select',
     '#options' => facebook_tracking_pixel_events_options(),
     '#weight' => 3,
-    '#default_value' => (isset($_GET['cid']) && isset($node->webform['components'][$_GET['cid']])) ? $node->webform['components'][$_GET['cid']]['type'] : 'textfield',
   );
-  $form['add']['weight'] = array(
+  $form['add']['weight'] = [
     '#type' => 'textfield',
     '#size' => 4,
-  );
-  $form['add']['add'] = array(
+  ];
+  $form['add']['add'] = [
     '#type' => 'submit',
     '#value' => t('Add'),
     '#weight' => 45,
-    '#validate' => array(
+    '#validate' => [
       'facebook_tracking_pixel_path_add_validate',
-      'webform_components_form_validate'
-    ),
-    '#submit' => array('facebook_tracking_pixel_path_add_form'),
-  );
-
+    ],
+    '#submit' => ['facebook_tracking_pixel_path_add_form'],
+  ];
 
   // Now we add our submit button, for submitting the form results.
-  //
-  // The 'actions' wrapper used here isn't strictly necessary for tabledrag,
-  // but is included as a Form API recommended practice.
-  $form['actions'] = array('#type' => 'actions');
-  $form['actions']['submit'] = array(
+  $form['actions'] = ['#type' => 'actions'];
+  $form['actions']['submit'] = [
     '#type' => 'submit',
-    '#value' => t('Save Changes')
-  );
+    '#value' => t('Save Changes'),
+    '#submit' => ['facebook_tracking_pixel_track_by_path_form_submit'],
+  ];
   return $form;
 }
 
@@ -94,24 +113,20 @@ function facebook_tracking_pixel_track_by_path_form($form, &$form_state) {
 function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   $form = $variables['form'];
 
-
   // We now define the table header values.  Ensure that the 'header' count
   // matches the final column count for your table.
-  //$header = array(t('Event Type'), t('Event Path'), t('Weight'));
   $header = [
     t('Event Type'),
     t('Event Path'),
     t('Weight'),
     [
       'data' => t('Operations'),
-      'colspan' => 3,
+      'colspan' => 2,
     ],
   ];
 
-
   // Initialize the variable which will store our table rows.
   $rows = [];
-
 
   // Iterate over each element in our $form['example_items'] array.
   foreach (element_children($form['facebook_tracking_pixel_tracking_codes_by_path']) as $id) {
