@@ -112,6 +112,10 @@ function facebook_tracking_pixel_track_by_path_form() {
 
 /**
  * Theme callback for the facebook_tracking_pixel_track_by_path_form form.
+ *
+ * @param $variables
+ * @return string
+ * @throws \Exception
  */
 function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   $form = $variables['form'];
@@ -143,7 +147,7 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   ];
   $add_form = [
     'data' => $row_data,
-    'class' => ['draggable', 'base-code-add-form']
+    'class' => ['draggable', 'path-code-add-form']
   ];
 
   // Iterate over each element in our $form['example_items'] array.
@@ -183,27 +187,22 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
     ];
   }
 
-  // We also need to pass the drupal_add_tabledrag() function an id which will
-  // be used to identify the <table> element containing our tabledrag form.
-  // Because an element's 'id' should be unique on a page, make sure the value
-  // you select is NOT the same as the form ID used in your form declaration.
-  $table_id = 'facebook-tracking-pixel-path-items-table';
   // Append the add form if not already printed.
   if ($add_form) {
     $rows[] = $add_form;
   }
   $output = '';
   // We can render our tabledrag table for output.
-  $output = theme('table', [
+  $output .= theme('table', [
     'header' => $header,
     'rows' => $rows,
-    'attributes' => ['id' => $table_id],
+    'attributes' => ['id' => 'facebook-tracking-pixel-path-items-table'],
   ]);
 
   // And then render any remaining form elements (such as our submit button).
   $output .= drupal_render_children($form);
 
-  drupal_add_tabledrag($table_id, 'order', 'sibling', 'example-item-weight');
+  drupal_add_tabledrag($table_id, 'order', 'sibling', 'path-code-weight');
   return $output;
 }
 
