@@ -73,19 +73,22 @@ function facebook_tracking_pixel_track_by_path_form() {
       ];
     }
   }
-  $form['add']['event_path'] = [
-    '#type' => 'textfield',
-    '#size' => 24,
-    '#maxlength' => 255,
-  ];
+
   $form['add']['event_type'] = array(
     '#type' => 'select',
     '#options' => facebook_tracking_pixel_events_options(),
     '#weight' => 3,
   );
-  $form['add']['weight'] = [
+  $form['add']['event_path'] = [
     '#type' => 'textfield',
-    '#size' => 4,
+    '#size' => 24,
+    '#maxlength' => 255,
+  ];
+  $form['add']['weight'] = [
+    '#type' => 'weight',
+    '#default_value' => 0,
+    '#delta' => $resultcount > 10 ? $resultcount : 10,
+    '#title_display' => 'invisible',
   ];
   $form['add']['add'] = [
     '#type' => 'submit',
@@ -112,7 +115,8 @@ function facebook_tracking_pixel_track_by_path_form() {
  */
 function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   $form = $variables['form'];
-
+  // Initialize the variable which will store our table rows.
+  $rows = [];
   // We now define the table header values.  Ensure that the 'header' count
   // matches the final column count for your table.
   $header = [
@@ -125,8 +129,22 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
     ],
   ];
 
-  // Initialize the variable which will store our table rows.
-  $rows = [];
+  // Add a row containing form elements for a new item.
+  unset($form['add']['event_path']['#title']);
+  $form['add']['event_path']['#attributes']['rel'] = t('New Tracking Path');
+  $form['add']['event_path']['#attributes']['class'] = ['path-code-name-default-value'];
+  $form['add']['event_type']['#attributes']['class'] = ['path-code-type'];
+  $form['add']['weight']['#attributes']['class'] = ['path-code-weight'];
+  $row_data = [
+    drupal_render($form['add']['event_type']),
+    drupal_render($form['add']['event_path']),
+    drupal_render($form['add']['event_id']) . drupal_render($form['add']['event_uid']) . drupal_render($form['add']['weight']),
+    ['colspan' => 2, 'data' => drupal_render($form['add']['add'])],
+  ];
+  $add_form = [
+    'data' => $row_data,
+    'class' => ['draggable', 'base-code-add-form']
+  ];
 
   // Iterate over each element in our $form['example_items'] array.
   foreach (element_children($form['facebook_tracking_pixel_tracking_codes_by_path']) as $id) {
@@ -153,8 +171,8 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
         // Add our 'weight' column.
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['weight']),
         // Operations column for editing and deleting.
-        l(t('Edit'), 'admin/config/system/facebook_tracking_pixel/path/edit/' . $node->nid . '/webform/components/', array('query' => drupal_get_destination())),
-        l(t('Delete'), 'admin/config/system/facebook_tracking_pixel/path/delete/' . $node->nid . '/webform/components/' . '/delete', array('query' => drupal_get_destination())),
+        l(t('Edit'), 'admin/config/system/facebook_tracking_pixel/path/edit/' . $id, ['query' => drupal_get_destination()]),
+        l(t('Delete'), 'admin/config/system/facebook_tracking_pixel/path/delete/' . $id, ['query' => drupal_get_destination()]),
 
       ],
       // To support the tabledrag behaviour, we need to assign each row of the
@@ -165,42 +183,27 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
     ];
   }
 
-
   // We also need to pass the drupal_add_tabledrag() function an id which will
   // be used to identify the <table> element containing our tabledrag form.
   // Because an element's 'id' should be unique on a page, make sure the value
   // you select is NOT the same as the form ID used in your form declaration.
   $table_id = 'facebook-tracking-pixel-path-items-table';
-
+  // Append the add form if not already printed.
+  if ($add_form) {
+    $rows[] = $add_form;
+  }
+  $output = '';
   // We can render our tabledrag table for output.
-  $output = theme('table', array(
+  $output = theme('table', [
     'header' => $header,
     'rows' => $rows,
-    'attributes' => array('id' => $table_id),
-  ));
+    'attributes' => ['id' => $table_id],
+  ]);
 
   // And then render any remaining form elements (such as our submit button).
   $output .= drupal_render_children($form);
 
-  // We now call the drupal_add_tabledrag() function in order to add the
-  // tabledrag.js goodness onto our page.
-  //
-  // For a basic sortable table, we need to pass it:
-  // - the $table_id of our <table> element,
-  // - the $action to be performed on our form items ('order'),
-  // - a string describing where $action should be applied ('siblings'),
-  // - and the class of the element containing our 'weight' element.
   drupal_add_tabledrag($table_id, 'order', 'sibling', 'example-item-weight');
-
-
-  $output = '';
-  $output .= theme('table', array(
-    'header' => $header,
-    'rows' => $rows,
-    'attributes' => array('id' => 'webform-components')
-  ));
-  $output .= drupal_render_children($form);
-
   return $output;
 }
 
