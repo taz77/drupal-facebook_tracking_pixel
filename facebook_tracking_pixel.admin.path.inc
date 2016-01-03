@@ -39,7 +39,7 @@ function facebook_tracking_pixel_track_by_path_form() {
       ->execute()
       ->fetchAllAssoc('base_code_id');
     $basecodes = [];
-    foreach ($resultbasecode as $item){
+    foreach ($resultbasecode as $item) {
       $basecodes[$item->base_code_id] = $item->base_code_fbid;
     }
   }
@@ -80,6 +80,10 @@ function facebook_tracking_pixel_track_by_path_form() {
         'event_path' => [
           '#markup' => $item->event_path,
         ],
+        // This shows the FBID but we track based off the serial ID number.
+        'event_base_code_id' => [
+          '#markup' => $basecodes[$item->event_base_code_id],
+        ],
         'weight' => [
           '#type' => 'weight',
           '#size' => 4,
@@ -106,12 +110,15 @@ function facebook_tracking_pixel_track_by_path_form() {
   $form['add']['event_type'] = array(
     '#type' => 'select',
     '#options' => facebook_tracking_pixel_events_options(),
-    '#weight' => 3,
   );
   $form['add']['event_path'] = [
     '#type' => 'textfield',
     '#size' => 24,
     '#maxlength' => 255,
+  ];
+  $form['add']['event_base_code_id'] = [
+    '#type' => 'select',
+    '#options' => $basecodes,
   ];
   $form['add']['weight'] = [
     '#type' => 'weight',
@@ -133,7 +140,7 @@ function facebook_tracking_pixel_track_by_path_form() {
   $form['actions'] = ['#type' => 'actions'];
   $form['actions']['submit'] = [
     '#type' => 'submit',
-    '#value' => t('Save Changes'),
+    '#value' => t('Save Arrangement'),
     '#submit' => ['facebook_tracking_pixel_track_by_path_form_submit'],
   ];
   return $form;
@@ -149,7 +156,7 @@ function facebook_tracking_pixel_track_by_path_form() {
 function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   $form = $variables['form'];
 
-  if ($form['emptyset'] == TRUE) {
+  if (isset($form['emptyset'])) {
     $output = '';
     $output .= drupal_render($form['notice']);
     return $output;
@@ -162,6 +169,7 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   $header = [
     t('Event Type'),
     t('Event Path'),
+    t('Base Code ID'),
     t('Weight'),
     [
       'data' => t('Operations'),
@@ -178,6 +186,7 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   $row_data = [
     drupal_render($form['add']['event_type']),
     drupal_render($form['add']['event_path']),
+    drupal_render($form['add']['event_base_code_id']),
     drupal_render($form['add']['event_id']) . drupal_render($form['add']['event_uid']) . drupal_render($form['add']['weight']),
     ['colspan' => 2, 'data' => drupal_render($form['add']['add'])],
   ];
@@ -208,6 +217,8 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_type']),
         // Add our 'event_path' column.
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_path']),
+        // Add the base code ID
+        drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_base_code_id']),
         // Add our 'weight' column.
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['weight']),
         // Operations column for editing and deleting.
@@ -238,7 +249,7 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   // And then render any remaining form elements (such as our submit button).
   $output .= drupal_render_children($form);
 
-  drupal_add_tabledrag($table_id, 'order', 'sibling', 'path-code-weight');
+  drupal_add_tabledrag('facebook-tracking-pixel-path-items-table', 'order', 'sibling', 'path-code-weight');
   return $output;
 }
 
