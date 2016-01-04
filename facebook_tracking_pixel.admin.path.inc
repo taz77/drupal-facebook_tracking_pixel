@@ -240,6 +240,8 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
     $rows[] = $add_form;
   }
   $output = '';
+  $output .= drupal_render($form['intro_0']);
+  $output .= drupal_render($form['intro_1']);
   // We can render our tabledrag table for output.
   $output .= theme('table', [
     'header' => $header,
@@ -345,60 +347,4 @@ function facebook_tracking_pixel_path_edit_form($form, &$form_state, $uid) {
     ->execute()
     ->fetchAssoc();
 
-}
-
-
-/**
- * Submit handler
- */
-function STUFFFFFFFFfacebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
-  // Trim slashes from the path.
-  $form_state['values']['facebook_tracking_pixel_path'] = trim($form_state['values']['facebook_tracking_pixel_path'], '/');
-
-  // If the path changed, notify that the folder must be moved.
-  $old_path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel_path');
-  if ($form_state['values']['facebook_tracking_pixel_path'] != $old_path and file_exists(drupal_realpath($old_path))) {
-    $base_path = variable_get('file_' . file_default_scheme() . '_path', conf_path() . '/files') . '/';
-    drupal_set_message(t('The file storage path has changed; thus, the contents of %old_path must manually be moved to %new_path.', [
-      '%old_path' => $base_path . file_uri_target($old_path),
-      '%new_path' => $base_path . file_uri_target($form_state['values']['facebook_tracking_pixel_path']),
-    ]), 'warning', FALSE);
-  }
-
-  $fb_script_src = [
-    '<script>
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
-    n.push=n;n.loaded=!0;n.version=\'2.0\';n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
-    document,\'script\',\'//connect.facebook.net/en_US/fbevents.js\');',
-    '</script>',
-  ];
-  $fb_noscript_src = [
-    '<noscript><img height="1" width="1" style="display:none"
-    src="https://www.facebook.com/tr?id=',
-    '&ev=PageView&noscript=1"/></noscript>',
-  ];
-
-  if (!empty($form_state['values']['facebook_tracking_pixel_tracking_codes']['code'])) {
-
-
-    // Remove existing file, if present.
-    try {
-      facebook_tracking_pixel_delete_file();
-    }
-    catch (Exception $e) {
-      watchdog('facebook_tracking_pixel', 'Failed deleting global JS files for Facebook Tracking Pixel. Error @error', array('@error' => $e), WATCHDOG_ERROR, NULL);
-      return form_set_error('facebook_tracking_pixel_tracking_code', 'Could not delete existing js files', NULL);
-    };
-    // Save the global js files for tracking pixel.
-    if (!empty($fb_script[0]) && !empty($fb_noscript[0])) {
-      $success = facebook_tracking_pixel_save_file($fb_script[0], 'fb_tkpx.js');
-      if (!$success) {
-        watchdog('facebook_tracking_pixel', 'Failed writing global JS files for Facebook Tracking Pixel.', array(), WATCHDOG_ERROR, NULL);
-        return form_set_error('facebook_tracking_pixel_tracking_code', 'Could not save the JS file. Check the Drupal and PHP logs.', NULL);;
-      }
-      variable_set('facebook_tracking_pixel_noscripts', $fb_noscript[0]);
-    }
-  }
 }
