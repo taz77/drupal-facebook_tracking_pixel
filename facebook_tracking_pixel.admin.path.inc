@@ -133,7 +133,7 @@ function facebook_tracking_pixel_track_by_path_form() {
     '#validate' => [
       'facebook_tracking_pixel_path_add_validate',
     ],
-    '#submit' => ['facebook_tracking_pixel_path_add_form'],
+    '#submit' => ['facebook_tracking_pixel_path_add_form_submit'],
   ];
 
   // Now we add our submit button, for submitting the form results.
@@ -272,44 +272,47 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
  */
 function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
   // @todo handle the items and write them to the files system and update the db
-  $global_fb_tracking_path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
+  $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
   $subdir = variable_get('facebook_tracking_pixel_path_subdir', 'pathtracking');
   $uid = uniqid('', TRUE);
-  // We have to verify the global JS file is already setup
-  if (file_exists($global_fb_tracking_path . '/fb_tkpx.js')) {
-    // Read the global file and append it.
-    $filename = $global_fb_tracking_path . '/fb_tkpx.js';
-    $handle = fopen($filename, 'r');
-    $contents = fread($handle, filesize($filename));
-    $path = $form_state['values']['event_path'];
-    $type = $form_state['values']['event_type'];
-    $fb_events = facebook_tracking_pixel_events();
-    $event_type = $fb_events[$type];
-    $contents .= $event_type['code'];
-    // Write out the new file for this tracking item.
-    facebook_tracking_pixel_save_file($contents, $uid . '.js', $subdir);
-    // Close the global file handler.
-    fclose($handle);
+  // Get the base code.
+  $base_code_script = facebook_tracking_pixel_base_code_js();
+  // Get the events.
+  $events = facebook_tracking_pixel_events();
 
-    // Full path and filename.
-    $event_js = $global_fb_tracking_path . '/' . $subdir . '/' . $uid;
-    db_insert('facebook_tracking_pixel_events_path')
-      ->fields(
-        [
-          'event_path' => $path,
-          'event_type' => $type,
-          'event_js_file' => $event_js,
-          'event_uid' => $uid,
-          'weight' => 0
-        ]
-      )
-      ->execute();
-    drupal_set_message(t('Tracking entry added.'), 'status', FALSE);
-  }
-  else {
-    // Return an error because there is no global JS file setup.
-    drupal_set_message(t('Your addition could not be saved because there is no global pixel JS file. Please check the logs'), 'warning', FALSE);
-  }
+  $base_code_id = $form_state['values']['event_base_code_id'];
+  $base_code_fbid = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c', ['base_code_fbid'])
+    ->condition('base_code_id', $base_code_id, '=')
+    ->execute()
+    ->fetchField();
+
+  $path = $form_state['values']['event_path'];
+  $type = $form_state['values']['event_type'];
+  $fb_events = facebook_tracking_pixel_events();
+  $event_type = $fb_events[$type];
+  $contents = $base_code_script[0] . $base_code_fbid . $base_code_script[1];
+  $contents .= $event_type['code'];
+  // Write out the new file for this tracking item.
+  facebook_tracking_pixel_save_file($contents, 'fb_trk.' . $uid . '.js', $subdir);
+  // Close the global file handler.
+
+
+  // Full path and filename.
+  $event_js = $path . '/' . $subdir . '/' . 'fb_trk.' . $uid . '.js';
+  db_insert('facebook_tracking_pixel_events_path')
+    ->fields(
+      [
+        'event_path' => $path,
+        'event_type' => $type,
+        'event_base_code_id' => $base_code_id,
+        'event_js_file' => $event_js,
+        'event_uid' => $uid,
+        'weight' => 0
+      ]
+    )
+    ->execute();
+  drupal_set_message(t('Tracking entry added.'), 'status', FALSE);
 
 }
 
