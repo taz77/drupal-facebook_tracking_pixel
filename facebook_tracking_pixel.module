@@ -139,9 +139,10 @@ function facebook_tracking_pixel_page_build(&$page) {
  * Deletes all CSS & JavaScript from the file system or a single file.
  *
  * @param null $filename
+ * @param null $subdir
  * @return bool
  */
-function facebook_tracking_pixel_delete_file($filename = NULL) {
+function facebook_tracking_pixel_delete_file($filename = NULL, $subdir = NULL) {
   $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
   // Calling the function without a file name will delete everything.
   if ($filename == NULL) {
@@ -153,7 +154,13 @@ function facebook_tracking_pixel_delete_file($filename = NULL) {
     }
   }
   else {
-    file_unmanaged_delete($path . '/' . $filename);
+    if(!empty($subdir)){
+      $deletepath = $path . '/' . $subdir . '/' . $filename;
+    }
+    else {
+      $deletepath = $path . '/' . $filename;
+    }
+    file_unmanaged_delete($deletepath);
     return TRUE;
   }
   return FALSE;
