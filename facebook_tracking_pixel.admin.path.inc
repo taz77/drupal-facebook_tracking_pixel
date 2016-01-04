@@ -6,6 +6,7 @@
  *
  * @author Brady Owens <info@fastglass.net>
  */
+use UnitedPrototype\GoogleAnalytics\Exception;
 
 
 /**
@@ -269,17 +270,14 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
  *
  * @param $form
  * @param $form_state
+ * @return bool
+ * @throws \Exception
  */
 function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
-  // @todo handle the items and write them to the files system and update the db
-  $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
   $subdir = variable_get('facebook_tracking_pixel_path_subdir', 'pathtracking');
   $uid = uniqid('', TRUE);
   // Get the base code.
   $base_code_script = facebook_tracking_pixel_base_code_js();
-  // Get the events.
-  $events = facebook_tracking_pixel_events();
-
   $base_code_id = $form_state['values']['event_base_code_id'];
   $base_code_fbid = db_select('facebook_tracking_pixel_base_codes', 'c')
     ->fields('c', ['base_code_fbid'])
@@ -294,25 +292,34 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
   $contents = $base_code_script[0] . $base_code_fbid . $base_code_script[1];
   $contents .= $event_type['code'];
   // Write out the new file for this tracking item.
-  facebook_tracking_pixel_save_file($contents, 'fb_trk.' . $uid . '.js', $subdir);
-  // Close the global file handler.
-
-
-  // Full path and filename.
-  $event_js = $path . '/' . $subdir . '/' . 'fb_trk.' . $uid . '.js';
-  db_insert('facebook_tracking_pixel_events_path')
-    ->fields(
-      [
-        'event_path' => $path,
-        'event_type' => $type,
-        'event_base_code_id' => $base_code_id,
-        'event_js_file' => $event_js,
-        'event_uid' => $uid,
-        'weight' => 0
-      ]
-    )
-    ->execute();
-  drupal_set_message(t('Tracking entry added.'), 'status', FALSE);
+  if (facebook_tracking_pixel_save_file($contents, 'fb_trk.' . $uid . '.js', $subdir)) {
+    // Full path and filename.
+    $event_js = $path . '/' . $subdir . '/' . 'fb_trk.' . $uid . '.js';
+    try {
+      db_insert('facebook_tracking_pixel_events_path')
+        ->fields(
+          [
+            'event_path' => $path,
+            'event_type' => $type,
+            'event_base_code_id' => $base_code_id,
+            'event_js_file' => $event_js,
+            'event_uid' => $uid,
+            'weight' => 0
+          ]
+        )
+        ->execute();
+      drupal_set_message(t('Path tracking entry added.'), 'status', FALSE);
+    }
+    catch (Exception $e) {
+      drupal_set_message(t('Path tracking entry failed to write to database.'), 'error', FALSE);
+      watchdog('facebook_tracking_pixel', 'Failed writing path tracking Information to database :e.', [':e' => $e], WATCHDOG_ERROR, NULL);
+    }
+  }
+  else {
+    drupal_set_message(t('Path tracking entry failed to write JS to file system.'), 'error', FALSE);
+    watchdog('facebook_tracking_pixel', 'Failed writing path tracking JS files for Facebook Tracking Pixel. Check PHP logs.', [], WATCHDOG_ERROR, NULL);
+  }
+  return TRUE;
 
 }
 
