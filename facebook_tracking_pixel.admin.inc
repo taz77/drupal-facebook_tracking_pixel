@@ -318,7 +318,6 @@ function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid
   $id = check_plain($tid);
   $result = db_select('facebook_tracking_pixel_base_codes', 'c')
     ->fields('c', ['base_code_fbid'])
-    ->orderBy('weight')
     ->condition('base_code_id', $id, '=')
     ->execute()
     ->fetchField();
