@@ -276,6 +276,7 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
  * @throws \Exception
  */
 function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
+  $path_js_real = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
   $subdir = variable_get('facebook_tracking_pixel_path_subdir', 'pathtracking');
   $uid = uniqid('', TRUE);
   // Get the base code.
@@ -296,7 +297,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
   // Write out the new file for this tracking item.
   if (facebook_tracking_pixel_save_file($contents, 'fb_trk.' . $uid . '.js', $subdir)) {
     // Full path and filename.
-    $event_js = $path . '/' . $subdir . '/' . 'fb_trk.' . $uid . '.js';
+    $event_js = $path_js_real . '/' . $subdir . '/' . 'fb_trk.' . $uid . '.js';
     try {
       db_insert('facebook_tracking_pixel_events_path')
         ->fields(
@@ -322,13 +323,13 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
     watchdog('facebook_tracking_pixel', 'Failed writing path tracking JS files for Facebook Tracking Pixel. Check PHP logs.', [], WATCHDOG_ERROR, NULL);
   }
   return TRUE;
-
 }
 
 /**
  * Form builder for tracking path delete.
  */
 function facebook_tracking_pixel_path_delete_form($form, &$form_state, $uid) {
+  // @todo Unfinished
   // Remove the file from storage.
   // Delete the entry from the database.
   $status = db_delete('facebook_tracking_pixel_events_path')
@@ -340,11 +341,10 @@ function facebook_tracking_pixel_path_delete_form($form, &$form_state, $uid) {
  * Form builder for tracking path edit.
  */
 function facebook_tracking_pixel_path_edit_form($form, &$form_state, $uid) {
-
+  // @todo Unfinished
   $result = db_select('facebook_tracking_pixel_events_path', 'e')
     ->condition('event_uid', $uid, '=')
     ->fields('e')
     ->execute()
     ->fetchAssoc();
-
 }
