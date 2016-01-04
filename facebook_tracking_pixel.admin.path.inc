@@ -87,7 +87,6 @@ function facebook_tracking_pixel_track_by_path_form() {
         ],
         'weight' => [
           '#type' => 'weight',
-          '#size' => 4,
           '#title' => t('Weight'),
           '#default_value' => $item->weight,
           '#delta' => 10,
@@ -198,20 +197,6 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
 
   // Iterate over each element in our $form['example_items'] array.
   foreach (element_children($form['facebook_tracking_pixel_tracking_codes_by_path']) as $id) {
-
-    // Before we add our 'weight' column to the row, we need to give the
-    // element a custom class so that it can be identified in the
-    // drupal_add_tabledrag call.
-    //
-    // This could also have been done during the form declaration by adding
-    // '#attributes' => array('class' => 'example-item-weight'),
-    // directy to the 'weight' element in tabledrag_example_simple_form().
-    $form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['weight']['#attributes']['class'] = ['facebook-tracking-pixel-path-weight'];
-
-    // We are now ready to add each element of our $form data to the $rows
-    // array, so that they end up as individual table cells when rendered
-    // in the final table.  We run each element through the drupal_render()
-    // function to generate the final html markup for that element.
     $rows[] = [
       'data' => [
         // Add our 'event_type' column.
@@ -234,7 +219,6 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
       'class' => ['draggable'],
     ];
   }
-
   // Append the add form if not already printed.
   if ($add_form) {
     $rows[] = $add_form;
