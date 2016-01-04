@@ -281,15 +281,15 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
   $uid = uniqid('', TRUE);
   // Get the base code.
   $base_code_script = facebook_tracking_pixel_base_code_js();
-  $base_code_id = $form_state['values']['event_base_code_id'];
+  $base_code_id = check_plain($form_state['values']['event_base_code_id']);
   $base_code_fbid = db_select('facebook_tracking_pixel_base_codes', 'c')
     ->fields('c', ['base_code_fbid'])
     ->condition('base_code_id', $base_code_id, '=')
     ->execute()
     ->fetchField();
 
-  $path = $form_state['values']['event_path'];
-  $type = $form_state['values']['event_type'];
+  $path = check_plain($form_state['values']['event_path']);
+  $type = check_plain($form_state['values']['event_type']);
   $fb_events = facebook_tracking_pixel_events();
   $event_type = $fb_events[$type];
   $contents = $base_code_script[0] . $base_code_fbid . $base_code_script[1];
@@ -328,13 +328,60 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
 /**
  * Form builder for tracking path delete.
  */
-function facebook_tracking_pixel_path_delete_form($form, &$form_state, $uid) {
+function facebook_tracking_pixel_path_delete_form($form, &$form_state, $tid) {
+  $id = check_plain($tid);
+  $path = db_select('facebook_tracking_pixel_events_path', 'c')
+    ->fields('c', ['event_path'])
+    ->condition('event_id', $id, '=')
+    ->execute()
+    ->fetchField();
+
+  $form = [];
+  $form['tid'] = [
+    '#type' => 'hidden',
+    '#value' => $id,
+  ];
+  $form['confirmation'] = [
+    '#markup' => t('You are about to delete the path tracking for path ' . $path),
+  ];
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Delete'),
+    '#weight' => 50,
+    '#submit' => ['facebook_tracking_pixel_path_delete_form_submit'],
+  ];
+  return $form;
+}
+
+function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
   // @todo Unfinished
   // Remove the file from storage.
-  // Delete the entry from the database.
-  $status = db_delete('facebook_tracking_pixel_events_path')
-    ->condition('event_uid', $uid, '=')
-    ->execute();
+  $id = check_plain($form_state['values']['tid']);
+  $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
+  $uid = db_select('facebook_tracking_pixel_events_path', 'c')
+    ->fields('c', ['event_uid'])
+    ->condition('event_id', $id, '=')
+    ->execute()
+    ->fetchField();
+
+  $subdir = variable_get('facebook_tracking_pixel_path_subdir', 'pathtracking');
+  $deletefile = 'fb_trk.' . $uid . '.js';
+  if (facebook_tracking_pixel_delete_file($deletefile, $subdir)) {
+    // Delete the entry from the database.
+    try {
+      db_delete('facebook_tracking_pixel_events_path')
+        ->condition('event_id', $id, '=')
+        ->execute();
+    }
+    catch (Exception $e) {
+      drupal_set_message(t('Path tracking entry failed to delete from the database.'), 'error', FALSE);
+      watchdog('facebook_tracking_pixel', 'Failed deleteing path tracking Information from the database :e.', [':e' => $e], WATCHDOG_ERROR, NULL);
+    }
+  }
+  else {
+    drupal_set_message(t('Path tracking entry failed to delete file from the filesytem.'), 'error', FALSE);
+    watchdog('facebook_tracking_pixel', 'Failed deleteing path tracking JS file form the file system.', [], WATCHDOG_ERROR, NULL);
+  }
 }
 
 /**
