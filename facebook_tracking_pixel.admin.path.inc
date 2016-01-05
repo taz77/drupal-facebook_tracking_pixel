@@ -312,7 +312,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
 /**
  * Form builder for tracking path delete.
  */
-function facebook_tracking_pixel_path_delete_form($form, &$form_state, $tid) {
+function facebook_tracking_pixel_path_delete_form($form, $form_state, $tid) {
   $id = check_plain($tid);
   $path = db_select('facebook_tracking_pixel_events_path', 'c')
     ->fields('c', ['event_path'])
