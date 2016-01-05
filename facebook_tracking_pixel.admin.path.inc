@@ -338,10 +338,9 @@ function facebook_tracking_pixel_path_delete_form($form, &$form_state, $tid) {
 }
 
 function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
-  // @todo Unfinished
-  // Remove the file from storage.
+
   $id = check_plain($form_state['values']['tid']);
-  $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
+  // Load the UID from the database.
   $uid = db_select('facebook_tracking_pixel_events_path', 'c')
     ->fields('c', ['event_uid'])
     ->condition('event_id', $id, '=')
@@ -350,7 +349,9 @@ function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
 
   $subdir = variable_get('facebook_tracking_pixel_path_subdir', 'pathtracking');
   $deletefile = 'fb_trk.' . $uid . '.js';
-  if (facebook_tracking_pixel_delete_file($deletefile, $subdir)) {
+  // Attempt to delete the file.
+  $filedelete = facebook_tracking_pixel_delete_file($deletefile, $subdir);
+  if ($filedelete) {
     // Delete the entry from the database.
     try {
       db_delete('facebook_tracking_pixel_events_path')
@@ -360,12 +361,24 @@ function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
     catch (Exception $e) {
       drupal_set_message(t('Path tracking entry failed to delete from the database.'), 'error', FALSE);
       watchdog('facebook_tracking_pixel', 'Failed deleteing path tracking Information from the database :e.', [':e' => $e], WATCHDOG_ERROR, NULL);
+      return FALSE;
     }
   }
   else {
     drupal_set_message(t('Path tracking entry failed to delete file from the filesytem.'), 'error', FALSE);
     watchdog('facebook_tracking_pixel', 'Failed deleteing path tracking JS file form the file system.', [], WATCHDOG_ERROR, NULL);
+    return FALSE;
   }
+
+  if ($filedelete && module_exists('advagg')) {
+    module_load_include('inc', 'advagg', 'advagg.cache');
+    advagg_push_new_changes();
+  }
+  elseif ($filedelete) {
+    // Clear JS cache.
+    drupal_clear_js_cache();
+  }
+
 }
 
 /**
