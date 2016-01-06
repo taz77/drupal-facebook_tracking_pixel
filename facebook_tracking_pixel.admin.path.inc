@@ -383,6 +383,11 @@ function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
 
 /**
  * Form builder for tracking path edit.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $uid
+ * @return array
  */
 function facebook_tracking_pixel_path_edit_form($form, &$form_state, $uid) {
   // @todo Unfinished
@@ -391,4 +396,25 @@ function facebook_tracking_pixel_path_edit_form($form, &$form_state, $uid) {
     ->fields('e')
     ->execute()
     ->fetchAssoc();
+
+  $form = [];
+
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 50,
+    '#validate' => ['facebook_tracking_pixel_path_edit_form_validate'],
+    '#submit' => ['facebook_tracking_pixel_path_delete_form_submit'],
+  ];
+
+  return $form;
+}
+
+/**
+ * Validation function for edit form.
+ * @param $form
+ * @param $form_state
+ */
+function facebook_tracking_pixel_path_edit_form_validate($form, &$form_state) {
+
 }
