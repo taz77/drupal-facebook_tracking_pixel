@@ -407,18 +407,22 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
   }
   $form = [];
   $pathtypeoptions = facebook_tracking_pixel_events_options();
-  $form['event_type'] = array(
+  $form['event_type'] = [
+    '#title' => 'Event Type',
     '#type' => 'select',
     '#options' => $pathtypeoptions,
     '#default_value' => $pathtypeoptions[$result['event_type']],
-  );
+  ];
   $form['event_path'] = [
+    '#title' => 'Path for Action',
     '#type' => 'textfield',
     '#size' => 24,
     '#maxlength' => 255,
     '#default_value' => $result['event_path'],
   ];
   $form['event_base_code_id'] = [
+    '#title' => 'Facebook Base Code ID',
+    '#description' => t('Corresponds to your Facebook advertising account.'),
     '#type' => 'select',
     '#options' => $basecodes,
     '#default_value' => $basecodes[$result['event_base_code_id']],
