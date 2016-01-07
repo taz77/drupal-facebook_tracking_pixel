@@ -117,12 +117,12 @@ function facebook_tracking_pixel_page_build(&$page) {
     foreach ($result as $element) {
       $file = $path . '/fb_tkpx.' . $element->base_code_fbid . '.js';
 
-      $page['content']['#attached']['js']['facebook_tracking_pixel_' . $i] = array(
+      $page['content']['#attached']['js']['facebook_tracking_pixel_' . $i] = [
         'type' => 'file',
         'group' => JS_THEME,
         'data' => $file,
         'preprocess' => (bool) variable_get('facebook_tracking_pixel_aggregation', FALSE),
-      );
+      ];
       // Assemble code.
       $fb_base_code_nojs = $fb_noscript_src[0] . $element->base_code_fbid . $fb_noscript_src[1];
       drupal_add_html_head([
