@@ -389,15 +389,40 @@ function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
  * @param $uid
  * @return array
  */
-function facebook_tracking_pixel_path_edit_form($form, &$form_state, $uid) {
-  // @todo Unfinished
+function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
   $result = db_select('facebook_tracking_pixel_events_path', 'e')
-    ->condition('event_uid', $uid, '=')
+    ->condition('event_id', $tid, '=')
     ->fields('e')
     ->execute()
     ->fetchAssoc();
 
+  $resultbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c')
+    ->orderBy('weight')
+    ->execute()
+    ->fetchAllAssoc('base_code_id');
+  $basecodes = [];
+  foreach ($resultbasecode as $item) {
+    $basecodes[$item->base_code_id] = $item->base_code_fbid;
+  }
   $form = [];
+  $pathtypeoptions = facebook_tracking_pixel_events_options();
+  $form['event_type'] = array(
+    '#type' => 'select',
+    '#options' => $pathtypeoptions,
+    '#default_value' => $pathtypeoptions[$result['event_type']],
+  );
+  $form['event_path'] = [
+    '#type' => 'textfield',
+    '#size' => 24,
+    '#maxlength' => 255,
+    '#default_value' => $result['event_path'],
+  ];
+  $form['event_base_code_id'] = [
+    '#type' => 'select',
+    '#options' => $basecodes,
+    '#default_value' => $basecodes[$result['event_base_code_id']],
+  ];
 
   $form['submit'] = [
     '#type' => 'submit',
