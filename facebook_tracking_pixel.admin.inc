@@ -331,11 +331,20 @@ function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid
     '#value' => $result,
   ];
   $form['confirmation'] = [
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
     '#markup' => t('You are about to delete the base code with ID number ' . $result),
   ];
+  $form['notice'] = [
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+    '#markup' => t('This will also remove any path tracking you have for this base code!'),
+  ];
   $form['submit'] = [
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
     '#type' => 'submit',
-    '#value' => t('Delete'),
+    '#value' => t('Confirm Delete'),
     '#weight' => 50,
     '#submit' => ['facebook_tracking_pixel_base_codes_delete_form_submit'],
   ];
@@ -350,6 +359,7 @@ function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid
  * @return bool
  */
 function facebook_tracking_pixel_base_codes_delete_form_submit($form, &$form_state) {
+  // @todo This must delete path tracking attached to the FBID.
   if (facebook_tracking_pixel_base_code_delete($form_state['values']['tid'], $form_state['values']['fbid'])) {
     return TRUE;
   }
