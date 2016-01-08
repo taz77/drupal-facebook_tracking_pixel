@@ -359,7 +359,6 @@ function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid
  * @return bool
  */
 function facebook_tracking_pixel_base_codes_delete_form_submit($form, &$form_state) {
-  // @todo This must delete path tracking attached to the FBID.
   if (facebook_tracking_pixel_base_code_delete($form_state['values']['tid'], $form_state['values']['fbid'])) {
     return TRUE;
   }
