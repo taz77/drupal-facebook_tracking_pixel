@@ -6,8 +6,6 @@
  *
  * @author Brady Owens <info@fastglass.net>
  */
-use UnitedPrototype\GoogleAnalytics\Exception;
-
 
 /**
  * Form builder for track by path.
@@ -241,7 +239,10 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
 }
 
 /**
- * Validate handler for facebook_tracking_pixel_track_by_path_form() when adding a new event path
+ * Validate handler for path add form.
+ *
+ * @param $form
+ * @param $form_state
  */
 function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
   // Check that the entered component name is valid.
@@ -311,6 +312,11 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
 
 /**
  * Form builder for tracking path delete.
+ *
+ * @param $form
+ * @param $form_state
+ * @param $tid
+ * @return array
  */
 function facebook_tracking_pixel_path_delete_form($form, $form_state, $tid) {
   $id = check_plain($tid);
@@ -337,6 +343,13 @@ function facebook_tracking_pixel_path_delete_form($form, $form_state, $tid) {
   return $form;
 }
 
+/**
+ * Delete submit handler for the delete form.
+ *
+ * @param $form
+ * @param $form_state
+ * @return bool
+ */
 function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
 
   $id = check_plain($form_state['values']['tid']);
@@ -395,7 +408,6 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
     ->fields('e')
     ->execute()
     ->fetchAssoc();
-
   $resultbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
     ->fields('c')
     ->orderBy('weight')
@@ -427,23 +439,21 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
     '#options' => $basecodes,
     '#default_value' => $basecodes[$result['event_base_code_id']],
   ];
-
   $form['submit'] = [
     '#type' => 'submit',
     '#value' => t('Save'),
     '#weight' => 50,
-    '#validate' => ['facebook_tracking_pixel_path_edit_form_validate'],
-    '#submit' => ['facebook_tracking_pixel_path_delete_form_submit'],
+    '#validate' => ['facebook_tracking_pixel_path_add_validate'],
+    '#submit' => ['facebook_tracking_pixel_path_edit_form_submit'],
   ];
-
   return $form;
 }
 
-/**
- * Validation function for edit form.
- * @param $form
- * @param $form_state
- */
-function facebook_tracking_pixel_path_edit_form_validate($form, &$form_state) {
+function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
+  $type = check_plain($form_state['values']['event_type']);
+  $path = check_plain($form_state['values']['event_path']);
+  $id = check_plain($form_state['values']['event_base_code_id']);
+
+  // @todo Delete the file using the old UID then generate a new UID and save the file
 
 }
