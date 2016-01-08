@@ -154,7 +154,7 @@ function facebook_tracking_pixel_delete_file($filename = NULL, $subdir = NULL) {
     }
   }
   else {
-    if(!empty($subdir)){
+    if (!empty($subdir)) {
       $deletepath = $path . '/' . $subdir . '/' . $filename;
     }
     else {
@@ -219,6 +219,43 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
     ->execute()
   ) {
     $status = FALSE;
+  }
+
+  $pathcount = db_select('facebook_tracking_pixel_events_path', 'c')
+    ->fields('c')
+    ->condition('event_base_code_id', $tid, '=')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+
+  if ($pathcount > 0) {
+    $subdir = variable_get('facebook_tracking_pixel_path_subdir', 'pathtracking');
+    try {
+      $deletepathuids = db_select('facebook_tracking_pixel_events_path', 'c')
+        ->fields('c', ['event_uid'])
+        ->condition('event_base_code_id', $tid, '=')
+        ->execute()
+        ->fetchAssoc();
+
+      foreach ($deletepathuids as $item) {
+        facebook_tracking_pixel_delete_file('fb_trk.' . $item . '.js', $subdir);
+      }
+    }
+    catch (Exception $e) {
+      watchdog('facebook_tracking_pixel', 'Failed to delete path items when deleting a base code :error.', [':error' => $e], WATCHDOG_ERROR, NULL);
+      drupal_set_message('Could not save the JS file. Check the Drupal and PHP logs.', 'error', FALSE);
+      $status = FALSE;
+    }
+    // Remove path tracking referencing this basecode.
+    try {
+      db_delete('facebook_tracking_pixel_events_path')
+        ->condition('event_base_code_id', $tid, '=')
+        ->execute();
+    }
+    catch (Exception $e) {
+      watchdog('facebook_tracking_pixel', 'Failed to delete path items DB entries when deleting a base code :error.', [':error' => $e], WATCHDOG_ERROR, NULL);
+      $status = FALSE;
+    }
   }
 
   if (!$status) {
