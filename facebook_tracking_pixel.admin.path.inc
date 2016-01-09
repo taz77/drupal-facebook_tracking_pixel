@@ -83,6 +83,9 @@ function facebook_tracking_pixel_track_by_path_form() {
         'event_base_code_id' => [
           '#markup' => $basecodes[$item->event_base_code_id],
         ],
+        'event_uid' => [
+          '#markup' => $item->event_uid,
+        ],
         'weight' => [
           '#type' => 'weight',
           '#title' => t('Weight'),
@@ -92,10 +95,6 @@ function facebook_tracking_pixel_track_by_path_form() {
           '#attributes' => [
             'class' => ['path-codes-weight'],
           ],
-        ],
-        'event_uid' => [
-          '#type' => 'hidden',
-          '#value' => $item->event_uid,
         ],
         'event_id' => [
           '#type' => 'hidden',
@@ -168,6 +167,7 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
     t('Event Type'),
     t('Event Path'),
     t('Base Code ID'),
+    t('Unique ID'),
     t('Weight'),
     [
       'data' => t('Operations'),
@@ -185,7 +185,8 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
     drupal_render($form['add']['event_type']),
     drupal_render($form['add']['event_path']),
     drupal_render($form['add']['event_base_code_id']),
-    drupal_render($form['add']['event_id']) . drupal_render($form['add']['event_uid']) . drupal_render($form['add']['weight']),
+    drupal_render($form['add']['event_uid']),
+    drupal_render($form['add']['event_id']) . drupal_render($form['add']['weight']),
     ['colspan' => 2, 'data' => drupal_render($form['add']['add'])],
   ];
   $add_form = [
@@ -203,6 +204,8 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_path']),
         // Add the base code ID
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_base_code_id']),
+        // Add our 'event_uid' column.
+        drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_uid']),
         // Add our 'weight' column.
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['weight']),
         // Operations column for editing and deleting.
