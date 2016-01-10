@@ -67,7 +67,7 @@ function facebook_tracking_pixel_menu() {
     'type' => MENU_LOCAL_TASK,
   ];
   $items['admin/config/system/facebook_tracking_pixel/path/delete/%'] = [
-    'title' => 'Delete an event',
+    'title' => 'Deleting an event',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['facebook_tracking_pixel_path_delete_form', 6],
     'access arguments' => ['administer facebook tracking pixels'],
@@ -75,7 +75,7 @@ function facebook_tracking_pixel_menu() {
     'type' => MENU_CALLBACK,
   ];
   $items['admin/config/system/facebook_tracking_pixel/path/edit/%'] = [
-    'title' => 'Edit an event',
+    'title' => 'Update details of an event',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['facebook_tracking_pixel_path_edit_form', 6],
     'access arguments' => ['administer facebook tracking pixels'],
