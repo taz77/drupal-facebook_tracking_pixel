@@ -440,7 +440,20 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
     '#description' => t('Corresponds to your Facebook advertising account.'),
     '#type' => 'select',
     '#options' => $basecodes,
-    '#default_value' => $basecodes[$result['event_base_code_id']],
+    '#default_value' => $result['event_base_code_id'],
+  ];
+  $form['event_uid_markup'] = [
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+    '#markup' => t('Unique ID: ') . $result['event_uid'] . '<br />' . t('This is the current Unique ID. A new value for the Unique ID will be generated with you save this form.'),
+  ];
+  $form['event_uid'] = [
+    '#type' => 'hidden',
+    '#value' =>  $result['event_uid'],
+  ];
+  $form['event_id'] = [
+    '#type' => 'hidden',
+    '#value' => $tid,
   ];
   $form['submit'] = [
     '#type' => 'submit',
@@ -452,11 +465,74 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
   return $form;
 }
 
+/**
+ * Submit handler for path edit form.
+ *
+ * @param $form
+ * @param $form_state
+ * @return bool
+ */
 function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
+  // Sanitize all input.
+  $tid = check_plain($form_state['values']['event_id']);
   $type = check_plain($form_state['values']['event_type']);
   $path = check_plain($form_state['values']['event_path']);
-  $id = check_plain($form_state['values']['event_base_code_id']);
+  $base_code_id = check_plain($form_state['values']['event_base_code_id']);
+  $uid = check_plain($form_state['values']['event_uid']);
+  // Get the base code FBID.
+  $base_code_fbid = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c', ['base_code_fbid'])
+    ->condition('base_code_id', $base_code_id, '=')
+    ->execute()
+    ->fetchField();
+  // Our path to files.
+  $path_js_real = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
+  // Generate a new UID.
+  $uidnew = uniqid('', TRUE);
+  // Sub-directory for path items.
+  $subdir = variable_get('facebook_tracking_pixel_path_subdir', 'pathtracking');
+  // Attempt to delete the existing file.
+  $deletefile = 'fb_trk.' . $uid . '.js';
+  try {
+    facebook_tracking_pixel_delete_file($deletefile, $subdir);
+  }
+  catch (Exception $e) {
+    return FALSE;
+  }
 
-  // @todo Delete the file using the old UID then generate a new UID and save the file
+  $newfile = 'fb_trk.' . $uidnew . '.js';
+  $base_code_script = facebook_tracking_pixel_base_code_js();
+  $fb_events = facebook_tracking_pixel_events();
+  $event_type = $fb_events[$type];
+  $contents = $base_code_script[0] . $base_code_fbid . $base_code_script[1];
+  $contents .= $event_type['code'];
+  // Write out the new file for this tracking item.
+  if (facebook_tracking_pixel_save_file($contents, $newfile, $subdir)) {
+    // Full path and filename.
+    $event_js = $path_js_real . '/' . $subdir . '/' . 'fb_trk.' . $uidnew . '.js';
+    try {
+      db_update('facebook_tracking_pixel_events_path')
+        ->fields(
+          [
+            'event_path' => $path,
+            'event_type' => $type,
+            'event_base_code_id' => $base_code_id,
+            'event_js_file' => $event_js,
+            'event_uid' => $uidnew,
+          ]
+        )
+        ->condition('event_id', $tid, '=')
+        ->execute();
+      drupal_set_message(t('Path tracking entry edited.'), 'status', FALSE);
+    }
+    catch (Exception $e) {
+      drupal_set_message(t('Path tracking entry failed to update database.'), 'error', FALSE);
+      watchdog('facebook_tracking_pixel', 'Failed writing path tracking information to database. Called from edit path item. Check PHP logs. :e', [':e' => $e], WATCHDOG_ERROR, NULL);
+    }
+  }
+  else {
+    drupal_set_message(t('Path tracking entry failed to write new JS to file system. Called from edit path item.'), 'error', FALSE);
+    watchdog('facebook_tracking_pixel', 'Failed writing path tracking JS files for Facebook Tracking Pixel. Called from edit path item. Check PHP logs.', [], WATCHDOG_ERROR, NULL);
+  }
 
 }
