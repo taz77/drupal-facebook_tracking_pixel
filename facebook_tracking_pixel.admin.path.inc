@@ -300,6 +300,8 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
         )
         ->execute();
       drupal_set_message(t('Path tracking entry added.'), 'status', FALSE);
+      // Clear caches.
+      facebook_tracking_pixel_clear_cache();
     }
     catch (Exception $e) {
       drupal_set_message(t('Path tracking entry failed to write to database.'), 'error', FALSE);
@@ -391,8 +393,8 @@ function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
     advagg_push_new_changes();
   }
   elseif ($filedelete) {
-    // Clear JS cache.
-    drupal_clear_js_cache();
+    // Clear caches.
+    facebook_tracking_pixel_clear_cache();
   }
 
 }
@@ -449,7 +451,7 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
   ];
   $form['event_uid'] = [
     '#type' => 'hidden',
-    '#value' =>  $result['event_uid'],
+    '#value' => $result['event_uid'],
   ];
   $form['event_id'] = [
     '#type' => 'hidden',
@@ -524,6 +526,8 @@ function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
         ->condition('event_id', $tid, '=')
         ->execute();
       drupal_set_message(t('Path tracking entry edited.'), 'status', FALSE);
+      // Clear caches.
+      facebook_tracking_pixel_clear_cache();
     }
     catch (Exception $e) {
       drupal_set_message(t('Path tracking entry failed to update database.'), 'error', FALSE);
