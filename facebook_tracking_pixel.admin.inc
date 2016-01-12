@@ -61,6 +61,12 @@ function facebook_tracking_pixel_settings_form($form_state) {
   return system_settings_form($form);
 }
 
+/**
+ * Validation for setting form.
+ * @param $form
+ * @param $form_state
+ */
+
 function facebook_tracking_pixel_settings_form_validate($form, &$form_state) {
   // Trim slashes from the path.
   $form_state['values']['facebook_tracking_pixel_path'] = trim($form_state['values']['facebook_tracking_pixel_path'], '/');
