@@ -36,6 +36,28 @@ function facebook_tracking_pixel_settings_form($form_state) {
     '#validate' => ['facebook_tracking_pixel_settings_form_validate'],
   ];
 
+  // Render the role overview.
+  $result = db_query('SELECT * FROM {role} ORDER BY name');
+
+  $form['facebook_tracking_pixel_roles'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Roles to track'),
+    '#collapsible' => TRUE,
+    '#description' => t('Define what user roles should be tracked with a Facebook pixel.'),
+  ];
+
+  foreach ($result as $role) {
+    // Can't use empty spaces in varname.
+    $role_name = $role->name;
+    $role_varname = str_replace(' ', '_', $role_name);
+    $form['facebook_tracking_pixel_roles']['facebook_tracking_pixel_roles_' . $role_varname] = [
+      '#type' => 'checkbox',
+      '#title' => t($role_name),
+      '#default_value' => variable_get('facebook_tracking_pixel_roles_' . $role_varname, FALSE),
+    ];
+  }
+
+
   return system_settings_form($form);
 }
 
