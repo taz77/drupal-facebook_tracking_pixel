@@ -472,6 +472,7 @@ function facebook_tracking_pixel_base_codes_edit_form_submit($form, &$form_state
     ->condition('base_code_id', $tid, '=')
     ->execute()
   ) {
+    facebook_tracking_pixel_clear_cache();
     drupal_set_message(t('Base Code Updated'), 'status', FALSE);
   }
   else {
@@ -543,8 +544,25 @@ function facebook_tracking_pixel_form_purge_submit() {
     drupal_set_message(t('Purging failed check your PHP logs on your server.'), 'error', FALSE);
   }
   else {
+    drupal_flush_all_caches();
     drupal_set_message(t('Purging complete'), 'status', FALSE);
   }
-  drupal_flush_all_caches();
   return $status;
+}
+
+/**
+ * Form builder for core modules settings.
+ */
+
+function facebook_tracking_pixel_user_registration($form_state) {
+
+  $form['facebook_tracking_pixel_user_registration'] = [
+    '#title' => t('File storage path'),
+    '#type' => 'textfield',
+    '#default_value' => variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel'),
+    '#description' => t('The subdirectory of the system files directory where Facebook Tracking Pixel will store its files. Note: changing this path will cause the old path to move to the new path, overwriting the new path, if it exists.'),
+    '#validate' => ['facebook_tracking_pixel_settings_form_validate'],
+  ];
+
+  return system_settings_form($form);
 }
