@@ -34,6 +34,14 @@ function facebook_tracking_pixel_menu() {
     'file' => 'facebook_tracking_pixel.admin.inc',
     'type' => MENU_LOCAL_TASK,
   ];
+  $items['admin/config/system/facebook_tracking_pixel/user_registration'] = [
+    'title' => 'Track User Registration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['facebook_tracking_pixel_user_registration'],
+    'access arguments' => ['administer facebook tracking pixels'],
+    'file' => 'facebook_tracking_pixel.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  ];
   $items['admin/config/system/facebook_tracking_pixel/base_codes/delete/%'] = [
     'title' => 'Delete a Base Code',
     'page callback' => 'drupal_get_form',
@@ -154,6 +162,12 @@ function facebook_tracking_pixel_page_build(&$page) {
           unset($basecodes[$code['event_base_code_id']]);
         }
       }
+    }
+
+    // Is the user registration tracking turned on?
+
+    if (!empty($_SESSION['facebook_tracking_pixel_registration'])) {
+
     }
 
     $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
@@ -319,6 +333,16 @@ function facebook_tracking_pixel_path_codes() {
 }
 
 /**
+ * Implements hook_user_insert().
+ */
+function facebook_tracking_pixel_user_insert(&$edit, $account, $category) {
+  $registration = variable_get('facebook_tracking_pixel_user_registration', FALSE);
+  if ($registration) {
+    $_SESSION['facebook_tracking_pixel_registration'] = TRUE;
+  }
+}
+
+/**
  * We use our own hook_alter to load the codes.
  * This is also an example of how another module would alter the codes.
  *
@@ -414,12 +438,8 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
   else {
     drupal_set_message(t('Base code deleted.'), 'status', FALSE);
   }
-  // Trigger reloading the CSS and JS file cache in AdvAgg, if available.
-  if ($filedelete && module_exists('advagg')) {
-    module_load_include('inc', 'advagg', 'advagg.cache');
-    advagg_push_new_changes();
-  }
-  elseif ($filedelete) {
+
+  if ($filedelete) {
     facebook_tracking_pixel_clear_cache();
   }
   return $status;
@@ -476,12 +496,6 @@ function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {
   file_prepare_directory($path, FILE_CREATE_DIRECTORY);
   $file_saved = file_unmanaged_save_data($data, $path . '/' . $filename, FILE_EXISTS_REPLACE);
 
-  // Trigger reloading the CSS and JS file cache in AdvAgg, if available.
-  if ($file_saved && module_exists('advagg')) {
-    module_load_include('inc', 'advagg', 'advagg.cache');
-    advagg_push_new_changes();
-  }
-  // Clear caches.
   facebook_tracking_pixel_clear_cache();
   return $file_saved;
 }
@@ -491,6 +505,14 @@ function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {
  */
 function facebook_tracking_pixel_clear_cache() {
   cache_clear_all('*', 'cache_page', TRUE);
-  cache_clear_all('*', 'cache_views', TRUE);
-  cache_clear_all('*', 'cache_views_data', TRUE);
+  // Clear views cache if available.
+  if(module_exists('views')) {
+    cache_clear_all('*', 'cache_views', TRUE);
+    cache_clear_all('*', 'cache_views_data', TRUE);
+  }
+  // Trigger reloading the CSS and JS file cache in AdvAgg, if available.
+  if (module_exists('advagg')) {
+    module_load_include('inc', 'advagg', 'advagg.cache');
+    advagg_push_new_changes();
+  }
 }
