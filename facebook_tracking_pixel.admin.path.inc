@@ -388,11 +388,7 @@ function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
     return FALSE;
   }
 
-  if ($filedelete && module_exists('advagg')) {
-    module_load_include('inc', 'advagg', 'advagg.cache');
-    advagg_push_new_changes();
-  }
-  elseif ($filedelete) {
+  if ($filedelete) {
     // Clear caches.
     facebook_tracking_pixel_clear_cache();
   }
