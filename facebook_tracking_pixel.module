@@ -65,6 +65,7 @@ function facebook_tracking_pixel_menu() {
     'access arguments' => ['administer facebook tracking pixels'],
     'file' => 'facebook_tracking_pixel.admin.inc',
     'type' => MENU_LOCAL_TASK,
+    'weight' => 50,
   ];
   $items['admin/config/system/facebook_tracking_pixel/path'] = [
     'title' => 'Events by Path',
