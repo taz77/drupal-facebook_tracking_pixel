@@ -554,15 +554,68 @@ function facebook_tracking_pixel_form_purge_submit() {
  * Form builder for core modules settings.
  */
 
-function facebook_tracking_pixel_user_registration($form_state) {
+function facebook_tracking_pixel_user_registration($form, &$form_state) {
+  //Check to see if there are base codes.
+  $resultcountbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+  if ($resultcountbasecode == 0) {
+    $form['emptyset'] = [
+      '#type' => 'hidden',
+      '#value' => TRUE,
+    ];
+    $form['notice'] = [
+      '#markup' => t('You must first set a base code for tracking.'),
+    ];
+    return $form;
+  }
+  else {
+    // If we have results then build an array to use as an option drop down for
+    // the path items.
+    $resultbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
+      ->fields('c')
+      ->orderBy('weight')
+      ->execute()
+      ->fetchAllAssoc('base_code_id');
+    $basecodes = [];
+    foreach ($resultbasecode as $item) {
+      $basecodes[$item->base_code_id] = $item->base_code_fbid;
+    }
+  }
 
-  $form['facebook_tracking_pixel_user_registration'] = [
-    '#title' => t('File storage path'),
-    '#type' => 'textfield',
-    '#default_value' => variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel'),
-    '#description' => t('The subdirectory of the system files directory where Facebook Tracking Pixel will store its files. Note: changing this path will cause the old path to move to the new path, overwriting the new path, if it exists.'),
-    '#validate' => ['facebook_tracking_pixel_settings_form_validate'],
+  $form['facebook_tracking_pixel_user_registration_enable'] = [
+    '#title' => t('Enable the tracking of user registrations'),
+    '#type' => 'checkbox',
+    '#default_value' => variable_get('facebook_tracking_pixel_user_registration_enable', 0),
+    '#ajax' => [
+      'callback' => 'facebook_tracking_pixel_user_registration_ajax',
+      'wrapper' => 'replace-facebook-tracking-pixel-user-registration-basecodes',
+      'effect' => 'fade',
+    ],
   ];
+  $form['facebook_tracking_pixel_user_registration_basecode'] = [
+    '#type' => 'select',
+    '#title' => t('Enable user tracking to set basecode'),
+    '#options' => [],
+    // '#default_value' => variable_get('freshdesk_widget_popup_type_attribute'),
+    '#prefix' => '<div id="replace-facebook-tracking-pixel-user-registration-basecodes">',
+    '#suffix' => '</div>',
+  ];
+  if (!empty($form_state['values']['facebook_tracking_pixel_user_registration_enable']) && $form_state['values']['facebook_tracking_pixel_user_registration_enable']) {
+    unset($form['facebook_tracking_pixel_user_registration_basecode']['#options']);
+    unset($form['facebook_tracking_pixel_user_registration_basecode']['#suffix']);
+    $form['facebook_tracking_pixel_user_registration_basecode']['#title'] = t('Facebook Base Tracking Code to Use');
+    $form['facebook_tracking_pixel_user_registration_basecode']['#options'] = $basecodes;
+  }
 
   return system_settings_form($form);
+}
+
+/**
+ * AJAX callback to replace button attribute.
+ */
+function facebook_tracking_pixel_user_registration_ajax($form, $form_state) {
+  return $form['facebook_tracking_pixel_user_registration_basecode'];
 }
