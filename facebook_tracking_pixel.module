@@ -349,18 +349,20 @@ function facebook_tracking_pixel_user_insert(&$edit, $account, $category) {
  * @param $trackingpaths
  */
 function facebook_tracking_pixel_facebook_tracking_pixel_alter(&$trackingpaths) {
-  foreach ($trackingpaths as $index => $code) {
-    $page_match = FALSE;
-    $paths = $code['event_path'];
-    $path = drupal_strtolower(drupal_get_path_alias($_GET['q']));
-    // Compare the lowercase internal and lowercase path alias (if any).
-    $path_match = drupal_match_path($path, $paths);
-    if ($path != $_GET['q']) {
-      $path_match = $path_match || drupal_match_path($_GET['q'], $paths);
-    }
+  if (!empty($trackingpaths)) {
+    foreach ($trackingpaths as $index => $code) {
+      $page_match = FALSE;
+      $paths = $code['event_path'];
+      $path = drupal_strtolower(drupal_get_path_alias($_GET['q']));
+      // Compare the lowercase internal and lowercase path alias (if any).
+      $path_match = drupal_match_path($path, $paths);
+      if ($path != $_GET['q']) {
+        $path_match = $path_match || drupal_match_path($_GET['q'], $paths);
+      }
 
-    if (!$path_match) {
-      unset($trackingpaths[$index]);
+      if (!$path_match) {
+        unset($trackingpaths[$index]);
+      }
     }
   }
 }
@@ -506,7 +508,7 @@ function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {
 function facebook_tracking_pixel_clear_cache() {
   cache_clear_all('*', 'cache_page', TRUE);
   // Clear views cache if available.
-  if(module_exists('views')) {
+  if (module_exists('views')) {
     cache_clear_all('*', 'cache_views', TRUE);
     cache_clear_all('*', 'cache_views_data', TRUE);
   }
