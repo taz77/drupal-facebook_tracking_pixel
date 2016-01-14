@@ -596,16 +596,16 @@ function facebook_tracking_pixel_user_registration($form, &$form_state) {
     ],
   ];
   $form['facebook_tracking_pixel_user_registration_basecode'] = [
-    '#type' => 'select',
-    '#title' => t('Enable user tracking to set basecode'),
-    '#options' => [],
+    '#markup' => t('Enable user tracking to set basecode'),
     // '#default_value' => variable_get('freshdesk_widget_popup_type_attribute'),
     '#prefix' => '<div id="replace-facebook-tracking-pixel-user-registration-basecodes">',
     '#suffix' => '</div>',
   ];
   if (!empty($form_state['values']['facebook_tracking_pixel_user_registration_enable']) && $form_state['values']['facebook_tracking_pixel_user_registration_enable']) {
     unset($form['facebook_tracking_pixel_user_registration_basecode']['#options']);
-    unset($form['facebook_tracking_pixel_user_registration_basecode']['#suffix']);
+    unset($form['facebook_tracking_pixel_user_registration_basecode']['#type']);
+    unset($form['facebook_tracking_pixel_user_registration_basecode']['#markup']);
+    $form['facebook_tracking_pixel_user_registration_basecode']['#type'] = 'select';
     $form['facebook_tracking_pixel_user_registration_basecode']['#title'] = t('Facebook Base Tracking Code to Use');
     $form['facebook_tracking_pixel_user_registration_basecode']['#options'] = $basecodes;
   }
