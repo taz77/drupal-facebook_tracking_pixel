@@ -584,11 +584,11 @@ function facebook_tracking_pixel_user_registration($form, &$form_state) {
       $basecodes[$item->base_code_id] = $item->base_code_fbid;
     }
   }
-
+  $enable = variable_get('facebook_tracking_pixel_user_registration_enable', 0);
   $form['facebook_tracking_pixel_user_registration_enable'] = [
     '#title' => t('Enable the tracking of user registrations'),
     '#type' => 'checkbox',
-    '#default_value' => variable_get('facebook_tracking_pixel_user_registration_enable', 0),
+    '#default_value' => $enable,
     '#ajax' => [
       'callback' => 'facebook_tracking_pixel_user_registration_ajax',
       'wrapper' => 'replace-facebook-tracking-pixel-user-registration-basecodes',
@@ -601,7 +601,7 @@ function facebook_tracking_pixel_user_registration($form, &$form_state) {
     '#prefix' => '<div id="replace-facebook-tracking-pixel-user-registration-basecodes">',
     '#suffix' => '</div>',
   ];
-  if (!empty($form_state['values']['facebook_tracking_pixel_user_registration_enable']) && $form_state['values']['facebook_tracking_pixel_user_registration_enable']) {
+  if ((!empty($form_state['values']['facebook_tracking_pixel_user_registration_enable']) && $form_state['values']['facebook_tracking_pixel_user_registration_enable']) || $enable == 1 ) {
     unset($form['facebook_tracking_pixel_user_registration_basecode']['#options']);
     unset($form['facebook_tracking_pixel_user_registration_basecode']['#type']);
     unset($form['facebook_tracking_pixel_user_registration_basecode']['#markup']);
@@ -643,7 +643,7 @@ function facebook_tracking_pixel_user_registration_submit($form, $form_state) {
   if (!empty($form_state['values']['facebook_tracking_pixel_user_registration_basecode'])) {
     $basecodeid = check_plain($form_state['values']['facebook_tracking_pixel_user_registration_basecode']);
     // This is saving the basecode ID number - not the basecode itself.
-    variable_set('facebook_tracking_pixel_user_registration_basecode', $basecode);
+    variable_set('facebook_tracking_pixel_user_registration_basecode', $basecodeid);
     $fbscriptjs = facebook_tracking_pixel_base_code_js();
     $eventtext = 'fbq(\'track\', "CompleteRegistration");';
     // This is the full JS code to save to the file system.
@@ -653,6 +653,11 @@ function facebook_tracking_pixel_user_registration_submit($form, $form_state) {
       ->execute()
       ->fetchField();
     $data = $fbscriptjs[0] . $base_code_fbid . $fbscriptjs[1] . $eventtext;
+    // Delete any existing file.
+    facebook_tracking_pixel_delete_file('fb_trk_user_registration.js', 'registrationtracking');
+    // Save new file.
     facebook_tracking_pixel_save_file($data, 'fb_trk_user_registration.js', 'registrationtracking');
+    // Clear cache for good measure.
+    facebook_tracking_pixel_clear_cache();
   }
 }
