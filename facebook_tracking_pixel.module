@@ -459,7 +459,15 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
     }
   }
 
-  // @todo Must delete and disable user tracking if used with basecode being deleted.
+  // If the Base Code ID being deleted matches one use for user tracking, destroy.
+  $usertrackingid = variable_get('facebook_tracking_pixel_user_registration_basecode', NULL);
+  if ($usertrackingid == $tid) {
+    variable_del('facebook_tracking_pixel_user_registration_basecode');
+    variable_del('facebook_tracking_pixel_user_registration_enable');
+    unset($_SESSION['facebook_tracking_pixel_registration']);
+    unset($_SESSION['facebook_tracking_pixel_registration_fbid']);
+    facebook_tracking_pixel_delete_file('fb_trk_user_registration.js', 'registrationtracking');
+  }
 
   if (!$status) {
     drupal_set_message(t('Failed to remove base code from database.'), 'error', FALSE);
