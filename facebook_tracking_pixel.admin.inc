@@ -655,5 +655,4 @@ function facebook_tracking_pixel_user_registration_submit($form, $form_state) {
     $data = $fbscriptjs[0] . $base_code_fbid . $fbscriptjs[1] . $eventtext;
     facebook_tracking_pixel_save_file($data, 'fb_trk_user_registration.js', 'registrationtracking');
   }
-
 }
