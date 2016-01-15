@@ -608,14 +608,52 @@ function facebook_tracking_pixel_user_registration($form, &$form_state) {
     $form['facebook_tracking_pixel_user_registration_basecode']['#type'] = 'select';
     $form['facebook_tracking_pixel_user_registration_basecode']['#title'] = t('Facebook Base Tracking Code to Use');
     $form['facebook_tracking_pixel_user_registration_basecode']['#options'] = $basecodes;
+    $form['facebook_tracking_pixel_user_registration_basecode']['#default_value'] = variable_get('facebook_tracking_pixel_user_registration_basecode', NULL);
   }
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => 'Save configuration',
+  ];
 
-  return system_settings_form($form);
+  return $form;
 }
 
 /**
  * AJAX callback to replace button attribute.
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
  */
 function facebook_tracking_pixel_user_registration_ajax($form, $form_state) {
   return $form['facebook_tracking_pixel_user_registration_basecode'];
+}
+
+/**
+ * Submit handler for user registration admin form.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function facebook_tracking_pixel_user_registration_submit($form, $form_state) {
+  // Sanitize variables for good measure.
+  $enabled = check_plain($form_state['values']['facebook_tracking_pixel_user_registration_enable']);
+  !empty($enabled) ? variable_set('facebook_tracking_pixel_user_registration_enable', $enabled) : variable_set('facebook_tracking_pixel_user_registration_enable', 0);
+
+  if (!empty($form_state['values']['facebook_tracking_pixel_user_registration_basecode'])) {
+    $basecodeid = check_plain($form_state['values']['facebook_tracking_pixel_user_registration_basecode']);
+    // This is saving the basecode ID number - not the basecode itself.
+    variable_set('facebook_tracking_pixel_user_registration_basecode', $basecode);
+    $fbscriptjs = facebook_tracking_pixel_base_code_js();
+    $eventtext = 'fbq(\'track\', "CompleteRegistration");';
+    // This is the full JS code to save to the file system.
+    $base_code_fbid = db_select('facebook_tracking_pixel_base_codes', 'c')
+      ->fields('c', ['base_code_fbid'])
+      ->condition('base_code_id', $basecodeid, '=')
+      ->execute()
+      ->fetchField();
+    $data = $fbscriptjs[0] . $base_code_fbid . $fbscriptjs[1] . $eventtext;
+    facebook_tracking_pixel_save_file($data, 'fb_trk_user_registration.js', 'registrationtracking');
+  }
+
 }
