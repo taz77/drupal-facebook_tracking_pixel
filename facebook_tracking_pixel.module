@@ -151,7 +151,9 @@ function facebook_tracking_pixel_page_build(&$page) {
         '#markup' => $fb_base_code_nojs,
         '#weight' => 150,
       ], 'facebook_tracking_pixel_path_user_registration');
-
+      // We remove the session variables, we do not want it loading but once.
+      unset($_SESSION['facebook_tracking_pixel_registration']);
+      unset($_SESSION['facebook_tracking_pixel_registration_fbid']);
       // If this is a user registration event we stop processing.
       return;
     }
@@ -445,7 +447,7 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
       drupal_set_message('Could not save the JS file. Check the Drupal and PHP logs.', 'error', FALSE);
       $status = FALSE;
     }
-    // Remove path tracking referencing this basecode.
+    // Remove path tracking referencing this basecode from the database.
     try {
       db_delete('facebook_tracking_pixel_events_path')
         ->condition('event_base_code_id', $tid, '=')
@@ -456,6 +458,8 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
       $status = FALSE;
     }
   }
+
+  // @todo Must delete and disable user tracking if used with basecode being deleted.
 
   if (!$status) {
     drupal_set_message(t('Failed to remove base code from database.'), 'error', FALSE);
