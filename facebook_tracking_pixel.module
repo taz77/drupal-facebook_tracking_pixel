@@ -91,6 +91,14 @@ function facebook_tracking_pixel_menu() {
     'file' => 'facebook_tracking_pixel.admin.path.inc',
     'type' => MENU_CALLBACK,
   ];
+  $items['admin/config/system/facebook_tracking_pixel/commercetracking'] = [
+    'title' => 'Commerce Tracking',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['facebook_tracking_pixel_commerce_form'],
+    'access arguments' => ['administer facebook tracking pixels'],
+    'file' => 'facebook_tracking_pixel.admin.commerce.inc',
+    'type' => MENU_LOCAL_TASK,
+  ];
   return $items;
 }
 
