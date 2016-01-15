@@ -252,10 +252,6 @@ function facebook_tracking_pixel_events() {
     'name' => t('Lead'),
     'code' => 'fbq(\'track\', \'Lead\');'
   ];
-  $events['registration'] = [
-    'name' => t('Complete Registration'),
-    'code' => 'fbq(\'track\', \'CompleteRegistration\');'
-  ];
   return $events;
 }
 

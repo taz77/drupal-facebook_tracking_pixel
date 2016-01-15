@@ -555,6 +555,9 @@ function facebook_tracking_pixel_form_purge_submit() {
  */
 
 function facebook_tracking_pixel_user_registration($form, &$form_state) {
+  $form['intro'] = [
+    '#markup' => t('Enabliing this will track user registration for the entire site. To not track users added by admins, do not enable tracking for their roles.'),
+  ];
   //Check to see if there are base codes.
   $resultcountbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
     ->fields('c')
