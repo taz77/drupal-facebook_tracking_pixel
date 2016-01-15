@@ -657,7 +657,5 @@ function facebook_tracking_pixel_user_registration_submit($form, $form_state) {
     facebook_tracking_pixel_delete_file('fb_trk_user_registration.js', 'registrationtracking');
     // Save new file.
     facebook_tracking_pixel_save_file($data, 'fb_trk_user_registration.js', 'registrationtracking');
-    // Clear cache for good measure.
-    facebook_tracking_pixel_clear_cache();
   }
 }
