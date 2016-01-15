@@ -130,6 +130,31 @@ function facebook_tracking_pixel_page_build(&$page) {
 
     // Facebook static code.
     $fb_noscript_src = facebook_tracking_pixel_base_code_nojs();
+    // Script path.
+    $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
+
+    // Is the user registration tracking turned on?
+
+    if (!empty($_SESSION['facebook_tracking_pixel_registration'])) {
+      $userregfile = $path . '/registrationtracking/fb_trk_user_registration.js';
+      $page['content']['#attached']['js']['facebook_tracking_pixel_path_user_registration'] = [
+        'type' => 'file',
+        'group' => JS_THEME,
+        'data' => $userregfile,
+        'preprocess' => (bool) variable_get('facebook_tracking_pixel_aggregation', FALSE),
+      ];
+
+      // Assemble code and pull the FBID from the session variable.
+      $fb_base_code_nojs = $fb_noscript_src[0] . $_SESSION['facebook_tracking_pixel_registration_fbid'] . $fb_noscript_src[1];
+      drupal_add_html_head([
+        '#type' => 'markup',
+        '#markup' => $fb_base_code_nojs,
+        '#weight' => 150,
+      ], 'facebook_tracking_pixel_path_user_registration');
+
+      // If this is a user registration event we stop processing.
+      return;
+    }
 
     // Gather the path based tracking codes.
     $trackingpaths = facebook_tracking_pixel_path_codes();
@@ -164,14 +189,6 @@ function facebook_tracking_pixel_page_build(&$page) {
         }
       }
     }
-
-    // Is the user registration tracking turned on?
-
-    if (!empty($_SESSION['facebook_tracking_pixel_registration'])) {
-
-    }
-
-    $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
 
     if ($basecodes) {
       $i = 0;
@@ -337,9 +354,18 @@ function facebook_tracking_pixel_path_codes() {
  * Implements hook_user_insert().
  */
 function facebook_tracking_pixel_user_insert(&$edit, $account, $category) {
-  $registration = variable_get('facebook_tracking_pixel_user_registration', FALSE);
+  $registration = variable_get('facebook_tracking_pixel_user_registration_enable', FALSE);
   if ($registration) {
     $_SESSION['facebook_tracking_pixel_registration'] = TRUE;
+
+    // We add the FBID to a session variable.
+    $basecodeid = variable_get('facebook_tracking_pixel_user_registration_basecode');
+    $base_code_fbid = db_select('facebook_tracking_pixel_base_codes', 'c')
+      ->fields('c', ['base_code_fbid'])
+      ->condition('base_code_id', $basecodeid, '=')
+      ->execute()
+      ->fetchField();
+    $_SESSION['facebook_tracking_pixel_registration_fbid'] = $base_code_fbid;
   }
 }
 
