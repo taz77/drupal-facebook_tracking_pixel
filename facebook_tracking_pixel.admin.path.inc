@@ -424,7 +424,7 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
     '#title' => 'Event Type',
     '#type' => 'select',
     '#options' => $pathtypeoptions,
-    '#default_value' => $pathtypeoptions[$result['event_type']],
+    '#default_value' => $result['event_type'],
   ];
   $form['event_path'] = [
     '#title' => 'Path for Action',
