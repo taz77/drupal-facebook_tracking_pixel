@@ -242,6 +242,25 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
 }
 
 /**
+ * Submit handler to save the weights of the path items.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function facebook_tracking_pixel_track_by_path_form_submit($form, $form_state) {
+  // Because the form elements were keyed with the item ids from the database,
+  // we can simply iterate through the submitted values.
+  if (!empty($form_state['values']['facebook_tracking_pixel_tracking_codes_by_path'])) {
+    foreach ($form_state['values']['facebook_tracking_pixel_tracking_codes_by_path'] as $id => $item) {
+      db_query(
+        "UPDATE {facebook_tracking_pixel_events_path} SET weight = :weight WHERE event_id = :id",
+        [':weight' => $item['weight'], ':id' => $id]
+      );
+    }
+  }
+}
+
+/**
  * Validate handler for path add form.
  *
  * @param $form
