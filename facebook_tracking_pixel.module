@@ -260,6 +260,10 @@ function facebook_tracking_pixel_events() {
     'name' => t('Lead'),
     'code' => 'fbq(\'track\', \'Lead\');'
   ];
+  $events['registration'] = [
+    'name' => t('Complete Registration'),
+    'code' => 'fbq(\'track\', \'CompleteRegistration\');'
+  ];
   return $events;
 }
 
@@ -278,6 +282,7 @@ function facebook_tracking_pixel_events_options() {
   $events['checkoutstart'] = t('Initiate checkout');
   $events['addpayment'] = t('Add Payment Info');
   $events['lead'] = t('Lead');
+  $events['registration'] = t('Complete Registration');
   return $events;
 }
 
