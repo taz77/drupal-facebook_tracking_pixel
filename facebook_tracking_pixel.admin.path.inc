@@ -435,7 +435,7 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
     ->fetchAllAssoc('base_code_id');
   $basecodes = [];
   foreach ($resultbasecode as $item) {
-    $basecodes[$item->base_code_id] = $item->base_code_fbid;
+    $basecodes[$item->base_code_id] = $item->base_code_name;
   }
   $form = [];
   $pathtypeoptions = facebook_tracking_pixel_events_options();
