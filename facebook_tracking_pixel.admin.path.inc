@@ -39,7 +39,7 @@ function facebook_tracking_pixel_track_by_path_form() {
       ->fetchAllAssoc('base_code_id');
     $basecodes = [];
     foreach ($resultbasecode as $item) {
-      $basecodes[$item->base_code_id] = $item->base_code_fbid;
+      $basecodes[$item->base_code_id] = $item->base_code_name;
     }
   }
   $form = [];
@@ -79,7 +79,7 @@ function facebook_tracking_pixel_track_by_path_form() {
         'event_path' => [
           '#markup' => $item->event_path,
         ],
-        // This shows the FBID but we track based off the serial ID number.
+        // This shows the Base Code human readable name but we track based off the serial ID number.
         'event_base_code_id' => [
           '#markup' => $basecodes[$item->event_base_code_id],
         ],
