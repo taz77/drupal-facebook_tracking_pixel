@@ -273,16 +273,19 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
     form_set_error('event_path', t('When adding a new event, the path field is required.'));
   }
   // @todo current paths and basecodes should be compared to submitted data.
-  $base_code_id = check_play($form_state['values'['event_base_code_id']]);
+  $base_code_id = check_plain($form_state['values']['event_base_code_id']);
 
-  $result = db_select('facebook_tracking_pixel_base_codes', 'c')
-    ->fields('c', ['base_code_fbid'])
-    ->condition(db_and()->conditaion('event_base_code_id', $base_code_id, '=')->condition('event_path', $path, '='))
+  $result = db_select('facebook_tracking_pixel_events_path', 'c')
+    ->fields('c')
+    ->condition(db_and()->condition('event_base_code_id', $base_code_id, '=')->condition('event_path', $path, '='))
     ->execute()
     ->fetchField();
   // If the same path has been added for an existing base code, reject the add.
   if ($result){
     form_set_error('event_path', t('You cannot add a duplicate event to the same path and base code.'));
+  }
+  if(!drupal_valid_path($path)){
+    form_set_error('event_path', t('The path you have entered (:path) does not appear to be a valid path.', [':path' => $path]));
   }
 }
 
