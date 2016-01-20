@@ -565,3 +565,30 @@ function facebook_tracking_pixel_clear_cache() {
     advagg_push_new_changes();
   }
 }
+
+/**
+ * Adds Facebook Pixel event to the user session to be added to the page code.
+ *
+ * @param string $event
+ *   A Facebook Pixel event to be added to the page code via sessions.
+ *
+ * @param string $value
+ *   If the event has a value it can be passed.
+ *
+ * @see facebook_tracking_pixel_events() for details on events.
+ */
+function facebook_tracking_pixel_add_session_event($event, $value = NULL) {
+  // In the session variable we store the key to our array of events.
+  if (!isset($_SESSION['facebook_tracking_pixel'])) {
+    $_SESSION['facebook_tracking_pixel'] = [];
+  }
+  // Use event name for array key as well, so that we don't send
+  // the same event multiple times. And if a value is supplied it
+  // is passed in the session variable.
+  if (!empty($value)) {
+    $_SESSION['facebook_tracking_pixel'][$event] = $value;
+  }
+  else {
+    $_SESSION['facebook_tracking_pixel'][$event] = TRUE;
+  }
+}
