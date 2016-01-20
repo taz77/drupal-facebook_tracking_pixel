@@ -11,7 +11,7 @@
  * Implements hook_menu().
  */
 function facebook_tracking_pixel_menu() {
-  $items = array();
+  $items = [];
 
   $items['admin/config/system/facebook_tracking_pixel'] = [
     'title' => 'Administer Facebook Tracking Pixel',
@@ -115,7 +115,7 @@ function facebook_tracking_pixel_permission() {
  */
 function facebook_tracking_pixel_page_build(&$page) {
 
-  // Assertain who should be given the popup widget
+  // Assertain which role should see the tracking information.
   global $user;
   // Default to no tracking.
   $trackable = 0;
@@ -230,39 +230,59 @@ function facebook_tracking_pixel_page_build(&$page) {
  * @return array
  */
 
+
 function facebook_tracking_pixel_events() {
+  $hook = 'facebook_tracking_pixel_events';
+  $results = module_invoke_all($hook);
+  if (!is_array($results)) {
+    $results = [];
+  }
+  drupal_alter($hook, $results);
+  return $results;
+}
+
+/**
+ * Implements hook_facebook_tracking_pixel_events().
+ *
+ * This is a model of how other modules can alter tracking events. Events
+ * are keyed wih the name of the event per Facebook documentation. The sub-array
+ * contains the human readable name and the JS code for the event.
+ * 
+ * @return array
+ */
+function facebook_tracking_pixel_facebook_tracking_pixel_events() {
   $events = [];
   $events['pageview'] = [
     'name' => t('Key Page View'),
-    'code' => 'fbq(\'track\', \'ViewContent\');'
+    'code' => 'fbq(\'track\', \'ViewContent\');',
   ];
   $events['search'] = [
     'name' => t('Search'),
-    'code' => 'fbq(\'track\', \'Search\');'
+    'code' => 'fbq(\'track\', \'Search\');',
   ];
   $events['addtocart'] = [
     'name' => t('Add to Cart'),
-    'code' => 'fbq(\'track\', \'AddToCart\');'
+    'code' => 'fbq(\'track\', \'AddToCart\');',
   ];
   $events['addtowish'] = [
     'name' => t('Add to Wishlist'),
-    'code' => 'fbq(\'track\', \'AddToWishlist\');'
+    'code' => 'fbq(\'track\', \'AddToWishlist\');',
   ];
   $events['checkoutstart'] = [
     'name' => t('Initiate checkout'),
-    'code' => 'fbq(\'track\', \'InitiateCheckout\');'
+    'code' => 'fbq(\'track\', \'InitiateCheckout\');',
   ];
   $events['addpayment'] = [
     'name' => t('Add Payment Info'),
-    'code' => 'fbq(\'track\', \'AddPaymentInfo\')'
+    'code' => 'fbq(\'track\', \'AddPaymentInfo\')',
   ];
   $events['lead'] = [
     'name' => t('Lead'),
-    'code' => 'fbq(\'track\', \'Lead\');'
+    'code' => 'fbq(\'track\', \'Lead\');',
   ];
   $events['registration'] = [
     'name' => t('Complete Registration'),
-    'code' => 'fbq(\'track\', \'CompleteRegistration\');'
+    'code' => 'fbq(\'track\', \'CompleteRegistration\');',
   ];
   return $events;
 }
@@ -274,16 +294,21 @@ function facebook_tracking_pixel_events() {
  */
 
 function facebook_tracking_pixel_events_options() {
-  $events = [];
-  $events['pageview'] = t('Key Page View');
-  $events['search'] = t('Search');
-  $events['addtocart'] = t('Add to Cart');
-  $events['addtowish'] = t('Add to Wishlist');
-  $events['checkoutstart'] = t('Initiate checkout');
-  $events['addpayment'] = t('Add Payment Info');
-  $events['lead'] = t('Lead');
-  $events['registration'] = t('Complete Registration');
+  $events = facebook_tracking_pixel_events();
+  $events = array_map('_facebook_tracking_pixel_events_names', facebook_tracking_pixel_events());
+  sort($events, SORT_NATURAL);
   return $events;
+}
+
+/**
+ * Helper function to get the names of the events.
+ *
+ * @param $event
+ * @return mixed
+ */
+function _facebook_tracking_pixel_events_names(&$event) {
+  $event = $event['name'];
+  return $event;
 }
 
 /**
@@ -297,7 +322,7 @@ function facebook_tracking_pixel_theme() {
     ],
     'facebook_tracking_pixel_track_by_path_form' => [
       'render element' => 'form',
-      'file' => 'facebook_tracking_pixel.admin.path.inc'
+      'file' => 'facebook_tracking_pixel.admin.path.inc',
     ],
   ];
 }
