@@ -296,20 +296,11 @@ function facebook_tracking_pixel_facebook_tracking_pixel_events() {
 
 function facebook_tracking_pixel_events_options() {
   $events = facebook_tracking_pixel_events();
-  $events = array_map('_facebook_tracking_pixel_events_names', facebook_tracking_pixel_events());
-  sort($events, SORT_NATURAL);
-  return $events;
-}
-
-/**
- * Helper function to get the names of the events.
- *
- * @param $event
- * @return mixed
- */
-function _facebook_tracking_pixel_events_names(&$event) {
-  $event = $event['name'];
-  return $event;
+  $options =[];
+  foreach($events as $key => $value){
+    $options[$key] = $value['name'];
+  }
+  return $options;
 }
 
 /**
