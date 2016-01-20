@@ -86,7 +86,7 @@ function facebook_tracking_pixel_settings_form_validate($form, &$form_state) {
  * Form builder for base tracking codes.
  */
 function facebook_tracking_pixel_base_codes_form() {
-
+  // @todo Add and exclusion field for the base codes to disable for the whole site.
   $result = db_select('facebook_tracking_pixel_base_codes', 'c')
     ->fields('c')
     ->orderBy('weight')
@@ -103,6 +103,7 @@ function facebook_tracking_pixel_base_codes_form() {
   // Iterate through each database result.
   if ($resultcount > 0) {
     foreach ($result as $item) {
+      $isglobal = ($item->base_code_global == 1) ? 'Yes' : 'No';
       $form['base_codes'][$item->base_code_id] = [
         'bcid' => [
           '#type' => 'hidden',
@@ -113,6 +114,9 @@ function facebook_tracking_pixel_base_codes_form() {
         ],
         'fbid' => [
           '#markup' => check_plain($item->base_code_fbid),
+        ],
+        'global' => [
+          '#markup' => t($isglobal),
         ],
         'weight' => [
           '#type' => 'weight',
@@ -141,6 +145,10 @@ function facebook_tracking_pixel_base_codes_form() {
     '#default_value' => '',
     '#size' => 20,
     '#maxlength' => 255,
+  ];
+  $form['add']['global'] = [
+    '#type' => 'checkbox',
+    '#default_value' => 1,
   ];
   $form['add']['weight'] = [
     '#type' => 'weight',
@@ -219,6 +227,7 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
   $header = [
     t('Name'),
     t('Facebook ID Number'),
+    t('Global'),
     t('Weight'),
     ['data' => t('Operations'), 'colspan' => 2]
   ];
@@ -232,6 +241,7 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
   $row_data = [
     drupal_render($form['add']['name']),
     drupal_render($form['add']['fbid']),
+    drupal_render($form['add']['global']),
     drupal_render($form['add']['bcid']) . drupal_render($form['add']['weight']),
     ['colspan' => 2, 'data' => drupal_render($form['add']['add'])],
   ];
@@ -248,6 +258,8 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
         drupal_render($form['base_codes'][$id]['name']),
         // Add our 'description' column.
         drupal_render($form['base_codes'][$id]['fbid']),
+        // Add our 'global' column.
+        drupal_render($form['base_codes'][$id]['global']),
         // Add our 'weight' column.
         drupal_render($form['base_codes'][$id]['weight']),
         l(t('Edit'), 'admin/config/system/facebook_tracking_pixel/base_codes/edit/' . $form['base_codes'][$id]['bcid']['#value'], ['query' => drupal_get_destination()]),
@@ -305,6 +317,7 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
   if (!empty($form_state['values']['name']) && !empty($form_state['values']['fbid'])) {
     $name = check_plain($form_state['values']['name']);
     $id = check_plain($form_state['values']['fbid']);
+    $isglobal = check_plain($form_state['values']['global']);
     $weight = check_plain($form_state['values']['weight']);
     $filename = 'fb_tkpx.' . $id . '.js';
     // Construct our tracking codes.
@@ -323,6 +336,7 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
         ->fields([
           'base_code_name' => $name,
           'base_code_fbid' => $id,
+          'base_code_global' => $isglobal,
           'weight' => $weight,
         ])
         ->execute();
@@ -423,6 +437,12 @@ function facebook_tracking_pixel_base_codes_edit_form($form, $form_state, $tid) 
     '#description' => t('The Facebook provided ID number.'),
     '#default_value' => $result['base_code_fbid'],
   ];
+  $form['global'] = [
+    '#type' => 'checkbox',
+    '#title' => 'Global',
+    '#description' => t('If this base code is used to track PageViews across the entire site.'),
+    '#default_value' => $result['base_code_global'],
+  ];
   $form['fbidold'] = [
     '#type' => 'hidden',
     '#value' => $result['base_code_fbid'],
@@ -451,6 +471,7 @@ function facebook_tracking_pixel_base_codes_edit_form($form, $form_state, $tid) 
 function facebook_tracking_pixel_base_codes_edit_form_submit($form, &$form_state) {
   $fbid = check_plain($form_state['values']['fbid']);
   $name = check_plain($form_state['values']['name']);
+  $isglobal = check_plain($form_state['values']['global']);
   $tid = check_plain($form_state['values']['tid']);
   $fbidold = check_plain($form_state['values']['fbidold']);
   $filename = 'fb_tkpx.' . $fbid . '.js';
@@ -468,7 +489,7 @@ function facebook_tracking_pixel_base_codes_edit_form_submit($form, &$form_state
   }
   // Now to update the database with the new tracking information.
   if (db_update('facebook_tracking_pixel_base_codes')
-    ->fields(['base_code_name' => $name, 'base_code_fbid' => $fbid])
+    ->fields(['base_code_name' => $name, 'base_code_fbid' => $fbid, 'base_code_global' => $isglobal])
     ->condition('base_code_id', $tid, '=')
     ->execute()
   ) {

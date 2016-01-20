@@ -83,6 +83,12 @@ function facebook_tracking_pixel_schema() {
         'length' => 200,
         'not null' => TRUE,
       ],
+      'base_code_global' => [
+        'description' => 'If a code is used globally.',
+        'type' => 'int',
+        'length' => 2,
+        'not null' > FALSE,
+      ],
       'weight' => [
         'description' => 'The sortable weight for this item.',
         'type' => 'int',
