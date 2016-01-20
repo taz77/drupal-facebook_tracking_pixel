@@ -19,7 +19,7 @@ function facebook_tracking_pixel_settings_form($form_state) {
 
   $form['aggregation'] = [
     '#type' => 'fieldset',
-    '#description' => t('Aggregation settings for the javascripts. Default setting is to allow aggregation. Uncheck to disable aggregation of the tracking javascript codes.')
+    '#description' => t('Aggregation settings for the javascripts. Default setting is to allow aggregation. Uncheck to disable aggregation of the tracking javascript codes.'),
   ];
 
   $form['aggregation']['facebook_tracking_pixel_aggregation'] = [
@@ -229,7 +229,7 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
     t('Facebook ID Number'),
     t('Global'),
     t('Weight'),
-    ['data' => t('Operations'), 'colspan' => 2]
+    ['data' => t('Operations'), 'colspan' => 2],
   ];
 
   // Add a row containing form elements for a new item.
@@ -247,7 +247,7 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
   ];
   $add_form = [
     'data' => $row_data,
-    'class' => ['draggable', 'base-code-add-form']
+    'class' => ['draggable', 'base-code-add-form'],
   ];
   $form_rendered = FALSE;
   // Iterate over each element in our $form['base_codes'] array.
@@ -359,10 +359,10 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
 function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid) {
   $id = check_plain($tid);
   $result = db_select('facebook_tracking_pixel_base_codes', 'c')
-    ->fields('c', ['base_code_fbid'])
+    ->fields('c')
     ->condition('base_code_id', $id, '=')
     ->execute()
-    ->fetchField();
+    ->fetchAssoc();
   $form = [];
   $form['tid'] = [
     '#type' => 'hidden',
@@ -370,12 +370,12 @@ function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid
   ];
   $form['fbid'] = [
     '#type' => 'hidden',
-    '#value' => $result,
+    '#value' => $result['base_code_fbid'],
   ];
   $form['confirmation'] = [
     '#prefix' => '<p>',
     '#suffix' => '</p>',
-    '#markup' => t('You are about to delete the base code with ID number ' . $result),
+    '#markup' => t('You are about to delete the base code name:' . ' ' . $result['base_code_name']),
   ];
   $form['notice'] = [
     '#prefix' => '<p>',
@@ -489,7 +489,11 @@ function facebook_tracking_pixel_base_codes_edit_form_submit($form, &$form_state
   }
   // Now to update the database with the new tracking information.
   if (db_update('facebook_tracking_pixel_base_codes')
-    ->fields(['base_code_name' => $name, 'base_code_fbid' => $fbid, 'base_code_global' => $isglobal])
+    ->fields([
+      'base_code_name' => $name,
+      'base_code_fbid' => $fbid,
+      'base_code_global' => $isglobal,
+    ])
     ->condition('base_code_id', $tid, '=')
     ->execute()
   ) {
@@ -625,7 +629,7 @@ function facebook_tracking_pixel_user_registration($form, &$form_state) {
     '#prefix' => '<div id="replace-facebook-tracking-pixel-user-registration-basecodes">',
     '#suffix' => '</div>',
   ];
-  if ((!empty($form_state['values']['facebook_tracking_pixel_user_registration_enable']) && $form_state['values']['facebook_tracking_pixel_user_registration_enable']) || $enable == 1 ) {
+  if ((!empty($form_state['values']['facebook_tracking_pixel_user_registration_enable']) && $form_state['values']['facebook_tracking_pixel_user_registration_enable']) || $enable == 1) {
     unset($form['facebook_tracking_pixel_user_registration_basecode']['#options']);
     unset($form['facebook_tracking_pixel_user_registration_basecode']['#type']);
     unset($form['facebook_tracking_pixel_user_registration_basecode']['#markup']);
