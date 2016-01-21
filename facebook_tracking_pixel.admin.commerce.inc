@@ -86,7 +86,6 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
       '#type' => 'checkboxes',
       '#title' => t('Events to track'),
       '#options' => [
-        'addpayment' => t('Add Payment'),
         'checkoutstart' => t('Checkout Start'),
         'addtocart' => t('Add to Cart'),
         'purchase' => t('Purchase'),
@@ -96,6 +95,7 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
         'wrapper' => 'replace-facebook-tracking-pixel-commerce-tracking-currency',
         'effect' => 'fade',
       ],
+    //  @todo need default values
     ];
     $form['facebook_tracking_pixel_commerce_tracking_options']['facebook_tracking_pixel_commerce_tracking_basecode'] = [
       '#type' => 'select',
@@ -160,18 +160,45 @@ function facebook_tracking_pixel_commerce_form_submit($form, $form_state) {
 
   if (!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_basecode'])) {
     // This is saving the basecode ID number - not the basecode itself.
-    variable_set('facebook_tracking_pixel_commerce_tracking_basecode', check_plain($form_state['values']['facebook_tracking_pixel_commerce_tracking_basecode']));
+    $basecodeid = check_plain($form_state['values']['facebook_tracking_pixel_commerce_tracking_basecode']);
+    variable_set('facebook_tracking_pixel_commerce_tracking_basecode', $basecodeid);
+
+    $base_code_fbid = db_select('facebook_tracking_pixel_base_codes', 'c')
+      ->fields('c', ['base_code_fbid'])
+      ->condition('base_code_id', $basecodeid, '=')
+      ->execute()
+      ->fetchField();
   }
   if (!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_currency_selection'])) {
     // Storing the currency selection.
     variable_set('facebook_tracking_pixel_commerce_tracking_currency_selection', check_plain($form_state['values']['facebook_tracking_pixel_commerce_tracking_currency_selection']));
   }
   if (!empty(array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']))) {
+    $fb_script_src = facebook_tracking_pixel_base_code_js();
+    $events = facebook_tracking_pixel_events();
+    $subdir = variable_get('facebook_tracking_pixel_commerce_js_subdir', 'commercetracking');
+    $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
     // This will create an array for the variable and only store the values that were checked.
     $selectedoptions = array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']);
     // We santizie form input since this data will get saved to the DB.
     foreach ($selectedoptions as $key => $val) {
       $clean[check_plain($key)] = check_plain($val);
+
+      // @todo some of these can be saved as JS files.
+      switch ($key) {
+        case 'addtocart':
+          $code = $fb_script_src[0] . $base_code_fbid . $fb_script_src[1] . $events['addtocart']['code'];
+          $filename = 'fb_trk_addtocart_' . $base_code_fbid . '.js';
+          facebook_tracking_pixel_delete_file($filename, $subdir);
+          facebook_tracking_pixel_save_file($code, $filename, $subdir);
+          break;
+        case 'checkoutstart':
+          $code = $fb_script_src[0] . $base_code_fbid . $fb_script_src[1] . $events['checkoutstart']['code'];
+          $filename = 'fb_trk_checkoutstart_' . $base_code_fbid . '.js';
+          facebook_tracking_pixel_delete_file($filename, $subdir);
+          facebook_tracking_pixel_save_file($code, $filename, $subdir);
+          break;
+      }
     }
     variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', $clean);
   }
