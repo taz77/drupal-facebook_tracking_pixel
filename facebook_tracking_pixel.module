@@ -132,7 +132,7 @@ function facebook_tracking_pixel_page_build(&$page) {
     // Pull base code IDs from database and build the noscript header includes.
     $basecodes = db_select('facebook_tracking_pixel_base_codes', 'c')
       ->fields('c')
-      ->condition('base_code_global', 1,'=')
+      ->condition('base_code_global', 1, '=')
       ->orderBy('weight')
       ->execute()
       ->fetchAllAssoc('base_code_id');
@@ -296,8 +296,8 @@ function facebook_tracking_pixel_facebook_tracking_pixel_events() {
 
 function facebook_tracking_pixel_events_options() {
   $events = facebook_tracking_pixel_events();
-  $options =[];
-  foreach($events as $key => $value){
+  $options = [];
+  foreach ($events as $key => $value) {
     $options[$key] = $value['name'];
   }
   return $options;
@@ -608,4 +608,26 @@ function facebook_tracking_pixel_add_session_event($event, $value = NULL) {
   else {
     $_SESSION['facebook_tracking_pixel'][$event] = TRUE;
   }
+}
+
+/**
+ * Returns currency codes from the xml file.
+ *
+ * This is used if Drupal Commerce is not available.
+ *
+ * @return array
+ */
+function facebook_tracking_pixel_get_currency_codes() {
+
+  $currencyfile = drupal_get_path('module', 'facebook_tracking_pixel') . '/' . 'currency-codes-iso4217.xml';
+  $currencydata = simplexml_load_file($currencyfile);
+  $json_string = json_encode($currencydata);
+  $result_array = json_decode($json_string, TRUE);
+  $currencycodes = [];
+  foreach ($result_array['CcyTbl']['CcyNtry'] as $item) {
+    if (!empty($item['Ccy'])) {
+      $currencycodes[$item['Ccy']] = $item['CcyNm'] . ' (' . $item['Ccy'] . ')';
+    }
+  }
+  return $currencycodes;
 }
