@@ -16,6 +16,11 @@
  */
 function facebook_tracking_pixel_commerce_form($form, &$form_state) {
 
+  $currencycodesraw = commerce_currencies();
+  $currencycodes = [];
+  foreach ($currencycodesraw as $key => $value) {
+    $currencycodes[$key] = $value['name'] . ' (' . $key . ')';
+  }
   if (!module_exists('commerce')) {
     $form['intro0'] = [
       '#markup' => t('This portion of the module is only compatible with Drupal Commerce.'),
@@ -69,30 +74,48 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
       'effect' => 'fade',
     ],
   ];
-  $form['facebook_tracking_pixel_commerce_tracking_basecode'] = [
-    '#markup' => '<p>' . t('Enable Drupal Commerce tracking to set options.') . '</p>',
+  $form['facebook_tracking_pixel_commerce_tracking_options'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Enable Drupal Commerce tracking to set options.'),
     '#prefix' => '<div id="replace-facebook-tracking-pixel-commerce-tracking-basecodes">',
     '#suffix' => '</div>',
   ];
   if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_enable']) && $form_state['values']['facebook_tracking_pixel_commerce_tracking_enable']) || $enable == 1) {
-
-    $form['facebook_tracking_pixel_commerce_tracking'] = [
+    $form['facebook_tracking_pixel_commerce_tracking_options']['#title'] = t('Commerce tracking options.');
+    $form['facebook_tracking_pixel_commerce_tracking_options']['facebook_tracking_pixel_commerce_tracking'] = [
       '#type' => 'checkboxes',
+      '#title' => t('Events to track'),
       '#options' => [
         'addpayment' => t('Add Payment'),
         'checkoutstart' => t('Checkout Start'),
         'addtocart' => t('Add to Cart'),
         'purchase' => t('Purchase'),
       ],
+      '#ajax' => [
+        'callback' => 'facebook_tracking_pixel_commerce_tracking_currency_codes_ajax',
+        'wrapper' => 'replace-facebook-tracking-pixel-commerce-tracking-currency',
+        'effect' => 'fade',
+      ],
+    ];
+    $form['facebook_tracking_pixel_commerce_tracking_options']['facebook_tracking_pixel_commerce_tracking_basecode'] = [
+      '#type' => 'select',
+      '#title' => t('Facebook Base Tracking Code to Use'),
+      '#options' => $basecodes,
+      '#default_value' => variable_get('facebook_tracking_pixel_commerce_tracking_basecode', NULL),
     ];
 
-    unset($form['facebook_tracking_pixel_commerce_tracking_basecode']['#options']);
-    unset($form['facebook_tracking_pixel_commerce_tracking_basecode']['#type']);
-    unset($form['facebook_tracking_pixel_commerce_tracking_basecode']['#markup']);
-    $form['facebook_tracking_pixel_commerce_tracking_basecode']['#type'] = 'select';
-    $form['facebook_tracking_pixel_commerce_tracking_basecode']['#title'] = t('Facebook Base Tracking Code to Use');
-    $form['facebook_tracking_pixel_commerce_tracking_basecode']['#options'] = $basecodes;
-    $form['facebook_tracking_pixel_commerce_tracking_basecode']['#default_value'] = variable_get('facebook_tracking_pixel_commerce_tracking_basecode', NULL);
+  }
+  $form['facebook_tracking_pixel_commerce_tracking_currency_selection'] = [
+    '#markup' => '',
+    '#prefix' => '<div id="replace-facebook-tracking-pixel-commerce-tracking-currency">',
+    '#suffix' => '</div>',
+  ];
+
+  if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking']) && array_key_exists('purchase', array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking'])))) {
+    unset($form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#markup']);
+    $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#type'] = 'select';
+    $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#options'] = $currencycodes;
+    $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#title'] = t('Currency Type');
   }
   $form['submit'] = [
     '#type' => 'submit',
@@ -103,14 +126,25 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
 }
 
 /**
- * AJAX callback to replace button attribute.
+ * AJAX callback to populate options for tracking.
  *
  * @param $form
  * @param $form_state
  * @return mixed
  */
 function facebook_tracking_pixel_commerce_tracking_ajax($form, $form_state) {
-  return $form['facebook_tracking_pixel_commerce_tracking_basecode'];
+  return $form['facebook_tracking_pixel_commerce_tracking_options'];
+}
+
+/**
+ * AJAX callback to populate currency selection.
+ *
+ * @param $form
+ * @param $form_state
+ * @return mixed
+ */
+function facebook_tracking_pixel_commerce_tracking_currency_codes_ajax($form, $form_state) {
+  return $form['facebook_tracking_pixel_commerce_tracking_currency_selection'];
 }
 
 /**
