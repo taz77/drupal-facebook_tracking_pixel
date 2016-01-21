@@ -82,7 +82,7 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
   ];
   if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_enable']) && $form_state['values']['facebook_tracking_pixel_commerce_tracking_enable']) || $enable == 1) {
     $form['facebook_tracking_pixel_commerce_tracking_options']['#title'] = t('Commerce tracking options.');
-    $form['facebook_tracking_pixel_commerce_tracking_options']['facebook_tracking_pixel_commerce_tracking'] = [
+    $form['facebook_tracking_pixel_commerce_tracking_options']['facebook_tracking_pixel_commerce_tracking_options_selection'] = [
       '#type' => 'checkboxes',
       '#title' => t('Events to track'),
       '#options' => [
@@ -111,7 +111,7 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
     '#suffix' => '</div>',
   ];
 
-  if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking']) && array_key_exists('purchase', array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking'])))) {
+  if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']) && array_key_exists('purchase', array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection'])))) {
     unset($form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#markup']);
     $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#type'] = 'select';
     $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#options'] = $currencycodes;
@@ -159,20 +159,20 @@ function facebook_tracking_pixel_commerce_form_submit($form, $form_state) {
   !empty($enabled) ? variable_set('facebook_tracking_pixel_commerce_tracking_enable', $enabled) : variable_set('facebook_tracking_pixel_commerce_tracking_enable', 0);
 
   if (!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_basecode'])) {
-    $basecodeid = check_plain($form_state['values']['facebook_tracking_pixel_commerce_tracking_basecode']);
     // This is saving the basecode ID number - not the basecode itself.
-    variable_set('facebook_tracking_pixel_commerce_tracking_basecode', $basecodeid);
-    $fbscriptjs = facebook_tracking_pixel_base_code_js();
-    $eventtext = 'fbq(\'track\', "CompleteRegistration");';
-    // This is the full JS code to save to the file system.
-    $base_code_fbid = db_select('facebook_tracking_pixel_base_codes', 'c')
-      ->fields('c', ['base_code_fbid'])
-      ->condition('base_code_id', $basecodeid, '=')
-      ->execute()
-      ->fetchField();
-
-    // @todo this cannot be file based since the value of shopping cart changes
-    $data = $fbscriptjs[0] . $base_code_fbid . $fbscriptjs[1] . $eventtext;
-
+    variable_set('facebook_tracking_pixel_commerce_tracking_basecode', check_plain($form_state['values']['facebook_tracking_pixel_commerce_tracking_basecode']));
+  }
+  if (!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_currency_selection'])) {
+    // Storing the currency selection.
+    variable_set('facebook_tracking_pixel_commerce_tracking_currency_selection', check_plain($form_state['values']['facebook_tracking_pixel_commerce_tracking_currency_selection']));
+  }
+  if (!empty(array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']))) {
+    // This will create an array for the variable and only store the values that were checked.
+    $selectedoptions = array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']);
+    // We santizie form input since this data will get saved to the DB.
+    foreach ($selectedoptions as $key => $val) {
+      $clean[check_plain($key)] = check_plain($val);
+    }
+    variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', $clean);
   }
 }
