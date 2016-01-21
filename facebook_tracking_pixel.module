@@ -631,3 +631,53 @@ function facebook_tracking_pixel_get_currency_codes() {
   }
   return $currencycodes;
 }
+
+/**
+ * Implements hook_commerce_cart_product_add().
+ *
+ * Tracks when an item is added to the cart.
+ *
+ * @param $order
+ * @param $product
+ * @param $quantity
+ * @param $line_item
+ */
+function facebook_tracking_pixel_commerce_cart_product_add($order, $product, $quantity, $line_item) {
+  $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
+  if (array_key_exists('addtocart', $options)) {
+    facebook_tracking_pixel_add_session_event('addtocart');
+  }
+}
+
+/**
+ * Implements hook_commerce_checkout_router().
+ *
+ * Tracks when a customer enters the checkout workflow.
+ *
+ * @param $order
+ * @param $checkout_page
+ */
+function facebook_tracking_pixel_commerce_checkout_router($order, $checkout_page) {
+  $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
+  if (array_key_exists('initiatecheckout', $options)) {
+    if ($checkout_page['page_id'] == 'checkout') {
+      facebook_tracking_pixel_add_session_event('initiatecheckout');
+    }
+  }
+}
+
+/**
+ * Implements hook_commerce_checkout_complete().
+ *
+ * This fires when checkout is complete to track the event.
+ *
+ * @param $order
+ */
+function facebook_tracking_pixel_commerce_checkout_complete($order) {
+  $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
+  if (array_key_exists('purchase', $options)) {
+    // We pass and store the order ID number so it can be used to populate currency
+    // and total values in the page build.
+    facebook_tracking_pixel_add_session_event('purchase', $order->order_id);
+  }
+}
