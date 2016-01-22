@@ -478,7 +478,7 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
   $form['event_uid_markup'] = [
     '#prefix' => '<p>',
     '#suffix' => '</p>',
-    '#markup' => t('Unique ID: ') . $result['event_uid'] . '<br />' . t('This is the current Unique ID. A new value for the Unique ID will be generated with you save this form.'),
+    '#markup' => t('Unique ID: ') . $result['event_uid'] . '<br />' . t('This is the current Unique ID. A new value for the Unique ID will be generated when you save this form.'),
   ];
   $form['event_uid'] = [
     '#type' => 'hidden',
