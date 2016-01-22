@@ -284,7 +284,7 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
   if ($result){
     form_set_error('event_path', t('You cannot add a duplicate event to the same path and base code.'));
   }
-  if(!drupal_valid_path($path)){
+  if(!(drupal_lookup_path('source', $path) || drupal_valid_path($path))){
     form_set_error('event_path', t('The path you have entered (:path) does not appear to be a valid path.', [':path' => $path]));
   }
 }
