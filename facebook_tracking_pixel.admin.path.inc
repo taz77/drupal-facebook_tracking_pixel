@@ -77,7 +77,7 @@ function facebook_tracking_pixel_track_by_path_form() {
           '#markup' => $item->event_type,
         ],
         'event_path' => [
-          '#markup' => $item->event_path,
+          '#markup' => l($item->event_path, $item->event_path),
         ],
         // This shows the Base Code human readable name but we track based off the serial ID number.
         'event_base_code_id' => [
