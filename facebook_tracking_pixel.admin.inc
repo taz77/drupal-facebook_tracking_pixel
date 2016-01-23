@@ -673,14 +673,14 @@ function facebook_tracking_pixel_user_registration_submit($form, $form_state) {
     // This is saving the basecode ID number - not the basecode itself.
     variable_set('facebook_tracking_pixel_user_registration_basecode', $basecodeid);
     $fbscriptjs = facebook_tracking_pixel_base_code_js();
-    $eventtext = 'fbq(\'track\', "CompleteRegistration");';
+    $events = facebook_tracking_pixel_events_reserved();
     // This is the full JS code to save to the file system.
     $base_code_fbid = db_select('facebook_tracking_pixel_base_codes', 'c')
       ->fields('c', ['base_code_fbid'])
       ->condition('base_code_id', $basecodeid, '=')
       ->execute()
       ->fetchField();
-    $data = $fbscriptjs[0] . $base_code_fbid . $fbscriptjs[1] . $eventtext;
+    $data = $fbscriptjs[0] . $base_code_fbid . $fbscriptjs[1] . $events['ftpregistration']['code'];
     // Delete any existing file.
     facebook_tracking_pixel_delete_file('fb_trk_user_registration.js', 'registrationtracking');
     // Save new file.
