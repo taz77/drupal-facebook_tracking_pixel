@@ -169,6 +169,8 @@ function facebook_tracking_pixel_page_build(&$page) {
     if (!empty($_SESSION['facebook_tracking_pixel'])) {
       // We need the source code since some of these are dynamic.
       $fb_script_src = facebook_tracking_pixel_base_code_js();
+      // We use this foreach to step through the session variables for special
+      // case codes.
       foreach ($_SESSION['facebook_tracking_pixel'] as $key => $value) {
         switch ($key) {
           case 'registration':
@@ -193,15 +195,15 @@ function facebook_tracking_pixel_page_build(&$page) {
             // If this is a user registration event we stop processing.
             return;
             break;
-          case 'addtocart':
+          case 'ftpdcaddtocart':
 
             break;
 
-          case 'checkoutstart':
+          case 'ftpdcinitiatecheckout':
 
             break;
 
-          case 'purchase':
+          case 'ftpdcpurchase':
 
             break;
 
@@ -244,9 +246,9 @@ function facebook_tracking_pixel_page_build(&$page) {
       }
     }
     // Process global tracking codes that are to run on the entire site.
-    foreach ($basecodes as $id => $values){
+    foreach ($basecodes as $id => $values) {
       $i = 0;
-      if($values->base_code_global == 1){
+      if ($values->base_code_global == 1) {
         // Our static tracking file.
         $file = $path . '/fb_tkpx.' . $values->base_code_fbid . '.js';
         // Page content with the static tracking file.
@@ -283,6 +285,11 @@ function facebook_tracking_pixel_events() {
     $results = [];
   }
   drupal_alter($hook, $results);
+  // @todo we need to reserve certain codes for Drupal Commerce portion of module
+  // List we  have to reserve
+  // ftpdcaddtocart
+  // ftpdcinitiatecheckout
+  // ftpdcpurchase
   return $results;
 }
 
@@ -333,6 +340,31 @@ function facebook_tracking_pixel_facebook_tracking_pixel_events() {
 }
 
 /**
+ * Returns the events reserved for this module.
+ * @return array
+ */
+function facebook_tracking_pixel_events_reserved(){
+  $events = [];
+  $events['ftpregistration'] = [
+    'name' => t('Complete Registration'),
+    'code' => 'fbq(\'track\', \'CompleteRegistration\');',
+  ];
+  $events['ftpdcinitiatecheckout'] = [
+    'name' => t('Initiate checkout'),
+    'code' => 'fbq(\'track\', \'InitiateCheckout\');',
+  ];
+  $events['ftpdcaddtocart'] = [
+    'name' => t('Add to Cart'),
+    'code' => 'fbq(\'track\', \'AddToCart\');',
+  ];
+  $events['ftpdcpurchase'] = [
+    'name' => t('Make Purchase'),
+    'code' => 'fbq(\'track\', \'Purchase\', {value: \'0.00\', currency: \'USD\'});',
+  ];
+  return $events;
+}
+
+/**
  * Return keyed array of standard events in a format for select boxes.
  *
  * @return array
@@ -369,7 +401,6 @@ function facebook_tracking_pixel_theme() {
  */
 
 function facebook_tracking_pixel_base_code_js() {
-  $fb_script_src = [];
   $fb_script_src = [
     '!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
     n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
@@ -389,7 +420,6 @@ function facebook_tracking_pixel_base_code_js() {
  */
 function facebook_tracking_pixel_base_code_nojs() {
   // Facebook static code.
-  $fb_noscript_src = [];
   $fb_noscript_src = [
     '<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=',
     '&ev=PageView&noscript=1"/></noscript>',
@@ -689,7 +719,7 @@ function facebook_tracking_pixel_get_currency_codes() {
 function facebook_tracking_pixel_commerce_cart_product_add($order, $product, $quantity, $line_item) {
   $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
   if (array_key_exists('addtocart', $options)) {
-    facebook_tracking_pixel_add_session_event('addtocart');
+    facebook_tracking_pixel_add_session_event('ftpdcaddtocart');
   }
 }
 
@@ -705,7 +735,7 @@ function facebook_tracking_pixel_commerce_checkout_router($order, $checkout_page
   $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
   if (array_key_exists('initiatecheckout', $options)) {
     if ($checkout_page['page_id'] == 'checkout') {
-      facebook_tracking_pixel_add_session_event('initiatecheckout');
+      facebook_tracking_pixel_add_session_event('ftpdcinitiatecheckout');
     }
   }
 }
@@ -722,6 +752,6 @@ function facebook_tracking_pixel_commerce_checkout_complete($order) {
   if (array_key_exists('purchase', $options)) {
     // We pass and store the order ID number so it can be used to populate currency
     // and total values in the page build.
-    facebook_tracking_pixel_add_session_event('purchase', $order->order_id);
+    facebook_tracking_pixel_add_session_event('ftpdcpurchase', $order->order_id);
   }
 }
