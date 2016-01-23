@@ -175,7 +175,7 @@ function facebook_tracking_pixel_commerce_form_submit($form, $form_state) {
   }
   if (!empty(array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']))) {
     $fb_script_src = facebook_tracking_pixel_base_code_js();
-    $events = facebook_tracking_pixel_events();
+    $events = facebook_tracking_pixel_events_reserved();
     $subdir = variable_get('facebook_tracking_pixel_commerce_js_subdir', 'commercetracking');
     $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
     // This will create an array for the variable and only store the values that were checked.
@@ -187,13 +187,13 @@ function facebook_tracking_pixel_commerce_form_submit($form, $form_state) {
       // @todo some of these can be saved as JS files.
       switch ($key) {
         case 'addtocart':
-          $code = $fb_script_src[0] . $base_code_fbid . $fb_script_src[1] . $events['addtocart']['code'];
+          $code = $fb_script_src[0] . $base_code_fbid . $fb_script_src[1] . $events['ftpdcaddtocart']['code'];
           $filename = 'fb_trk_addtocart_' . $base_code_fbid . '.js';
           facebook_tracking_pixel_delete_file($filename, $subdir);
           facebook_tracking_pixel_save_file($code, $filename, $subdir);
           break;
         case 'checkoutstart':
-          $code = $fb_script_src[0] . $base_code_fbid . $fb_script_src[1] . $events['checkoutstart']['code'];
+          $code = $fb_script_src[0] . $base_code_fbid . $fb_script_src[1] . $events['ftpdcinitiatecheckout']['code'];
           $filename = 'fb_trk_checkoutstart_' . $base_code_fbid . '.js';
           facebook_tracking_pixel_delete_file($filename, $subdir);
           facebook_tracking_pixel_save_file($code, $filename, $subdir);
