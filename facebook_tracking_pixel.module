@@ -132,7 +132,6 @@ function facebook_tracking_pixel_page_build(&$page) {
     // Pull base code IDs from database and build the noscript header includes.
     $basecodes = db_select('facebook_tracking_pixel_base_codes', 'c')
       ->fields('c')
-      ->condition('base_code_global', 1, '=')
       ->orderBy('weight')
       ->execute()
       ->fetchAllAssoc('base_code_id');
@@ -209,8 +208,6 @@ function facebook_tracking_pixel_page_build(&$page) {
         }
 
       }
-
-
     }
 
     // Gather the path based tracking codes.
@@ -247,19 +244,20 @@ function facebook_tracking_pixel_page_build(&$page) {
       }
     }
     // Process global tracking codes that are to run on the entire site.
-    if ($basecodes) {
+    foreach ($basecodes as $id => $values){
       $i = 0;
-      foreach ($basecodes as $element) {
-        $file = $path . '/fb_tkpx.' . $element->base_code_fbid . '.js';
-
+      if($values->base_code_global == 1){
+        // Our static tracking file.
+        $file = $path . '/fb_tkpx.' . $values->base_code_fbid . '.js';
+        // Page content with the static tracking file.
         $page['content']['#attached']['js']['facebook_tracking_pixel_' . $i] = [
           'type' => 'file',
           'group' => JS_THEME,
           'data' => $file,
           'preprocess' => (bool) variable_get('facebook_tracking_pixel_aggregation', FALSE),
         ];
-        // Assemble code.
-        $fb_base_code_nojs = $fb_noscript_src[0] . $element->base_code_fbid . $fb_noscript_src[1];
+        // Assemble noscript code and add it to the head.
+        $fb_base_code_nojs = $fb_noscript_src[0] . $values->base_code_fbid . $fb_noscript_src[1];
         drupal_add_html_head([
           '#type' => 'markup',
           '#markup' => $fb_base_code_nojs,
