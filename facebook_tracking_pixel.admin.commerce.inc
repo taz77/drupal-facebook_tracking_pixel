@@ -16,11 +16,6 @@
  */
 function facebook_tracking_pixel_commerce_form($form, &$form_state) {
 
-  $currencycodesraw = commerce_currencies();
-  $currencycodes = [];
-  foreach ($currencycodesraw as $key => $value) {
-    $currencycodes[$key] = $value['name'] . ' (' . $key . ')';
-  }
   if (!module_exists('commerce')) {
     $form['intro0'] = [
       '#markup' => t('This portion of the module is only compatible with Drupal Commerce.'),
@@ -30,7 +25,11 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
     ];
     return $form;
   }
-
+  $currencycodesraw = commerce_currencies();
+  $currencycodes = [];
+  foreach ($currencycodesraw as $key => $value) {
+    $currencycodes[$key] = $value['name'] . ' (' . $key . ')';
+  }
   $form['intro0'] = [
     '#markup' => t('Enabliing this will track user registration for the entire site. To not track users added by admins, do not enable tracking for their roles.'),
   ];
