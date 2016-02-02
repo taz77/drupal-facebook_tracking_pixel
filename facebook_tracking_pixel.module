@@ -143,30 +143,6 @@ function facebook_tracking_pixel_page_build(&$page) {
     // Script path.
     $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
 
-    // Is the user registration tracking turned on?
-
-    if (!empty($_SESSION['facebook_tracking_pixel_registration'])) {
-      $userregfile = $path . '/registrationtracking/fb_trk_user_registration.js';
-      $page['content']['#attached']['js']['facebook_tracking_pixel_path_user_registration'] = [
-        'type' => 'file',
-        'group' => JS_THEME,
-        'data' => $userregfile,
-        'preprocess' => (bool) variable_get('facebook_tracking_pixel_aggregation', FALSE),
-      ];
-
-      // Assemble code and pull the FBID from the session variable.
-      $fb_base_code_nojs = $fb_noscript_src[0] . $_SESSION['facebook_tracking_pixel_registration_fbid'] . $fb_noscript_src[1];
-      drupal_add_html_head([
-        '#type' => 'markup',
-        '#markup' => $fb_base_code_nojs,
-        '#weight' => 150,
-      ], 'facebook_tracking_pixel_path_user_registration');
-      // We remove the session variables, we do not want it loading but once.
-      unset($_SESSION['facebook_tracking_pixel_registration']);
-      unset($_SESSION['facebook_tracking_pixel_registration_fbid']);
-      // If this is a user registration event we stop processing.
-      return;
-    }
     // Process anything that could be stored in the session.
     if (!empty($_SESSION['facebook_tracking_pixel'])) {
       // We need the source code since some of these are dynamic.
@@ -185,15 +161,15 @@ function facebook_tracking_pixel_page_build(&$page) {
             ];
 
             // Assemble code and pull the FBID from the session variable.
-            $fb_base_code_nojs = $fb_noscript_src[0] . $_SESSION['facebook_tracking_pixel_registration_fbid'] . $fb_noscript_src[1];
+            $fb_base_code_nojs = $fb_noscript_src[0] . $_SESSION['facebook_tracking_pixel']['registration_fbid'] . $fb_noscript_src[1];
             drupal_add_html_head([
               '#type' => 'markup',
               '#markup' => $fb_base_code_nojs,
               '#weight' => 150,
             ], 'facebook_tracking_pixel_path_user_registration');
             // We remove the session variables, we do not want it loading but once.
-            unset($_SESSION['facebook_tracking_pixel_registration']);
-            unset($_SESSION['facebook_tracking_pixel_registration_fbid']);
+            unset($_SESSION['facebook_tracking_pixel']['registration']);
+            unset($_SESSION['facebook_tracking_pixel']['registration_fbid']);
             // If this is a user registration event we stop processing.
             return;
             break;
@@ -536,8 +512,6 @@ function facebook_tracking_pixel_path_codes() {
 function facebook_tracking_pixel_user_insert(&$edit, $account, $category) {
   $registration = variable_get('facebook_tracking_pixel_user_registration_enable', FALSE);
   if ($registration) {
-    $_SESSION['facebook_tracking_pixel_registration'] = TRUE;
-
     // We add the FBID to a session variable.
     $basecodeid = variable_get('facebook_tracking_pixel_user_registration_basecode');
     $base_code_fbid = db_select('facebook_tracking_pixel_base_codes', 'c')
@@ -545,7 +519,8 @@ function facebook_tracking_pixel_user_insert(&$edit, $account, $category) {
       ->condition('base_code_id', $basecodeid, '=')
       ->execute()
       ->fetchField();
-    $_SESSION['facebook_tracking_pixel_registration_fbid'] = $base_code_fbid;
+    facebook_tracking_pixel_add_session_event('registration');
+    facebook_tracking_pixel_add_session_event('registration_fbid', $base_code_fbid);
   }
 }
 
@@ -642,8 +617,8 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
   if ($usertrackingid == $tid) {
     variable_del('facebook_tracking_pixel_user_registration_basecode');
     variable_del('facebook_tracking_pixel_user_registration_enable');
-    unset($_SESSION['facebook_tracking_pixel_registration']);
-    unset($_SESSION['facebook_tracking_pixel_registration_fbid']);
+    unset($_SESSION['facebook_tracking_pixel']['registration']);
+    unset($_SESSION['facebook_tracking_pixel']['registration_fbid']);
     facebook_tracking_pixel_delete_file('fb_trk_user_registration.js', 'registrationtracking');
   }
 
