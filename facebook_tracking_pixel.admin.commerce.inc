@@ -183,7 +183,7 @@ function facebook_tracking_pixel_commerce_form_submit($form, $form_state) {
     foreach ($selectedoptions as $key => $val) {
       $clean[check_plain($key)] = check_plain($val);
 
-      // @todo some of these can be saved as JS files.
+      // @todo test saved codes.
       switch ($key) {
         case 'addtocart':
           $code = $fb_script_src[0] . $base_code_fbid . $fb_script_src[1] . $events['ftpdcaddtocart']['code'];
