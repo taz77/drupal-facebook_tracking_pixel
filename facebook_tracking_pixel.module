@@ -264,7 +264,6 @@ function facebook_tracking_pixel_page_build(&$page) {
             break;
         }
       }
-      // @todo Must devise a method of handling any events that could be added via the events hook_alter
     }
 
     // Gather the path based tracking codes.
@@ -340,11 +339,6 @@ function facebook_tracking_pixel_events() {
     $results = [];
   }
   drupal_alter($hook, $results);
-  // @todo we need to reserve certain codes for Drupal Commerce portion of module
-  // List we  have to reserve
-  // ftpdcaddtocart
-  // ftpdcinitiatecheckout
-  // ftpdcpurchase
   return $results;
 }
 
