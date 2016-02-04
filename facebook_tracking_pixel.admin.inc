@@ -609,7 +609,7 @@ function facebook_tracking_pixel_user_registration($form, &$form_state) {
       ->fetchAllAssoc('base_code_id');
     $basecodes = [];
     foreach ($resultbasecode as $item) {
-      $basecodes[$item->base_code_id] = $item->base_code_fbid;
+      $basecodes[$item->base_code_id] = $item->base_code_name;
     }
   }
   $enable = variable_get('facebook_tracking_pixel_user_registration_enable', 0);
