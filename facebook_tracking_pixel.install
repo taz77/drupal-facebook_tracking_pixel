@@ -32,6 +32,13 @@ function facebook_tracking_pixel_schema() {
         'default' => '',
         'not null' => FALSE,
       ],
+      'event_path_system' => [
+        'description' => 'The resolved system path.',
+        'type' => 'varchar',
+        'length' => 255,
+        'default' => '',
+        'not null' => FALSE,
+      ],
       'event_type' => [
         'description' => 'The event type.',
         'type' => 'varchar',
