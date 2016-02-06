@@ -40,9 +40,9 @@ function facebook_tracking_pixel_schema() {
         'not null' => FALSE,
       ],
       'event_type' => [
-        'description' => 'The event type.',
+        'description' => 'The event type as a serialized array of types.',
         'type' => 'varchar',
-        'length' => 255,
+        'length' => 1000,
         'default' => '',
         'not null' => FALSE,
       ],
