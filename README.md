@@ -9,6 +9,9 @@ page. This module also takes the code from Facebook as it is supplied by them
 and optimizes it for loading on pages so it can be aggregated, compressed, and
 pushed via a CDN if you wish.
 
+
+[![BuildStatus](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel.svg?branch=master)](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel)
+
 Basic Setup
 ================================================================================
 
