@@ -267,6 +267,7 @@ function facebook_tracking_pixel_track_by_path_form_submit($form, $form_state) {
  * @param $form_state
  */
 function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
+  // @todo Must not let two entries with the same resolved system path
   // Check that the entered component name is valid.
   $path = check_plain($form_state['values']['event_path']);
   if (drupal_strlen(trim($path)) <= 0) {
@@ -286,6 +287,8 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
   if ($result && $form['#id'] != 'facebook-tracking-pixel-path-edit-form'){
     form_set_error('event_path', t('You cannot add a duplicate event to the same path and base code.'));
   }
+
+  // Compare paths
   if(!(drupal_lookup_path('source', $path) || drupal_valid_path($path))){
     form_set_error('event_path', t('The path you have entered (:path) does not appear to be a valid path.', [':path' => $path]));
   }
@@ -435,9 +438,9 @@ function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
 /**
  * Form builder for tracking path edit.
  *
- * @param $form
- * @param $form_state
- * @param $uid
+ * @param array $form
+ * @param array $form_state
+ * @param string $tid
  * @return array
  */
 function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
@@ -572,4 +575,51 @@ function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
     watchdog('facebook_tracking_pixel', 'Failed writing path tracking JS files for Facebook Tracking Pixel. Called from edit path item. Check PHP logs.', [], WATCHDOG_ERROR, NULL);
   }
 
+}
+
+/**
+ * Form builder for tracking path add.
+ *
+ * @param $form
+ * @param $form_state
+ * @return array
+ */
+function facebook_tracking_pixel_path_add_form($form, $form_state) {
+  // Pull all base codes.
+  $resultbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c')
+    ->orderBy('weight')
+    ->execute()
+    ->fetchAllAssoc('base_code_id');
+  $basecodes = [];
+  foreach ($resultbasecode as $item) {
+    $basecodes[$item->base_code_id] = $item->base_code_name;
+  }
+  $form = [];
+  $pathtypeoptions = facebook_tracking_pixel_events_options();
+  $form['event_type'] = [
+    '#title' => 'Event Type',
+    '#type' => 'checkboxes',
+    '#options' => $pathtypeoptions,
+  ];
+  $form['event_path'] = [
+    '#title' => 'Path for Action',
+    '#type' => 'textfield',
+    '#size' => 24,
+    '#maxlength' => 255,
+  ];
+  $form['event_base_code_id'] = [
+    '#title' => 'Facebook Base Code ID',
+    '#description' => t('Corresponds to your Facebook advertising account.'),
+    '#type' => 'select',
+    '#options' => $basecodes,
+  ];
+  $form['submit'] = [
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#weight' => 50,
+    '#validate' => ['facebook_tracking_pixel_path_add_validate'],
+    '#submit' => ['facebook_tracking_pixel_path_add_form_submit'],
+  ];
+  return $form;
 }
