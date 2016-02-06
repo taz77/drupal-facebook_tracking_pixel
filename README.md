@@ -10,7 +10,7 @@ and optimizes it for loading on pages so it can be aggregated, compressed, and
 pushed via a CDN if you wish.
 
 
-[![BuildStatus](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel.svg?branch=master)](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel)
+[![BuildStatus](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel.svg?branch=7.x-1.x)](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel)
 
 Basic Setup
 ================================================================================
