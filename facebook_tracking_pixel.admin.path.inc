@@ -50,7 +50,7 @@ function facebook_tracking_pixel_track_by_path_form() {
   $form['intro_1'] = [
     '#markup' => '<p>' . t('For more information regarding event tracking, read Facebook\'s') . ' ' . l('documentation.', 'https://www.facebook.com/business/help/402791146561655', [
         '#external' => TRUE,
-        'attributes' => ['target' => '_blank']
+        'attributes' => ['target' => '_blank'],
       ]) . '</p>',
     '#weight' => -49,
   ];
@@ -104,10 +104,10 @@ function facebook_tracking_pixel_track_by_path_form() {
     }
   }
 
-  $form['add']['event_type'] = array(
+  $form['add']['event_type'] = [
     '#type' => 'select',
     '#options' => facebook_tracking_pixel_events_options(),
-  );
+  ];
   $form['add']['event_path'] = [
     '#type' => 'textfield',
     '#size' => 24,
@@ -191,7 +191,7 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   ];
   $add_form = [
     'data' => $row_data,
-    'class' => ['draggable', 'path-code-add-form']
+    'class' => ['draggable', 'path-code-add-form'],
   ];
 
   // Iterate over each element in our $form['example_items'] array.
@@ -278,18 +278,20 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
 
   $result = db_select('facebook_tracking_pixel_events_path', 'c')
     ->fields('c')
-    ->condition(db_and()->condition('event_base_code_id', $base_code_id, '=')->condition('event_path', $path, '='))
+    ->condition(db_and()
+      ->condition('event_base_code_id', $base_code_id, '=')
+      ->condition('event_path', $path, '='))
     ->execute()
     ->fetchField();
   // If the same path has been added for an existing base code, reject the add.
   // But if this is the edit form do not throw this error because you are
   // editing an existing item.
-  if ($result && $form['#id'] != 'facebook-tracking-pixel-path-edit-form'){
+  if ($result && $form['#id'] != 'facebook-tracking-pixel-path-edit-form') {
     form_set_error('event_path', t('You cannot add a duplicate event to the same path and base code.'));
   }
 
   // Compare paths
-  if(!(drupal_lookup_path('source', $path) || drupal_valid_path($path))){
+  if (!(drupal_lookup_path('source', $path) || drupal_valid_path($path))) {
     form_set_error('event_path', t('The path you have entered (:path) does not appear to be a valid path.', [':path' => $path]));
   }
 }
@@ -322,6 +324,12 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
   $event_type = $fb_events[$type];
   $contents = $base_code_script[0] . $base_code_fbid . $base_code_script[1];
   $contents .= $event_type['code'];
+  if (drupal_lookup_path('source', $path)) {
+    $systemsource = drupal_lookup_path('source', $path);
+  }
+  elseif (drupal_valid_path($path)) {
+    $systemsource = drupal_valid_path($path);
+  }
   // Write out the new file for this tracking item.
   if (facebook_tracking_pixel_save_file($contents, 'fb_trk.' . $uid . '.js', $subdir)) {
     // Full path and filename.
@@ -335,7 +343,8 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
             'event_base_code_id' => $base_code_id,
             'event_js_file' => $event_js,
             'event_uid' => $uid,
-            'weight' => 0
+            'event_path_system' => $systemsource,
+            'weight' => 0,
           ]
         )
         ->execute();
