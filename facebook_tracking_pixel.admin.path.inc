@@ -338,7 +338,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
     ->fetchField();
 
   $path = check_plain($form_state['values']['event_path']);
-  $type = check_plain($form_state['values']['event_type']);
+  $type = serialize($form_state['values']['event_type']);
   $fb_events = facebook_tracking_pixel_events();
   $event_type = $fb_events[$type];
   $contents = $base_code_script[0] . $base_code_fbid . $base_code_script[1];
@@ -490,7 +490,7 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
   $pathtypeoptions = facebook_tracking_pixel_events_options();
   $form['event_type'] = [
     '#title' => 'Event Type',
-    '#type' => 'select',
+    '#type' => 'checkboxes',
     '#options' => $pathtypeoptions,
     '#default_value' => $result['event_type'],
   ];
