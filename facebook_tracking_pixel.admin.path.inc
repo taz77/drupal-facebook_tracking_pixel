@@ -104,35 +104,6 @@ function facebook_tracking_pixel_track_by_path_form() {
     }
   }
 
-  $form['add']['event_type'] = [
-    '#type' => 'select',
-    '#options' => facebook_tracking_pixel_events_options(),
-  ];
-  $form['add']['event_path'] = [
-    '#type' => 'textfield',
-    '#size' => 24,
-    '#maxlength' => 255,
-  ];
-  $form['add']['event_base_code_id'] = [
-    '#type' => 'select',
-    '#options' => $basecodes,
-  ];
-  $form['add']['weight'] = [
-    '#type' => 'weight',
-    '#default_value' => 0,
-    '#delta' => $resultcount > 10 ? $resultcount : 10,
-    '#title_display' => 'invisible',
-  ];
-  $form['add']['add'] = [
-    '#type' => 'submit',
-    '#value' => t('Add'),
-    '#weight' => 45,
-    '#validate' => [
-      'facebook_tracking_pixel_path_add_validate',
-    ],
-    '#submit' => ['facebook_tracking_pixel_path_add_form_submit'],
-  ];
-
   // Now we add our submit button, for submitting the form results.
   $form['actions'] = ['#type' => 'actions'];
   $form['actions']['submit'] = [
@@ -175,25 +146,6 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
     ],
   ];
 
-  // Add a row containing form elements for a new item.
-  unset($form['add']['event_path']['#title']);
-  $form['add']['event_path']['#attributes']['rel'] = t('New Tracking Path');
-  $form['add']['event_path']['#attributes']['class'] = ['path-code-name-default-value'];
-  $form['add']['event_type']['#attributes']['class'] = ['path-code-type'];
-  $form['add']['weight']['#attributes']['class'] = ['path-code-weight'];
-  $row_data = [
-    drupal_render($form['add']['event_type']),
-    drupal_render($form['add']['event_path']),
-    drupal_render($form['add']['event_base_code_id']),
-    drupal_render($form['add']['event_uid']),
-    drupal_render($form['add']['event_id']) . drupal_render($form['add']['weight']),
-    ['colspan' => 2, 'data' => drupal_render($form['add']['add'])],
-  ];
-  $add_form = [
-    'data' => $row_data,
-    'class' => ['draggable', 'path-code-add-form'],
-  ];
-
   // Iterate over each element in our $form['example_items'] array.
   foreach (element_children($form['facebook_tracking_pixel_tracking_codes_by_path']) as $id) {
     $rows[] = [
@@ -219,10 +171,6 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
       // rendered.
       'class' => ['draggable'],
     ];
-  }
-  // Append the add form if not already printed.
-  if ($add_form) {
-    $rows[] = $add_form;
   }
   $output = '';
   $output .= drupal_render($form['intro_0']);
