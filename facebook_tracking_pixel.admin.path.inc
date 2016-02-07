@@ -620,6 +620,22 @@ function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
  * @return array
  */
 function facebook_tracking_pixel_path_add_form($form, $form_state) {
+  //Check to see if there are base codes.
+  $resultcountbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+  if ($resultcountbasecode == 0) {
+    $form['emptyset'] = [
+      '#type' => 'hidden',
+      '#value' => TRUE,
+    ];
+    $form['notice'] = [
+      '#markup' => t('You must first set a base code for tracking.'),
+    ];
+    return $form;
+  }
   // Pull all base codes.
   $resultbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
     ->fields('c')
