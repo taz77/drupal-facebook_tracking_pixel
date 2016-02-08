@@ -86,7 +86,6 @@ function facebook_tracking_pixel_settings_form_validate($form, &$form_state) {
  * Form builder for base tracking codes.
  */
 function facebook_tracking_pixel_base_codes_form() {
-  // @todo Add and exclusion field for the base codes to disable for the whole site.
   $result = db_select('facebook_tracking_pixel_base_codes', 'c')
     ->fields('c')
     ->orderBy('weight')
@@ -156,24 +155,6 @@ function facebook_tracking_pixel_base_codes_form() {
     '#delta' => $resultcount > 10 ? $resultcount : 10,
     '#title_display' => 'invisible',
   ];
-  // @todo this does not work yet.
-  if (isset($_GET['bcid'])) {
-    // Make the new component appear by default directly after the one that was
-    // just added.
-    $form['add']['weight']['#default_value'] = $result[$_GET['bcid']]->weight + 1;
-    foreach ($result as $cid) {
-      // Adjust all later components also, to make sure none of them have the
-      // same weight as the new component.
-      if ($form['base_codes'][$cid]['weight']['#default_value'] >= $form['add']['weight']['#default_value']) {
-        $form['base_codes'][$cid]['weight']['#default_value']++;
-      }
-    }
-  }
-  else {
-    // If no component was just added, the new component should appear by
-    // default at the end of the list.
-    $form['add']['weight']['#default_value'] = isset($max_weight) ? $max_weight + 1 : 0;
-  }
 
   $form['add']['add'] = [
     '#type' => 'submit',
