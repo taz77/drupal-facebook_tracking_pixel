@@ -68,13 +68,26 @@ function facebook_tracking_pixel_track_by_path_form() {
   // Identify that the elements in 'example_items' are a collection, to
   // prevent Form API from flattening the array when submitted.
   $form['facebook_tracking_pixel_tracking_codes_by_path']['#tree'] = TRUE;
-
+  // We need all of the event types possible.
+  $eventtypes = facebook_tracking_pixel_events_options();
   if ($resultcount > 0) {
     // Iterate through each database result.
     foreach ($result as $item) {
+      // Create the markup for the event types.
+      $itemeventtypessaved = unserialize($item->event_type);
+      $itemeventtypemarkup = '<ul>';
+      foreach ($itemeventtypessaved as $itemtypeinner) {
+        if (!empty($eventtypes[$itemtypeinner])) {
+          $itemeventtypemarkup .= '<li>' . $eventtypes[$itemtypeinner] . '</li>';
+        }
+      }
+      $itemeventtypemarkup .= '</ul>';
       $form['facebook_tracking_pixel_tracking_codes_by_path'][$item->event_id] = [
+        'event_name' => [
+          '#markup' => $item->event_name,
+        ],
         'event_type' => [
-          '#markup' => $item->event_type,
+          '#markup' => $itemeventtypemarkup,
         ],
         'event_path' => [
           '#markup' => l($item->event_path, $item->event_path),
@@ -93,7 +106,7 @@ function facebook_tracking_pixel_track_by_path_form() {
           '#delta' => 10,
           '#title_display' => 'invisible',
           '#attributes' => [
-            'class' => ['path-codes-weight'],
+            'class' => ['path-code-weight'],
           ],
         ],
         'event_id' => [
@@ -135,7 +148,8 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   // We now define the table header values.  Ensure that the 'header' count
   // matches the final column count for your table.
   $header = [
-    t('Event Type'),
+    t('Event Name'),
+    t('Event Type(s)'),
     t('Event Path'),
     t('Base Code ID'),
     t('Unique ID'),
@@ -150,6 +164,8 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   foreach (element_children($form['facebook_tracking_pixel_tracking_codes_by_path']) as $id) {
     $rows[] = [
       'data' => [
+        // Add our 'event_name' column.
+        drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_name']),
         // Add our 'event_type' column.
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_type']),
         // Add our 'event_path' column.
@@ -211,11 +227,16 @@ function facebook_tracking_pixel_track_by_path_form_submit($form, $form_state) {
 /**
  * Validate handler for path add form.
  *
- * @param $form
- * @param $form_state
+ * @param array $form
+ * @param array $form_state
  */
 function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
-  // @todo Must not let two entries with the same resolved system path
+  // Check that the entered component name is valid.
+  $path = check_plain($form_state['values']['event_path']);
+  if (drupal_strlen(trim($path)) <= 0) {
+    form_set_error('event_path', t('When adding a new event, the path field is required.'));
+  }
+
   // Compare paths
   if (!(drupal_lookup_path('source', $path) || drupal_valid_path($path))) {
     form_set_error('event_path', t('The path you have entered (:path) does not appear to be a valid path.', [':path' => $path]));
@@ -227,13 +248,6 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
   }
   elseif (drupal_valid_path($path)) {
     $systemsource = $path;
-  }
-
-
-  // Check that the entered component name is valid.
-  $path = check_plain($form_state['values']['event_path']);
-  if (drupal_strlen(trim($path)) <= 0) {
-    form_set_error('event_path', t('When adding a new event, the path field is required.'));
   }
 
   $base_code_id = check_plain($form_state['values']['event_base_code_id']);
@@ -258,7 +272,7 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
     ->execute()
     ->fetchField();
   if ($result && $form['#id'] != 'facebook-tracking-pixel-path-edit-form') {
-    form_set_error('event_path', t('The event you are trying to add is the resolved path in Drupal as the event with UID') . ' ' . $result['event_uid']);
+    form_set_error('event_path', t('The event you are trying to add is the resolved path in Drupal as the event with name') . ' <em>' . $result['event_name'] . '</em>');
   }
 
 }
@@ -276,6 +290,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
   $path_js_real = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
   $subdir = variable_get('facebook_tracking_pixel_path_subdir', 'pathtracking');
   $uid = uniqid('', TRUE);
+  $name = check_plain($form_state['values']['event_name']);
   // Get the base code.
   $base_code_script = facebook_tracking_pixel_base_code_js();
   $base_code_id = check_plain($form_state['values']['event_base_code_id']);
@@ -286,11 +301,19 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
     ->fetchField();
 
   $path = check_plain($form_state['values']['event_path']);
-  $type = serialize($form_state['values']['event_type']);
+  // We only store the values that were checked.
+  $eventtypes = [];
+  foreach ($form_state['values']['event_type'] as $key => $value) {
+    (!empty($value)) ? $eventtypes[] = $key : '';
+  }
+  $type = serialize($eventtypes);
   $fb_events = facebook_tracking_pixel_events();
-  $event_type = $fb_events[$type];
   $contents = $base_code_script[0] . $base_code_fbid . $base_code_script[1];
-  $contents .= $event_type['code'];
+  // Step through and add all the event types that have been check to write
+  // to the JS file.
+  foreach ($eventtypes as $item) {
+    $contents .= $fb_events[$item]['code'];
+  }
   if (drupal_lookup_path('source', $path)) {
     $systemsource = drupal_lookup_path('source', $path);
   }
@@ -311,6 +334,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
             'event_js_file' => $event_js,
             'event_uid' => $uid,
             'event_path_system' => $systemsource,
+            'event_name' => $name,
             'weight' => 0,
           ]
         )
@@ -318,10 +342,11 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
       drupal_set_message(t('Path tracking entry added.'), 'status', FALSE);
       // Clear caches.
       facebook_tracking_pixel_clear_cache();
+      drupal_goto('admin/config/system/facebook_tracking_pixel/path');
     }
     catch (Exception $e) {
       drupal_set_message(t('Path tracking entry failed to write to database.'), 'error', FALSE);
-      watchdog('facebook_tracking_pixel', 'Failed writing path tracking Information to database :e.', [':e' => $e], WATCHDOG_ERROR, NULL);
+      watchdog('facebook_tracking_pixel', 'Failed writing path tracking Information to database: %error', ['%error' => $e->getMessage()], WATCHDOG_ERROR, NULL);
     }
   }
   else {
@@ -394,7 +419,7 @@ function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
     }
     catch (Exception $e) {
       drupal_set_message(t('Path tracking entry failed to delete from the database.'), 'error', FALSE);
-      watchdog('facebook_tracking_pixel', 'Failed deleteing path tracking Information from the database :e.', [':e' => $e], WATCHDOG_ERROR, NULL);
+      watchdog('facebook_tracking_pixel', 'Failed deleteing path tracking Information from the database :e.', [':e' => $e->getMessage()], WATCHDOG_ERROR, NULL);
       return FALSE;
     }
   }
@@ -436,11 +461,18 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
   }
   $form = [];
   $pathtypeoptions = facebook_tracking_pixel_events_options();
+  $form['event_name'] = [
+    '#title' => 'Event Name',
+    '#type' => 'textfield',
+    '#size' => 24,
+    '#maxlength' => 255,
+    '#default_value' => $result['event_name'],
+  ];
   $form['event_type'] = [
     '#title' => 'Event Type',
     '#type' => 'checkboxes',
     '#options' => $pathtypeoptions,
-    '#default_value' => $result['event_type'],
+    '#default_value' => unserialize($result['event_type']),
   ];
   $form['event_path'] = [
     '#title' => 'Path for Action',
@@ -489,7 +521,13 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
 function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
   // Sanitize all input.
   $tid = check_plain($form_state['values']['event_id']);
-  $type = check_plain($form_state['values']['event_type']);
+  // Human readable name.
+  $name = check_plain($form_state['values']['event_name']);
+  // We only store the values that were checked.
+  $eventtypes = [];
+  foreach ($form_state['values']['event_type'] as $key => $value) {
+    (!empty($value)) ? $eventtypes[] = $key : '';
+  }
   $path = check_plain($form_state['values']['event_path']);
   $base_code_id = check_plain($form_state['values']['event_base_code_id']);
   $uid = check_plain($form_state['values']['event_uid']);
@@ -511,15 +549,19 @@ function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
     facebook_tracking_pixel_delete_file($deletefile, $subdir);
   }
   catch (Exception $e) {
+    watchdog('facebook_tracking_pixel', 'Deletion of the file failed in the edit path function: %error', ['%error' => $e->getMessage()], WATCHDOG_ERROR, NULL);
     return FALSE;
   }
 
   $newfile = 'fb_trk.' . $uidnew . '.js';
   $base_code_script = facebook_tracking_pixel_base_code_js();
   $fb_events = facebook_tracking_pixel_events();
-  $event_type = $fb_events[$type];
   $contents = $base_code_script[0] . $base_code_fbid . $base_code_script[1];
-  $contents .= $event_type['code'];
+  // Step through and add all the event types that have been check to write
+  // to the JS file.
+  foreach ($eventtypes as $item) {
+    $contents .= $fb_events[$item]['code'];
+  }
   if (drupal_lookup_path('source', $path)) {
     $systemsource = drupal_lookup_path('source', $path);
   }
@@ -535,11 +577,12 @@ function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
         ->fields(
           [
             'event_path' => $path,
-            'event_type' => $type,
+            'event_type' => serialize($eventtypes),
             'event_base_code_id' => $base_code_id,
             'event_js_file' => $event_js,
             'event_uid' => $uidnew,
             'event_path_system' => $systemsource,
+            'event_name' => $name,
           ]
         )
         ->condition('event_id', $tid, '=')
@@ -550,7 +593,7 @@ function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
     }
     catch (Exception $e) {
       drupal_set_message(t('Path tracking entry failed to update database.'), 'error', FALSE);
-      watchdog('facebook_tracking_pixel', 'Failed writing path tracking information to database. Called from edit path item. Check PHP logs. :e', [':e' => $e], WATCHDOG_ERROR, NULL);
+      watchdog('facebook_tracking_pixel', 'Failed writing path tracking information to database. Called from edit path item. Check PHP logs. %error', ['%error' => $e->getMessage()], WATCHDOG_ERROR, NULL);
     }
   }
   else {
@@ -596,6 +639,13 @@ function facebook_tracking_pixel_path_add_form($form, $form_state) {
   }
   $form = [];
   $pathtypeoptions = facebook_tracking_pixel_events_options();
+  $form['event_name'] = [
+    '#title' => 'Event Name.',
+    '#type' => 'textfield',
+    '#size' => 24,
+    '#maxlength' => 255,
+    '#description' => t('A human readable name only used for reference.'),
+  ];
   $form['event_type'] = [
     '#title' => 'Event Type',
     '#type' => 'checkboxes',
