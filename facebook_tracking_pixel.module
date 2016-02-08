@@ -383,7 +383,7 @@ function facebook_tracking_pixel_facebook_tracking_pixel_events() {
   ];
   $events['addpaymentinfo'] = [
     'name' => t('Add Payment Info'),
-    'code' => 'fbq(\'track\', \'AddPaymentInfo\')',
+    'code' => 'fbq(\'track\', \'AddPaymentInfo\');',
   ];
   $events['lead'] = [
     'name' => t('Lead'),
@@ -598,7 +598,7 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
       }
     }
     catch (Exception $e) {
-      watchdog('facebook_tracking_pixel', 'Failed to delete path items when deleting a base code :error.', [':error' => $e], WATCHDOG_ERROR, NULL);
+      watchdog('facebook_tracking_pixel', 'Failed to delete path items when deleting a base code %error.', ['%error' => $e->getMessage()], WATCHDOG_ERROR, NULL);
       drupal_set_message('Could not save the JS file. Check the Drupal and PHP logs.', 'error', FALSE);
       $status = FALSE;
     }
@@ -609,7 +609,7 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
         ->execute();
     }
     catch (Exception $e) {
-      watchdog('facebook_tracking_pixel', 'Failed to delete path items DB entries when deleting a base code :error.', [':error' => $e], WATCHDOG_ERROR, NULL);
+      watchdog('facebook_tracking_pixel', 'Failed to delete path items DB entries when deleting a base code %error.', ['%error' => $e->getMessage()], WATCHDOG_ERROR, NULL);
       $status = FALSE;
     }
   }
