@@ -304,7 +304,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
   // We only store the values that were checked.
   $eventtypes = [];
   foreach ($form_state['values']['event_type'] as $key => $value) {
-    (!empty($value)) ? $eventtypes[] = $key : '';
+    (!empty($value)) ? $eventtypes[] = check_plain($key) : '';
   }
   $type = serialize($eventtypes);
   $fb_events = facebook_tracking_pixel_events();
@@ -526,7 +526,7 @@ function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
   // We only store the values that were checked.
   $eventtypes = [];
   foreach ($form_state['values']['event_type'] as $key => $value) {
-    (!empty($value)) ? $eventtypes[] = $key : '';
+    (!empty($value)) ? $eventtypes[] = check_plain($key) : '';
   }
   $path = check_plain($form_state['values']['event_path']);
   $base_code_id = check_plain($form_state['values']['event_base_code_id']);
