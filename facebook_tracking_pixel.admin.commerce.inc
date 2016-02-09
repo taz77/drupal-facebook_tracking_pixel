@@ -81,6 +81,7 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
   ];
   if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_enable']) && $form_state['values']['facebook_tracking_pixel_commerce_tracking_enable']) || $enable == 1) {
     $form['facebook_tracking_pixel_commerce_tracking_options']['#title'] = t('Commerce tracking options.');
+    $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection', []);
     $form['facebook_tracking_pixel_commerce_tracking_options']['facebook_tracking_pixel_commerce_tracking_options_selection'] = [
       '#type' => 'checkboxes',
       '#title' => t('Events to track'),
@@ -94,7 +95,7 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
         'wrapper' => 'replace-facebook-tracking-pixel-commerce-tracking-currency',
         'effect' => 'fade',
       ],
-    //  @todo need default values
+      '#default_value' => $options,
     ];
     $form['facebook_tracking_pixel_commerce_tracking_options']['facebook_tracking_pixel_commerce_tracking_basecode'] = [
       '#type' => 'select',
