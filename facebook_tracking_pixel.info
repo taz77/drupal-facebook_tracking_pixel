@@ -1,6 +1,7 @@
 name = Facebook Tracking Pixel
 description = Manage Facebook Tracking pixels
 core = 7.x
+php = 5.4
 files[] = tests/facebook_tracking_pixel.test
 package = Statistics
 configure = admin/config/system/facebook_tracking_pixel
