@@ -67,3 +67,29 @@ Commerce Tracking
 
 Not finished... 
 admin/config/system/facebook_tracking_pixel/commercetracking
+
+Developers - Hooks provided
+================================================================================
+
+There is one hook alter and one hook provided. The hook allows the ability to
+provide additional tracking events that can be incorporated into a site. The 
+additional events will then be available in the path admin UI. The name of the
+provided hook is HOOK_facebook_tracking_pixel(). You may define additional
+events by providing an array of event information. An example:
+
+    mymodule_facebook_tracking_pixel(){
+      $events = [];
+      $events['pageview'] = [
+        'name' => t('Key Page View'),
+        'code' => 'fbq(\'track\', \'ViewContent\');',
+      ];
+      return $events;
+    }
+The array is keyed with the machine name of the event and each item contains an
+array with the human readable name and the actual JS code to be used.
+
+As a function of the path tracking. You may alter the paths being used by the
+module by executing a `HOOK_facebook_tracking_pixel_alter()`. See
+`facebook_tracking_pixel_facebook_tracking_pixel_alter()` in the file
+*facebook_tracking_pixel.module* as an example of how to use this alter. This
+module uses it's own alter to match paths.
