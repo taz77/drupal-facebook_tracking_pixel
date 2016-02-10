@@ -110,12 +110,14 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
     '#prefix' => '<div id="replace-facebook-tracking-pixel-commerce-tracking-currency">',
     '#suffix' => '</div>',
   ];
-
-  if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']) && array_key_exists('purchase', array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection'])))) {
+  // @todo The currency selection box is not behaving correctly with the AJAX callback.
+  $currencydefault = variable_get('facebook_tracking_pixel_commerce_tracking_currency_selection', NULL);
+  if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']) && array_key_exists('purchase', array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']))) || !empty($currencydefault)) {
     unset($form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#markup']);
     $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#type'] = 'select';
     $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#options'] = $currencycodes;
     $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#title'] = t('Currency Type');
+    $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#default_value'] = $currencydefault;
   }
   $form['submit'] = [
     '#type' => 'submit',
@@ -177,9 +179,9 @@ function facebook_tracking_pixel_commerce_form_submit($form, $form_state) {
     $fb_script_src = facebook_tracking_pixel_base_code_js();
     $events = facebook_tracking_pixel_events_reserved();
     $subdir = variable_get('facebook_tracking_pixel_commerce_js_subdir', 'commercetracking');
-    $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
     // This will create an array for the variable and only store the values that were checked.
     $selectedoptions = array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']);
+    // @todo if the Add to Cart is unchecked and previously checked the currency variable needs to be deleted.
     // We santizie form input since this data will get saved to the DB.
     foreach ($selectedoptions as $key => $val) {
       $clean[check_plain($key)] = check_plain($val);
