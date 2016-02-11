@@ -110,14 +110,26 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
     '#prefix' => '<div id="replace-facebook-tracking-pixel-commerce-tracking-currency">',
     '#suffix' => '</div>',
   ];
-  // @todo The currency selection box is not behaving correctly with the AJAX callback.
+  // To make the AJAX work correctly we have two different states we test for.
   $currencydefault = variable_get('facebook_tracking_pixel_commerce_tracking_currency_selection', NULL);
-  if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']) && array_key_exists('purchase', array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']))) || !empty($currencydefault)) {
-    unset($form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#markup']);
+  if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']) && array_key_exists('purchase', array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']))) || array_key_exists('purchase', $options)) {
+    unset($form['facebook_tracking_pixel_commerce_tracking_currency_selection']);
+    $form['facebook_tracking_pixel_commerce_tracking_currency_selection'] = [
+      '#prefix' => '<div id="replace-facebook-tracking-pixel-commerce-tracking-currency">',
+      '#suffix' => '</div>',
+    ];
     $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#type'] = 'select';
     $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#options'] = $currencycodes;
     $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#title'] = t('Currency Type');
     $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#default_value'] = $currencydefault;
+  }
+  if (!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']) && !array_key_exists('purchase', array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection'])) && array_key_exists('purchase', $options)){
+    unset($form['facebook_tracking_pixel_commerce_tracking_currency_selection']);
+    $form['facebook_tracking_pixel_commerce_tracking_currency_selection'] = [
+      '#markup' => '',
+      '#prefix' => '<div id="replace-facebook-tracking-pixel-commerce-tracking-currency">',
+      '#suffix' => '</div>',
+    ];
   }
   $form['submit'] = [
     '#type' => 'submit',
@@ -181,7 +193,11 @@ function facebook_tracking_pixel_commerce_form_submit($form, $form_state) {
     $subdir = variable_get('facebook_tracking_pixel_commerce_js_subdir', 'commercetracking');
     // This will create an array for the variable and only store the values that were checked.
     $selectedoptions = array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']);
-    // @todo if the Add to Cart is unchecked and previously checked the currency variable needs to be deleted.
+    if (!array_key_exists('purchase', $selectedoptions)) {
+      // If the Add to Cart is not checked we delete the variable for currency.
+      variable_del('facebook_tracking_pixel_commerce_tracking_currency_selection');
+    }
+
     // We santizie form input since this data will get saved to the DB.
     foreach ($selectedoptions as $key => $val) {
       $clean[check_plain($key)] = check_plain($val);
