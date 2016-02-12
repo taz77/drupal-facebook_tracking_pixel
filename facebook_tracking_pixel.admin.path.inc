@@ -44,7 +44,7 @@ function facebook_tracking_pixel_track_by_path_form() {
   }
   $form = [];
   $form['intro_0'] = [
-    '#markup' => '<p><h2>' . t('Facebook Event tracking via path') . '</h2></p>',
+    '#markup' => '<p><h2>' . t('Facebook Event Tracking via Drupal Path') . '</h2></p>',
     '#weight' => -50,
   ];
   $form['intro_1'] = [
@@ -148,9 +148,9 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
   // We now define the table header values.  Ensure that the 'header' count
   // matches the final column count for your table.
   $header = [
-    t('Event Name'),
+    t('Tracker Name'),
     t('Event Type(s)'),
-    t('Event Path'),
+    t('Path'),
     t('Base Code ID'),
     t('Unique ID'),
     t('Weight'),
@@ -640,19 +640,19 @@ function facebook_tracking_pixel_path_add_form($form, $form_state) {
   $form = [];
   $pathtypeoptions = facebook_tracking_pixel_events_options();
   $form['event_name'] = [
-    '#title' => 'Event Name.',
+    '#title' => 'Tracker Name',
     '#type' => 'textfield',
     '#size' => 24,
     '#maxlength' => 255,
     '#description' => t('A human readable name only used for reference.'),
   ];
   $form['event_type'] = [
-    '#title' => 'Event Type',
+    '#title' => 'Tracking Event Type',
     '#type' => 'checkboxes',
     '#options' => $pathtypeoptions,
   ];
   $form['event_path'] = [
-    '#title' => 'Path for Action',
+    '#title' => 'Path for Tracker',
     '#type' => 'textfield',
     '#size' => 24,
     '#maxlength' => 255,
