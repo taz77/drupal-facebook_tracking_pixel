@@ -188,7 +188,8 @@ function facebook_tracking_pixel_page_build(&$page) {
               ->condition('base_code_id', $ftpdcbasecodeid, '=')
               ->execute()
               ->fetchField();
-            $ftpdcfilname = 'fb_trk_addtocart_' . $ftpdcfbid . '.js';
+            $subdir = variable_get('facebook_tracking_pixel_commerce_js_subdir', 'commercetracking');
+            $ftpdcfilname = $path . '/' . $subdir . '/' . 'fb_trk_addtocart_' . $ftpdcfbid . '.js';
             // JS to load into page header.
             $page['content']['#attached']['js']['facebook_tracking_pixel_path_drupal_commerce_addtocart'] = [
               'type' => 'file',
@@ -205,6 +206,7 @@ function facebook_tracking_pixel_page_build(&$page) {
             ], 'facebook_tracking_pixel_path_drupal_commerce_addtocart');
             // Delete session variable.
             unset($_SESSION['facebook_tracking_pixel']['ftpdcaddtocart']);
+            unset($subdir);
             break;
 
           case 'ftpdcinitiatecheckout':
@@ -214,7 +216,8 @@ function facebook_tracking_pixel_page_build(&$page) {
               ->condition('base_code_id', $ftpdcbasecodeid, '=')
               ->execute()
               ->fetchField();
-            $ftpdcfilname = 'fb_trk_checkoutstart_' . $ftpdcfbid . '.js';
+            $subdir = variable_get('facebook_tracking_pixel_commerce_js_subdir', 'commercetracking');
+            $ftpdcfilname = $path . '/' . $subdir . '/' . 'fb_trk_checkoutstart_' . $ftpdcfbid . '.js';
             // JS to load into page header.
             $page['content']['#attached']['js']['facebook_tracking_pixel_path_drupal_commerce_initiatecheckout'] = [
               'type' => 'file',
@@ -231,6 +234,7 @@ function facebook_tracking_pixel_page_build(&$page) {
             ], 'facebook_tracking_pixel_path_drupal_commerce_initiatecheckout');
             // Delete session variable.
             unset($_SESSION['facebook_tracking_pixel']['ftpdcinitiatecheckout']);
+            unset($subdir);
             break;
 
           case 'ftpdcpurchase':
