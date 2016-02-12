@@ -125,4 +125,7 @@ function facebook_tracking_pixel_uninstall() {
   db_drop_table('facebook_tracking_pixel_base_codes');
   variable_del('facebook_tracking_pixel_path');
   variable_del('facebook_tracking_pixel_aggregation');
+  variable_del('facebook_tracking_pixel_commerce_tracking_basecode');
+  variable_del('facebook_tracking_pixel_commerce_tracking_enable');
+  variable_del('facebook_tracking_pixel_commerce_tracking_options_selection');
 }
