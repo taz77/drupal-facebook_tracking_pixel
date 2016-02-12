@@ -249,6 +249,7 @@ function facebook_tracking_pixel_page_build(&$page) {
             $wrapper = entity_metadata_wrapper('commerce_order', $order);
             $currency_code = $wrapper->commerce_order_total->currency_code->value();
             $total = $wrapper->commerce_order_total->amount->value();
+            $total = sprintf('%.2f', $total / 100);
             // Prepare an array of arguments to do text replacements.
             $argreplace = [
               '@val' => $total,
