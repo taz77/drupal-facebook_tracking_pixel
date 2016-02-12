@@ -68,7 +68,7 @@ function facebook_tracking_pixel_menu() {
     'weight' => 50,
   ];
   $items['admin/config/system/facebook_tracking_pixel/path'] = [
-    'title' => 'Events by Path',
+    'title' => 'Track Events by Path',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['facebook_tracking_pixel_track_by_path_form'],
     'access arguments' => ['administer facebook tracking pixels'],
@@ -76,7 +76,7 @@ function facebook_tracking_pixel_menu() {
     'type' => MENU_LOCAL_TASK,
   ];
   $items['admin/config/system/facebook_tracking_pixel/path/add'] = [
-    'title' => 'Add a Path Event',
+    'title' => 'Add tracking based on path',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['facebook_tracking_pixel_path_add_form'],
     'access arguments' => ['administer facebook tracking pixels'],
