@@ -90,11 +90,6 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
         'addtocart' => t('Add to Cart'),
         'purchase' => t('Purchase'),
       ],
-      '#ajax' => [
-        'callback' => 'facebook_tracking_pixel_commerce_tracking_currency_codes_ajax',
-        'wrapper' => 'replace-facebook-tracking-pixel-commerce-tracking-currency',
-        'effect' => 'fade',
-      ],
       '#default_value' => $options,
     ];
     $form['facebook_tracking_pixel_commerce_tracking_options']['facebook_tracking_pixel_commerce_tracking_basecode'] = [
@@ -104,32 +99,6 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
       '#default_value' => variable_get('facebook_tracking_pixel_commerce_tracking_basecode', NULL),
     ];
 
-  }
-  $form['facebook_tracking_pixel_commerce_tracking_currency_selection'] = [
-    '#markup' => '',
-    '#prefix' => '<div id="replace-facebook-tracking-pixel-commerce-tracking-currency">',
-    '#suffix' => '</div>',
-  ];
-  // To make the AJAX work correctly we have two different states we test for.
-  $currencydefault = variable_get('facebook_tracking_pixel_commerce_tracking_currency_selection', NULL);
-  if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']) && array_key_exists('purchase', array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']))) || array_key_exists('purchase', $options)) {
-    unset($form['facebook_tracking_pixel_commerce_tracking_currency_selection']);
-    $form['facebook_tracking_pixel_commerce_tracking_currency_selection'] = [
-      '#prefix' => '<div id="replace-facebook-tracking-pixel-commerce-tracking-currency">',
-      '#suffix' => '</div>',
-    ];
-    $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#type'] = 'select';
-    $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#options'] = $currencycodes;
-    $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#title'] = t('Currency Type');
-    $form['facebook_tracking_pixel_commerce_tracking_currency_selection']['#default_value'] = $currencydefault;
-  }
-  if (!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']) && !array_key_exists('purchase', array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection'])) && array_key_exists('purchase', $options)){
-    unset($form['facebook_tracking_pixel_commerce_tracking_currency_selection']);
-    $form['facebook_tracking_pixel_commerce_tracking_currency_selection'] = [
-      '#markup' => '',
-      '#prefix' => '<div id="replace-facebook-tracking-pixel-commerce-tracking-currency">',
-      '#suffix' => '</div>',
-    ];
   }
   $form['submit'] = [
     '#type' => 'submit',
@@ -148,17 +117,6 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
  */
 function facebook_tracking_pixel_commerce_tracking_ajax($form, $form_state) {
   return $form['facebook_tracking_pixel_commerce_tracking_options'];
-}
-
-/**
- * AJAX callback to populate currency selection.
- *
- * @param $form
- * @param $form_state
- * @return mixed
- */
-function facebook_tracking_pixel_commerce_tracking_currency_codes_ajax($form, $form_state) {
-  return $form['facebook_tracking_pixel_commerce_tracking_currency_selection'];
 }
 
 /**
