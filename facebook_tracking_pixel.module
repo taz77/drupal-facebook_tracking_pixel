@@ -778,9 +778,12 @@ function facebook_tracking_pixel_get_currency_codes() {
  * @param $line_item
  */
 function facebook_tracking_pixel_commerce_cart_product_add($order, $product, $quantity, $line_item) {
-  $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
-  if (array_key_exists('addtocart', $options)) {
-    facebook_tracking_pixel_add_session_event('ftpdcaddtocart');
+  $enable = variable_get('facebook_tracking_pixel_commerce_tracking_enable', NULL);
+  if ($enable) {
+    $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
+    if (array_key_exists('addtocart', $options)) {
+      facebook_tracking_pixel_add_session_event('ftpdcaddtocart');
+    }
   }
 }
 
@@ -793,10 +796,13 @@ function facebook_tracking_pixel_commerce_cart_product_add($order, $product, $qu
  * @param $checkout_page
  */
 function facebook_tracking_pixel_commerce_checkout_router($order, $checkout_page) {
-  $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
-  if (array_key_exists('checkoutstart', $options)) {
-    if ($checkout_page['page_id'] == 'checkout') {
-      facebook_tracking_pixel_add_session_event('ftpdcinitiatecheckout');
+  $enable = variable_get('facebook_tracking_pixel_commerce_tracking_enable', NULL);
+  if ($enable) {
+    $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
+    if (array_key_exists('checkoutstart', $options)) {
+      if ($checkout_page['page_id'] == 'checkout') {
+        facebook_tracking_pixel_add_session_event('ftpdcinitiatecheckout');
+      }
     }
   }
 }
@@ -809,10 +815,13 @@ function facebook_tracking_pixel_commerce_checkout_router($order, $checkout_page
  * @param $order
  */
 function facebook_tracking_pixel_commerce_checkout_complete($order) {
-  $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
-  if (array_key_exists('purchase', $options)) {
-    // We pass and store the order ID number so it can be used to populate currency
-    // and total values in the page build.
-    facebook_tracking_pixel_add_session_event('ftpdcpurchase', $order->order_id);
+  $enable = variable_get('facebook_tracking_pixel_commerce_tracking_enable', 0);
+  if ($enable) {
+    $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
+    if (array_key_exists('purchase', $options)) {
+      // We pass and store the order ID number so it can be used to populate currency
+      // and total values in the page build.
+      facebook_tracking_pixel_add_session_event('ftpdcpurchase', $order->order_id);
+    }
   }
 }
