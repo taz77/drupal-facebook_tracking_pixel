@@ -58,7 +58,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $node = $this->drupalCreateNode($edit);
     $this->testFacebookTrackingPixelNodeNID = $node->nid;
 
-    $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid', ['%ned' => $node->nid]), t('Facebook Tracking Pixel'));
+    $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid', ['%nid' => $node->nid]), t('Facebook Tracking Pixel'));
   }
 
   /**
