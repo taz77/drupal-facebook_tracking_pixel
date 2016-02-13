@@ -31,8 +31,6 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     // Create a generic authenticated user.
     $this->web_user = $this->drupalCreateUser();
 
-    // @todo Create test pages using default content types
-
     // Test Basecode ID.
     db_insert('facebook_tracking_pixel_base_codes')
       ->fields([
@@ -55,11 +53,13 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
    */
   public function testFacebookTrackingPixelNodeCreate() {
     // Create node to edit.
-    $edit = array();
+    $edit = [];
     $edit['title'] = $this->randomName(8);
-    $edit["body[und][0][value]"] = $this->randomName(16);
-    $this->drupalPost('node/add/page', $edit, t('Save'));
-    $this->assertText(t('Basic page @title has been created.', array('@title' => $edit['title'])));
+    $edit['body'] = $this->randomName(56);
+    $edit['type'] = 'page';
+    $edit['alias'] = 'nodetest';
+    $node = $this->drupalCreateNode($edit);
+    $this->testFacebookTrackingPixelNodeNID = $node->nid;
   }
 
   /**
