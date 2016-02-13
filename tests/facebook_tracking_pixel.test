@@ -28,7 +28,38 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     // Call the parent with an array of modules to enable for the test.
     parent::setUp(array('facebook_tracking_pixel'));
 
-    // @TODO: perform additional setup tasks here if required.
+    // Create a generic authenticated user.
+    $this->web_user = $this->drupalCreateUser(['authenticated user']);
+
+    // @todo Create test pages using default content types
+
+    // Test Basecode ID.
+    db_insert('facebook_tracking_pixel_base_codes')
+      ->fields([
+        'base_code_name' => 'Test Basecode',
+        'base_code_fbid' => '123123123',
+        'base_code_global' => 1,
+        'weight' => 10,
+      ])
+      ->execute();
+
+
+    // @todo Create test Facebook Tracking Path Item
+
+
+  }
+
+
+  /**
+   * Create a basic page node using the node form.
+   */
+  public function testFacebookTrackingPixelNodeCreate() {
+    // Create node to edit.
+    $edit = array();
+    $edit['title'] = $this->randomName(8);
+    $edit["body[und][0][value]"] = $this->randomName(16);
+    $this->drupalPost('node/add/page', $edit, t('Save'));
+    $this->assertText(t('Basic page @title has been created.', array('@title' => $edit['title'])));
   }
 
   /**
