@@ -29,7 +29,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     parent::setUp(array('facebook_tracking_pixel'));
 
     // Create a generic authenticated user.
-    $this->web_user = $this->drupalCreateUser(['authenticated user']);
+    $this->web_user = $this->drupalCreateUser();
 
     // @todo Create test pages using default content types
 
