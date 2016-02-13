@@ -54,9 +54,6 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
   public function testFacebookTrackingPixelNodeCreate() {
     // Create node to edit.
     $edit = [];
-    $edit['title'] = $this->randomName(8);
-    $edit['body'] = $this->randomName(56);
-    $edit['type'] = 'page';
     $edit['alias'] = 'nodetest';
     $node = $this->drupalCreateNode($edit);
     $this->testFacebookTrackingPixelNodeNID = $node->nid;
