@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @file 
+ * @file
  * Contains tests for the Facebook Tracking Pixel module.
  */
 
@@ -14,11 +14,11 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
    * Implements getInfo().
    */
   public static function getInfo() {
-    return array(
+    return [
       'name' => t('Facebook Tracking Pixel tests'),
       'description' => t('Place tracking pixel onto a site and control events.'),
       'group' => t('Facebook Tracking Pixel'),
-    );
+    ];
   }
 
   /**
@@ -26,7 +26,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
    */
   function setUp() {
     // Call the parent with an array of modules to enable for the test.
-    parent::setUp(array('facebook_tracking_pixel'));
+    parent::setUp(['facebook_tracking_pixel']);
 
     // Create a generic authenticated user.
     $this->web_user = $this->drupalCreateUser();
@@ -40,11 +40,6 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
         'weight' => 10,
       ])
       ->execute();
-
-
-    // @todo Create test Facebook Tracking Path Item
-
-
   }
 
 
@@ -58,14 +53,24 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $node = $this->drupalCreateNode($edit);
     $this->testFacebookTrackingPixelNodeNID = $node->nid;
 
-    $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid and title %title and path alias %alias', ['%nid' => $node->nid, '%title' => $node->title, '%alias' => $node->alias]), t('Facebook Tracking Pixel'));
+    $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid and title %title and path alias %alias', [
+      '%nid' => $node->nid,
+      '%title' => $node->title,
+      '%alias' => $node->alias,
+    ]), t('Facebook Tracking Pixel'));
   }
 
-  /**
-   * Test the module's functionality.
-   */
-  function testTodoChangeThisName() {
-    // @TODO: write test!
+  public function testFacebookTrackingPixelPathItemNodeExisting() {
+    // Test to add a path item to the existing node created in this test.
   }
 
+  public function testFacebookTrackingPixelPathItemNodeExistingDuplicateAlias(){
+    // Attempt to add a path item for an existing path item with an alias address
+
+  }
+
+  public function testFacebookTrackingPixelPathItemNodeExistingDuplicateSysPath(){
+    // Attempt to add a path item for an existing path item with a system path
+  }
+  
 }
