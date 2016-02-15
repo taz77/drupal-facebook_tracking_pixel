@@ -40,8 +40,13 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
         'weight' => 10,
       ])
       ->execute();
-  }
 
+    // Retreieve the base id created.
+    $this->basecodeid = db_select('facebook_tracking_pixel_base_codes', 'c')
+      ->fields('c', ['event_id'])
+      ->execute()
+      ->fetchField();
+  }
 
   /**
    * Create a basic page node using the node form.
@@ -52,6 +57,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $edit['alias'] = 'nodetest';
     $node = $this->drupalCreateNode($edit);
     $this->testFacebookTrackingPixelNodeNID = $node->nid;
+    $this->testFacebookTrackingPixelNodeAlias = $edit['alias'];
 
     $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid and title %title and path alias %alias', [
       '%nid' => $node->nid,
@@ -60,17 +66,38 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     ]), t('Facebook Tracking Pixel'));
   }
 
+  /**
+   * Attempt to add a path tracking item to the node created using path alias.
+   */
   public function testFacebookTrackingPixelPathItemNodeExisting() {
     // Test to add a path item to the existing node created in this test.
+    $edit = [];
+
+    $edit['event_name'] = $this->randomName(8);
+    $edit['event_path'] = $this->testFacebookTrackingPixelNodeAlias;
+    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event_type[]'] = ['addtocart', 'lead'];
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
+    $this->assertText(t('Path tracking entry added.'));
+
+
   }
 
-  public function testFacebookTrackingPixelPathItemNodeExistingDuplicateAlias(){
+  /**
+   *
+   */
+  public function testFacebookTrackingPixelPathItemNodeExistingDuplicateAlias() {
     // Attempt to add a path item for an existing path item with an alias address
+    $edit = [];
 
   }
 
-  public function testFacebookTrackingPixelPathItemNodeExistingDuplicateSysPath(){
+  /**
+   *
+   */
+  public function testFacebookTrackingPixelPathItemNodeExistingDuplicateSysPath() {
     // Attempt to add a path item for an existing path item with a system path
+    $edit = [];
   }
-  
+
 }
