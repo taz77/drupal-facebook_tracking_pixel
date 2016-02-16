@@ -31,6 +31,10 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     // Create a generic authenticated user.
     $this->web_user = $this->drupalCreateUser();
 
+    // Create an admin user and log them in.
+    $this->admin_user = $this->drupalCreateUser('administer facebook tracking pixels');
+    $this->drupalLogin($this->admin_user);
+
     // Test Basecode ID.
     db_insert('facebook_tracking_pixel_base_codes')
       ->fields([
