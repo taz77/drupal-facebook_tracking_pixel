@@ -73,9 +73,9 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     // Test to add a path item to the existing node created in this test.
     $edit = [];
 
-    $edit['event_name'] = $this->randomName(8);
-    $edit['event_path'] = $this->testFacebookTrackingPixelNodeAlias;
-    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event-name'] = $this->randomName(8);
+    $edit['event-path'] = $this->testFacebookTrackingPixelNodeAlias;
+    $edit['event-base-code-id'] = $this->basecodeid;
     $edit['event_type[]'] = ['addtocart', 'lead'];
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
     $this->assertText(t('Path tracking entry added.'));
