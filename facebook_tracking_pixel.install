@@ -65,6 +65,13 @@ function facebook_tracking_pixel_schema() {
         'length' => 11,
         'not null' > FALSE,
       ],
+      'event_enable' => [
+        'description' => 'If a code is enabled.',
+        'type' => 'int',
+        'length' => 2,
+        'default' => 1,
+        'not null' > FALSE,
+      ],
       'weight' => [
         'description' => 'The sortable weight for this item',
         'type' => 'int',

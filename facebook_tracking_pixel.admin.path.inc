@@ -90,7 +90,7 @@ function facebook_tracking_pixel_track_by_path_form() {
           '#markup' => $itemeventtypemarkup,
         ],
         'event_path' => [
-          '#markup' => l($item->event_path, $item->event_path),
+          '#markup' => ($item->event_enable == 1) ? l($item->event_path, $item->event_path) : $item->event_path,
         ],
         // This shows the Base Code human readable name but we track based off the serial ID number.
         'event_base_code_id' => [
@@ -98,6 +98,9 @@ function facebook_tracking_pixel_track_by_path_form() {
         ],
         'event_uid' => [
           '#markup' => $item->event_uid,
+        ],
+        'event_enable' => [
+          '#markup' =>($item->event_enable == 1) ? 'Enabled' : 'Disabled',
         ],
         'weight' => [
           '#type' => 'weight',
@@ -152,6 +155,7 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
     t('Event Type(s)'),
     t('Path'),
     t('Base Code ID'),
+    t('Status'),
     t('Unique ID'),
     t('Weight'),
     [
@@ -172,6 +176,8 @@ function theme_facebook_tracking_pixel_track_by_path_form($variables) {
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_path']),
         // Add the base code ID
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_base_code_id']),
+        // Add our 'event_enable' column.
+        drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_enable']),
         // Add our 'event_uid' column.
         drupal_render($form['facebook_tracking_pixel_tracking_codes_by_path'][$id]['event_uid']),
         // Add our 'weight' column.
@@ -332,6 +338,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
             'event_type' => $type,
             'event_base_code_id' => $base_code_id,
             'event_js_file' => $event_js,
+            'event_enable' => 1,
             'event_uid' => $uid,
             'event_path_system' => $systemsource,
             'event_name' => $name,
@@ -460,6 +467,11 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
     $basecodes[$item->base_code_id] = $item->base_code_name;
   }
   $form = [];
+  if (empty($result['event_enable'])){
+    $form['event_disabled'] = [
+      '#markup' => t('This event is disabled because the path being tracked no longer exists. You may only update the path of this item to provide a new valid path.')
+    ];
+  }
   $pathtypeoptions = facebook_tracking_pixel_events_options();
   $form['event_name'] = [
     '#title' => 'Event Name',
@@ -467,12 +479,14 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
     '#size' => 24,
     '#maxlength' => 255,
     '#default_value' => $result['event_name'],
+    '#disabled' => ($result['event_enable'] == 1) ? FALSE : TRUE,
   ];
   $form['event_type'] = [
     '#title' => 'Event Type',
     '#type' => 'checkboxes',
     '#options' => $pathtypeoptions,
     '#default_value' => unserialize($result['event_type']),
+    '#disabled' => ($result['event_enable'] == 1) ? FALSE : TRUE,
   ];
   $form['event_path'] = [
     '#title' => 'Path for Action',
@@ -487,6 +501,7 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
     '#type' => 'select',
     '#options' => $basecodes,
     '#default_value' => $result['event_base_code_id'],
+    '#disabled' => ($result['event_enable'] == 1) ? FALSE : TRUE,
   ];
   $form['event_uid_markup'] = [
     '#prefix' => '<p>',
@@ -581,6 +596,7 @@ function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
             'event_base_code_id' => $base_code_id,
             'event_js_file' => $event_js,
             'event_uid' => $uidnew,
+            'event_enable' => 1,
             'event_path_system' => $systemsource,
             'event_name' => $name,
           ]

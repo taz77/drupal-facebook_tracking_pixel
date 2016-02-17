@@ -499,7 +499,8 @@ function facebook_tracking_pixel_path_codes() {
 
   if (!$trackingpaths) {
     $result = db_select('facebook_tracking_pixel_events_path', 'g')
-      ->fields('g', ['event_path', 'event_js_file', 'event_base_code_id']);
+      ->fields('g', ['event_path', 'event_js_file', 'event_base_code_id'])
+      ->condition('event_enable', 1, '=');
     $result = $result->execute();
 
     while ($code = $result->fetchAssoc()) {
@@ -823,5 +824,28 @@ function facebook_tracking_pixel_commerce_checkout_complete($order) {
       // and total values in the page build.
       facebook_tracking_pixel_add_session_event('ftpdcpurchase', $order->order_id);
     }
+  }
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function facebook_tracking_pixel_node_delete($node) {
+  //  If the node being deleted has a path tracking item, disable the item.
+  $result = db_select('facebook_tracking_pixel_events_path', 'c')
+    ->fields('c')
+    ->condition('event_path_system', 'node/' . $node->nid, '=')
+    ->execute()
+    ->fetchField();
+  if ($result) {
+    // If a node exists then we update the DB to disable that item.
+    db_update('facebook_tracking_pixel_events_path')
+      ->fields(
+        [
+          'event_enable' => 0,
+        ]
+      )
+      ->condition('event_id', $result['event_id'], '=')
+      ->execute();
   }
 }
