@@ -15,9 +15,9 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
    */
   public static function getInfo() {
     return [
-      'name' => t('Facebook Tracking Pixel tests'),
-      'description' => t('Place tracking pixel onto a site and control events.'),
-      'group' => t('Facebook Tracking Pixel'),
+      'name' => 'General Test',
+      'description' => 'Place tracking pixel onto a site and control events.',
+      'group' => 'Facebook Tracking Pixel',
     ];
   }
 
@@ -32,7 +32,14 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $this->web_user = $this->drupalCreateUser();
 
     // Create an admin user and log them in.
-    $this->admin_user = $this->drupalCreateUser(['administer facebook tracking pixels']);
+    $this->admin_user = $this->drupalCreateUser([
+      'administer facebook tracking pixels',
+      'access content',
+      'create page content',
+      'edit own page content',
+      'administer url aliases',
+      'create url aliases',
+    ]);
     $this->drupalLogin($this->admin_user);
 
 
@@ -51,24 +58,35 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
       ->fields('c', ['base_code_id'])
       ->execute()
       ->fetchField();
-  }
 
-  /**
-   * Create a basic page node using the node form.
-   */
-  public function testFacebookTrackingPixelNodeCreate() {
+    // Create a Node with a path alias for testing.
     // Create node to edit.
-    $edit = [];
-    $edit['alias'] = 'nodetest';
-    $node = $this->drupalCreateNode($edit);
+    $node = $this->drupalCreateNode();
     $this->testFacebookTrackingPixelNodeNID = $node->nid;
-    $this->testFacebookTrackingPixelNodeAlias = $edit['alias'];
 
-    $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid and title %title and path alias %alias', [
+
+    $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid and title %title and path alias', [
       '%nid' => $node->nid,
       '%title' => $node->title,
-      '%alias' => $node->alias,
     ]), t('Facebook Tracking Pixel'));
+
+    // Create alias for the node just created above.
+    $edit = [];
+    $edit['source'] = 'node/' . $node->nid;
+    $edit['alias'] = 'nodetest';
+    $this->drupalPost('admin/config/search/path/add', $edit, t('Save'));
+    $this->testFacebookTrackingPixelNodeAlias = $edit['alias'];
+
+    // Visit the system path for the node and confirm a cache entry is
+    // created.
+    cache_clear_all('*', 'cache_path', TRUE);
+    $this->drupalGet($edit['source']);
+    $this->assertTrue(cache_get($edit['source'], 'cache_path'), 'Cache entry was created.');
+
+    // Visit the alias for the node and confirm a cache entry is created.
+    cache_clear_all('*', 'cache_path', TRUE);
+    $this->drupalGet($edit['alias']);
+    $this->assertTrue(cache_get($edit['source'], 'cache_path'), 'Cache entry was created.');
   }
 
   /**
@@ -83,7 +101,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $edit['event_type[addtocart]'] = TRUE;
     $edit['event_type[lead]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
-    $this->assertText(t('Path tracking entry added.'), t('Path tracking text confirmation on page displayed after form submit.'),'FBTrkPx');
+    $this->assertText(t('Path tracking entry added.'), t('Path tracking text confirmation on page displayed after form submit. Path name %name added', ['%name' => $edit['event_name']]), 'FBTrkPx');
   }
 
   /**
@@ -98,7 +116,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $edit['event_type[addtocart]'] = TRUE;
     $edit['event_type[lead]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
-    $this->assertText(t('You cannot add a duplicate event to the same path and base code.'), t('Adding path with same alias should fail.'),'FBTrkPx');
+    $this->assertText(t('You cannot add a duplicate event to the same path and base code.'), t('Adding path with same alias should fail.'), 'FBTrkPx');
 
   }
 
