@@ -83,7 +83,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $edit['event_type[addtocart]'] = TRUE;
     $edit['event_type[lead]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
-    $this->assertText(t('Path tracking entry added.'), t('Path tracking was added throught the UI as an admin.'),'Facebook Tracking Pixel');
+    $this->assertText(t('Path tracking entry added.'), t('Path tracking text confirmation on page displayed after form submit.'),'FBTrkPx');
   }
 
   /**
@@ -92,6 +92,13 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
   public function testFacebookTrackingPixelPathItemNodeExistingDuplicateAlias() {
     // Attempt to add a path item for an existing path item with an alias address
     $edit = [];
+    $edit['event_name'] = $this->randomName(8);
+    $edit['event_path'] = $this->testFacebookTrackingPixelNodeAlias;
+    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event_type[addtocart]'] = TRUE;
+    $edit['event_type[lead]'] = TRUE;
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
+    $this->assertText(t('You cannot add a duplicate event to the same path and base code.'), t('Adding path with same alias should fail.'),'FBTrkPx');
 
   }
 
