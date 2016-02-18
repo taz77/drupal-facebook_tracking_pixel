@@ -100,7 +100,7 @@ function facebook_tracking_pixel_track_by_path_form() {
           '#markup' => $item->event_uid,
         ],
         'event_enable' => [
-          '#markup' =>($item->event_enable == 1) ? 'Enabled' : 'Disabled',
+          '#markup' => ($item->event_enable == 1) ? 'Enabled' : 'Disabled',
         ],
         'weight' => [
           '#type' => 'weight',
@@ -276,9 +276,9 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
     ->fields('c')
     ->condition('event_path_system', $systemsource, '=')
     ->execute()
-    ->fetchField();
+    ->fetchAssoc();
   if ($result && $form['#id'] != 'facebook-tracking-pixel-path-edit-form') {
-    form_set_error('event_path', t('The event you are trying to add is the resolved path in Drupal as the event with name') . ' <em>' . $result['event_name'] . '</em>');
+    form_set_error('event_path', t('The event you are trying to add is the resolved path in Drupal as the event with name <em>%name</em>'), ['%name' => $result['event_name']]);
   }
 
 }
@@ -467,9 +467,9 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
     $basecodes[$item->base_code_id] = $item->base_code_name;
   }
   $form = [];
-  if (empty($result['event_enable'])){
+  if (empty($result['event_enable'])) {
     $form['event_disabled'] = [
-      '#markup' => t('This event is disabled because the path being tracked no longer exists. You may only update the path of this item to provide a new valid path.')
+      '#markup' => t('This event is disabled because the path being tracked no longer exists. You may only update the path of this item to provide a new valid path.'),
     ];
   }
   $pathtypeoptions = facebook_tracking_pixel_events_options();
