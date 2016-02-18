@@ -50,6 +50,13 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
   protected $admin_user = [];
 
   /**
+   * Facebook Basecode database ID number.
+   *
+   * @var string
+   */
+  protected $basecodeid = '';
+
+  /**
    * Implements setUp().
    */
   function setUp() {
@@ -67,8 +74,13 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
       'edit own page content',
       'administer url aliases',
       'create url aliases',
+      'administer users',
+      'administer permissions',
     ]);
     $this->drupalLogin($this->admin_user);
+    // Set the role as admin for the admin user just created.
+    $this->drupalPost('user/' . $this->admin_user->uid . '/edit', ['roles[3]' => TRUE], t('Save'));
+
 
 
     // Test Basecode ID.
@@ -120,7 +132,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
   /**
    * Attempt to add a path tracking item to the node created using path alias.
    */
-  public function testFacebookTrackingPixelPathItem() {
+  public function testFacebookTrackingPixelPathItemNodes() {
     // Test to add a path item to the existing node created in this test.
     $edit = [];
     $edit['event_name'] = $this->randomName(8);
@@ -153,6 +165,25 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $edit['event_type[registration]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
     $this->assertText(t('The event you are trying to add is the resolved path in Drupal as the event with name'), t('Adding path with same alias should fail. This test should pass.'), 'FBTrkPx');
+  }
+
+  /**
+   * Test path items using pages routed via menu router.
+   *
+   * This will apply to views, custom modules, panels, etc.
+   */
+  public function testFacebookTrackingPixelPathItemRouter() {
+    // Test to add a path item to a menu router path item.
+    // We are going to use a path that is available in any Drupal installation
+    $edit = [];
+    $edit['event_name'] = $this->randomName(8);
+    $edit['event_path'] = 'admin';
+    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event_type[addtocart]'] = TRUE;
+    $edit['event_type[lead]'] = TRUE;
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
+    $this->assertText(t('Path tracking entry added.'), t('Path tracking text confirmation on page displayed after form submit. Path name %name added', ['%name' => $edit['event_name']]), 'FBTrkPx');
+
   }
 
 }
