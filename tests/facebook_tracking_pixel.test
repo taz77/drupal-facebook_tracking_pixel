@@ -130,6 +130,24 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Test basecode functionality.
+   */
+  public function testFacebookTrackingPixelBasePixel(){
+    // Submit a new basecode.
+    $edit = [];
+    $edit['name'] = $this->randomName(8);
+    $edit['fbid'] = 12314512312;
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel/base_codes', $edit, t('Add'));
+    $this->assertText(t('Facebook Base Tracking Code Added'), t('Add new base code through the admin UI'));
+
+    // Submit a duplicate item using the same FB basecode ID.    $edit = [];
+    $edit['name'] = $this->randomName(8);
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel/base_codes', $edit, t('Add'));
+    $this->assertText(t('You only need to add a base tracking code once.'), t('Add duplicate base code through the admin UI'));
+
+  }
+
+  /**
    * Attempt to add a path tracking item to the node created using path alias.
    */
   public function testFacebookTrackingPixelPathItemNodes() {
@@ -174,7 +192,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
    */
   public function testFacebookTrackingPixelPathItemRouter() {
     // Test to add a path item to a menu router path item.
-    // We are going to use a path that is available in any Drupal installation
+    // We are going to use a path that is available in any Drupal installation.
     $edit = [];
     $edit['event_name'] = $this->randomName(8);
     $edit['event_path'] = 'admin';
@@ -183,6 +201,16 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $edit['event_type[lead]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
     $this->assertText(t('Path tracking entry added.'), t('Path tracking text confirmation on page displayed after form submit. Path name %name added', ['%name' => $edit['event_name']]), 'FBTrkPx');
+
+    // Attemp to submit another item using the same menu router path.
+    $edit = [];
+    $edit['event_name'] = $this->randomName(8);
+    $edit['event_path'] = 'admin';
+    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event_type[search]'] = TRUE;
+    $edit['event_type[registration]'] = TRUE;
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
+    $this->assertText(t('You cannot add a duplicate event to the same path and base code.'), t('A duplicate menu router item was not allowed to be submitted'), 'FBTrkPx');
 
   }
 
