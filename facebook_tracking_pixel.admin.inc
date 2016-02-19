@@ -276,6 +276,19 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
  * @param $form_state
  */
 function facebook_tracking_pixel_base_codes_add_fbid_validate($form, &$form_state) {
+  $base_code_fbid = check_plain($form_state['values']['fbid']);
+  $result = db_select('facebook_tracking_pixel_base_codes', 'c')
+    ->fields('c')
+    ->condition('base_code_fbid', $base_code_fbid, '=')
+    ->execute()
+    ->fetchField();
+  // If the same path has been added for an existing base code, reject the add.
+  // But if this is the edit form do not throw this error because you are
+  // editing an existing item.
+  if ($result) {
+    form_set_error('fbid', t('You only need to add a base tracking code once.'));
+  }
+
   // Throw an error if no name has been provided.
   if (empty($form_state['values']['name'])) {
     form_error($form['add']['name'], t('Please supply a human readable name.'));
@@ -321,6 +334,7 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
           'weight' => $weight,
         ])
         ->execute();
+      drupal_set_message(t('Facebook Base Tracking Code Added'), 'status');
       return TRUE;
     }
     return FALSE;
