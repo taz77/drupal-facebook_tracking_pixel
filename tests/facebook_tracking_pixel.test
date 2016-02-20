@@ -63,6 +63,12 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
   protected $basecodefbid = '';
 
   /**
+   * Test node id number.
+   * @var int
+   */
+  protected $nodeid = 0;
+
+  /**
    * Implements setUp().
    */
   function setUp() {
@@ -114,7 +120,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid and title %title and path alias', [
       '%nid' => $node->nid,
       '%title' => $node->title,
-    ]), t('Facebook Tracking Pixel'));
+    ]), t('FBTrkPx'));
 
     // Create alias for the node just created above.
     $edit = [];
@@ -122,6 +128,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $edit['alias'] = 'nodetest';
     $this->drupalPost('admin/config/search/path/add', $edit, t('Save'));
     $this->testFacebookTrackingPixelNodeAlias = $edit['alias'];
+    $this->nodeid = $node->nid;
 
     // Visit the system path for the node and confirm a cache entry is
     // created.
@@ -222,16 +229,23 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
 
   public function testFacebookTrackingPixelTrackPages() {
     // Test Basecode ID that is not global
+    $testfbid = '890890890890';
     db_insert('facebook_tracking_pixel_base_codes')
       ->fields([
         'base_code_name' => 'Test Basecode',
-        'base_code_fbid' => '890890890890',
+        'base_code_fbid' => $testfbid,
         'base_code_global' => 0,
         'weight' => 10,
       ])
       ->execute();
+    // Retreieve the base code ID created.
+    $testbasecodeid = db_select('facebook_tracking_pixel_base_codes', 'c')
+      ->fields('c', ['base_code_id'])
+      ->condition('base_code_fbid', $testfbid, '=')
+      ->execute()
+      ->fetchField();
 
-    // Turn on tracking for roles
+    // Turn on tracking for roles.
     $edit = [];
     $edit['facebook_tracking_pixel_roles_administrator'] = TRUE;
     $edit['facebook_tracking_pixel_roles_anonymous_user'] = TRUE;
@@ -239,11 +253,60 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $this->drupalPost('admin/config/system/facebook_tracking_pixel', $edit, t('Save configuration'));
     $this->assertText(t('The configuration options have been saved.'), t('Save the settings to track all roles.'), 'FBTrkPx');
 
-    // Load the front page and check for the global code
+    // Load the front page and check for the global and non-global code.
     $this->drupalGet('');
-
-    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->basecodefbid  . '.js', t('Global tracking code JS found in head.'), 'FBTrkPx');
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->basecodefbid . '.js', t('Global tracking code JS found in head.'), 'FBTrkPx');
     $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.890890890890.js', t('Non-global tracking code JS not found in head.'), 'FBTrkPx');
 
+    // Track created node using system path.
+    $this->drupalGet('node/' . $this->nodeid);
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->basecodefbid . '.js', t('Global tracking code JS found in head for node system path.'), 'FBTrkPx');
+    $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.890890890890.js', t('Non-global tracking code JS found in head for node system path.'), 'FBTrkPx');
+
+    // Track created node using alias path.
+    $this->drupalGet($this->testFacebookTrackingPixelNodeAlias);
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->basecodefbid . '.js', t('Global tracking code JS found in head for node alias path.'), 'FBTrkPx');
+    $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.890890890890.js', t('Non-global tracking code JS found in head for node system path.'), 'FBTrkPx');
+
+    // Create a new node and add path tracking to the new node.
+    $node = $this->drupalCreateNode();
+    $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid and title %title and path alias', [
+      '%nid' => $node->nid,
+      '%title' => $node->title,
+    ]), t('FBTrkPx'));
+
+    // Create alias for the node just created above.
+    $edit = [];
+    $edit['source'] = 'node/' . $node->nid;
+    $testpath = $edit['alias'] = 'pathtest';
+    $this->drupalPost('admin/config/search/path/add', $edit, t('Save'));
+    // Visit the system path for the node and confirm a cache entry is
+    // created.
+    cache_clear_all('*', 'cache_path', TRUE);
+    $this->drupalGet($edit['source']);
+    $this->assertTrue(cache_get($edit['source'], 'cache_path'), 'Cache entry was created.');
+
+    // Attempt to add a path item for the same path as above using alias path.
+    $edit = [];
+    $edit['event_name'] = $this->randomName(8);
+    $edit['event_path'] = $testpath;
+    $edit['event_base_code_id'] = $testbasecodeid;
+    $edit['event_type[search]'] = TRUE;
+    $edit['event_type[registration]'] = TRUE;
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
+    $this->assertText(t('Path tracking entry added.'), t('Path tracking text confirmation on page displayed after form submit. Path name %name added', ['%name' => $edit['event_name']]), 'FBTrkPx');
+    $testbasecodeuid = db_select('facebook_tracking_pixel_events_path', 'c')
+      ->fields('c', ['event_uid'])
+      ->condition('event_base_code_id', $testbasecodeid, '=')
+      ->execute()
+      ->fetchField();
+
+    // Load the system path of the newly created node and see if code exists.
+    $this->drupalGet('node/' . $node->nid);
+    $this->assertRaw('facebook_tracking_pixel/pathtracking/fb_trk.' . $testbasecodeuid . '.js', t('Path tracking code JS found in head.'), 'FBTrkPx');
+
+    // Load the alias path of the newly created node and see if code exists.
+    $this->drupalGet($testpath);
+    $this->assertRaw('facebook_tracking_pixel/pathtracking/fb_trk.' . $testbasecodeuid . '.js', t('Path tracking code JS found in head.'), 'FBTrkPx');
   }
 }
