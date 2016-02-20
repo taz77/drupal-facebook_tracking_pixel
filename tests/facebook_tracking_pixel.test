@@ -11,7 +11,7 @@
 class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
 
   /**
-   * Implements getInfo().
+   * {@inheritdoc}
    */
   public static function getInfo() {
     return [
@@ -57,11 +57,18 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
   protected $basecodeid = '';
 
   /**
+   * Test base code FB ID number.
+   * @var string
+   */
+  protected $basecodefbid = '';
+
+  /**
    * Implements setUp().
    */
   function setUp() {
     // Call the parent with an array of modules to enable for the test.
-    parent::setUp(['facebook_tracking_pixel']);
+    $modules[] = 'facebook_tracking_pixel';
+    parent::setUp($modules);
 
     // Create a generic authenticated user.
     $this->web_user = $this->drupalCreateUser();
@@ -81,13 +88,12 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     // Set the role as admin for the admin user just created.
     $this->drupalPost('user/' . $this->admin_user->uid . '/edit', ['roles[3]' => TRUE], t('Save'));
 
-
-
+    $this->basecodefbid = '123123123';
     // Test Basecode ID.
     db_insert('facebook_tracking_pixel_base_codes')
       ->fields([
         'base_code_name' => 'Test Basecode',
-        'base_code_fbid' => '123123123',
+        'base_code_fbid' => $this->basecodefbid,
         'base_code_global' => 1,
         'weight' => 10,
       ])
@@ -132,7 +138,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
   /**
    * Test basecode functionality.
    */
-  public function testFacebookTrackingPixelBasePixel(){
+  public function testFacebookTrackingPixelBasePixel() {
     // Submit a new basecode.
     $edit = [];
     $edit['name'] = $this->randomName(8);
@@ -140,7 +146,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/base_codes', $edit, t('Add'));
     $this->assertText(t('Facebook Base Tracking Code Added'), t('Add new base code through the admin UI'));
 
-    // Submit a duplicate item using the same FB basecode ID.    $edit = [];
+    // Submit a duplicate item using the same FB basecode ID.
     $edit['name'] = $this->randomName(8);
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/base_codes', $edit, t('Add'));
     $this->assertText(t('You only need to add a base tracking code once.'), t('Add duplicate base code through the admin UI'));
@@ -214,4 +220,30 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
 
   }
 
+  public function testFacebookTrackingPixelTrackPages() {
+    // Test Basecode ID that is not global
+    db_insert('facebook_tracking_pixel_base_codes')
+      ->fields([
+        'base_code_name' => 'Test Basecode',
+        'base_code_fbid' => '890890890890',
+        'base_code_global' => 0,
+        'weight' => 10,
+      ])
+      ->execute();
+
+    // Turn on tracking for roles
+    $edit = [];
+    $edit['facebook_tracking_pixel_roles_administrator'] = TRUE;
+    $edit['facebook_tracking_pixel_roles_anonymous_user'] = TRUE;
+    $edit['facebook_tracking_pixel_roles_authenticated_user'] = TRUE;
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel', $edit, t('Save configuration'));
+    $this->assertText(t('The configuration options have been saved.'), t('Save the settings to track all roles.'), 'FBTrkPx');
+
+    // Load the front page and check for the global code
+    $this->drupalGet('');
+
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->basecodefbid  . '.js', t('Global tracking code JS found in head.'), 'FBTrkPx');
+    $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.890890890890.js', t('Non-global tracking code JS not found in head.'), 'FBTrkPx');
+
+  }
 }
