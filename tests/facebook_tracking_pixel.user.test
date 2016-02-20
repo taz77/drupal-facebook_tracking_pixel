@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * @file
+ * Contains tests for the Facebook Tracking Pixel module.
+ */
+
+/**
+ * Test case.
+ */
+class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'User Registration Test',
+      'description' => 'Test user registration tracking.',
+      'group' => 'Facebook Tracking Pixel',
+    ];
+  }
+
+  /**
+   * Test to enable user tracking.
+   */
+  public function testFacebookTrackingPixelUserRegistration(){
+    // Turn on user registration and select test base code.
+    $edit = [];
+    $edit['facebook_tracking_pixel_user_registration_enable'] = TRUE;
+    $edit['facebook_tracking_pixel_user_registration_basecode'] = $this->basecodeid;
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel/user_registration', $edit, t('Save configuration'));
+    $this->assertText(t('User tracking settings saved.'), t('User registration tracking enabled.'), 'FBTrkPx');
+  }
+}
