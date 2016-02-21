@@ -98,6 +98,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     // Retreieve the base id created.
     $this->basecodeid = db_select('facebook_tracking_pixel_base_codes', 'c')
       ->fields('c', ['base_code_id'])
+      ->condition('base_code_fbid', $this->basecodefbid, '=')
       ->execute()
       ->fetchField();
 
