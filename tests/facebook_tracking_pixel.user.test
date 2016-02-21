@@ -24,12 +24,14 @@ class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
   /**
    * Test to enable user tracking.
    */
-  public function testFacebookTrackingPixelUserRegistration(){
+  public function testFacebookTrackingPixelUserRegistration() {
     // Turn on user registration and select test base code.
     $edit = [];
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/user_registration');
     $edit['facebook_tracking_pixel_user_registration_enable'] = TRUE;
+    $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_user_registration_enable');
     $edit['facebook_tracking_pixel_user_registration_basecode'] = $this->basecodeid;
-    $this->drupalPost('admin/config/system/facebook_tracking_pixel/user_registration', $edit, t('Save configuration'));
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
     $this->assertText(t('User tracking settings saved.'), t('User registration tracking enabled.'), 'FBTrkPx');
   }
 }
