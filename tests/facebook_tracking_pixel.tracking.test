@@ -22,13 +22,15 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
   }
 
   /**
-   * Test basecode functionality.
+   * Test adding basecodes through UI and see they appear on the page.
    */
   public function testFacebookTrackingPixelBasePixel() {
-    // Submit a new basecode.
+    // Submit a new global basecode.
     $edit = [];
     $edit['name'] = $this->randomName(8);
-    $edit['fbid'] = 12314512312;
+    $id1 = 12314512312;
+    $edit['fbid'] = $id1;
+    $edit['global'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/base_codes', $edit, t('Add'));
     $this->assertText(t('Facebook Base Tracking Code Added'), t('Add new base code through the admin UI'));
 
@@ -36,6 +38,22 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $edit['name'] = $this->randomName(8);
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/base_codes', $edit, t('Add'));
     $this->assertText(t('You only need to add a base tracking code once.'), t('Add duplicate base code through the admin UI'));
+
+    // Submit a second global basecode.
+    $edit = [];
+    $edit['name'] = $this->randomName(8);
+    $id2 = 789789789;
+    $edit['fbid'] = $id2;
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel/base_codes', $edit, t('Add'));
+    $this->assertText(t('Facebook Base Tracking Code Added'), t('Add new base code through the admin UI'));
+
+    // Enable all roles to be tracked.
+    parent::_enable_tracking_all_roles();
+    // With two base codes set to global they should both appear on a page.
+    $this->drupalGet('');
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Tracking Code 1 Found in Raw Source'), 'FBTrkPx');
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id2 . '.js', t('Tracking Code 2 Found in Raw Source'), 'FBTrkPx');
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->basecodefbid . '.js', t('Setup Tracking Code Found in Raw Source'), 'FBTrkPx');
 
   }
 
