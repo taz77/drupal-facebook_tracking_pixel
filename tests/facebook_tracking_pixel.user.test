@@ -26,13 +26,8 @@ class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
    */
   public function testFacebookTrackingPixelUserRegistration() {
 
-    // Turn on tracking for roles.
-    $edit = [];
-    $edit['facebook_tracking_pixel_roles_administrator'] = TRUE;
-    $edit['facebook_tracking_pixel_roles_anonymous_user'] = TRUE;
-    $edit['facebook_tracking_pixel_roles_authenticated_user'] = TRUE;
-    $this->drupalPost('admin/config/system/facebook_tracking_pixel', $edit, t('Save configuration'));
-    $this->assertText(t('The configuration options have been saved.'), t('Save the settings to track all roles.'), 'FBTrkPx');
+    // Turn on tracking for all roles.
+    parent::_enable_tracking_all_roles();
 
     // Turn on user registration and select test global base code.
     $edit = [];
