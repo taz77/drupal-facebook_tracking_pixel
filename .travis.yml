@@ -104,7 +104,6 @@ mysql:
 before_install:
   - composer self-update
   - git config --global github.accesstoken $GITHUB_OAUTH_TOKEN
-  - drush dl commerce
   - cd ./tests
   - composer global require "lionsad/drupal_ti:1.*"
   - drupal-ti before_install
@@ -114,6 +113,7 @@ install:
 
 before_script:
   - drupal-ti before_script
+  - drush dl commerce
 
 script:
   - drupal-ti script
