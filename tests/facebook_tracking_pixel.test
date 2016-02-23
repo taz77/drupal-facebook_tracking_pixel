@@ -11,13 +11,6 @@
 class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
 
   /**
-   * Node ID created during testing.
-   *
-   * @var string
-   */
-  protected $testFacebookTrackingPixelNodeNID = '';
-
-  /**
    * Node alias created during testing.
    *
    * @var string
@@ -57,6 +50,11 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
    */
   protected $nodeid = 0;
 
+  /**
+   * Test node title.
+   * @var string
+   */
+  protected $nodetitle = '';
 
   /**
    * {@inheritdoc}
@@ -105,7 +103,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     // Create a Node with a path alias for testing.
     // Create node to edit.
     $node = $this->drupalCreateNode();
-    $this->testFacebookTrackingPixelNodeNID = $node->nid;
+    $this->nodetitle = $node->title;
 
 
     $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid and title %title and path alias', [
