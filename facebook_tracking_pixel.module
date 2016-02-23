@@ -836,7 +836,7 @@ function facebook_tracking_pixel_node_delete($node) {
     ->fields('c')
     ->condition('event_path_system', 'node/' . $node->nid, '=')
     ->execute()
-    ->fetchField();
+    ->fetchAssoc();
   if ($result) {
     // If a node exists then we update the DB to disable that item.
     db_update('facebook_tracking_pixel_events_path')
