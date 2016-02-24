@@ -253,12 +253,15 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
 
     // Check DB to see if tracking item is now showing as disabled.
     $result = db_select('facebook_tracking_pixel_events_path', 'c')
-      ->fields('c', ['event_path_system', 'event_enable'])
+      ->fields('c', ['event_path_system', 'event_enable', 'event_id'])
       ->condition('event_path_system', 'node/' . $nid, '=')
       ->execute()
       ->fetchAssoc();
     $this->assertEqual($result['event_enable'], 0, t('Tracking event is disabled in database after node delete'), 'FBTrkPx');
 
-    // Check UI to see if tracking item is now showing as disabled.
+    // Check edit page to see if tracking item is now showing as disabled.
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/path/edit/' . $result['event_id']);
+    $this->assertText(t('This event is disabled because the path being tracked no longer exists. You may only update the path of this item to provide a new valid path.'), t('Tracking event is disabled in the UI after node delete.'), 'FBTrkPx');
+
   }
 }
