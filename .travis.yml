@@ -47,12 +47,10 @@ before_install:
 install:
 - drupal-ti install
 before_script:
-- pwd
-- cd $DRUPAL_TI_DRUPAL_DIR
-- wget https://www.drupal.org/files/issues/drupal-session_destroy_return_bool-2460833-30.patch
-- git apply drupal-session_destroy_return_bool-2460833-30.patch
+- drupal-ti --include before.sh
 - drupal-ti before_script
 - drush dl commerce
+- drush en -y commerce
 script:
 - drupal-ti script
 after_script:
