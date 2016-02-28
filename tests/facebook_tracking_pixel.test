@@ -22,39 +22,39 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
    *
    * @var array
    */
-  protected $web_user = [];
+  protected $webUser = [];
 
   /**
    * Adminstrative user.
    *
    * @var array
    */
-  protected $admin_user = [];
+  protected $adminUser = [];
 
   /**
    * Facebook Basecode database ID number.
    *
    * @var string
    */
-  protected $basecodeid = '';
+  protected $baseCodeID = '';
 
   /**
    * Test base code FB ID number.
    * @var string
    */
-  protected $basecodefbid = '';
+  protected $baseCodeFBID = '';
 
   /**
    * Test node id number.
    * @var int
    */
-  protected $nodeid = 0;
+  protected $nodeID = 0;
 
   /**
    * Test node title.
    * @var string
    */
-  protected $nodetitle = '';
+  protected $nodeTitle = '';
 
   /**
    * {@inheritdoc}
@@ -65,10 +65,10 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     parent::setUp($modules);
 
     // Create a generic authenticated user.
-    $this->web_user = $this->drupalCreateUser();
+    $this->webUser = $this->drupalCreateUser();
 
     // Create an admin user and log them in.
-    $this->admin_user = $this->drupalCreateUser([
+    $this->adminUser = $this->drupalCreateUser([
       'administer facebook tracking pixels',
       'access content',
       'create page content',
@@ -78,32 +78,32 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
       'administer users',
       'administer permissions',
     ]);
-    $this->drupalLogin($this->admin_user);
+    $this->drupalLogin($this->adminUser);
     // Set the role as admin for the admin user just created.
-    $this->drupalPost('user/' . $this->admin_user->uid . '/edit', ['roles[3]' => TRUE], t('Save'));
+    $this->drupalPost('user/' . $this->adminUser->uid . '/edit', ['roles[3]' => TRUE], t('Save'));
 
-    $this->basecodefbid = '123123123';
+    $this->baseCodeFBID = '123123123';
     // Test Basecode ID.
     db_insert('facebook_tracking_pixel_base_codes')
       ->fields([
         'base_code_name' => 'Test Basecode',
-        'base_code_fbid' => $this->basecodefbid,
+        'base_code_fbid' => $this->baseCodeFBID,
         'base_code_global' => 1,
         'weight' => 10,
       ])
       ->execute();
 
     // Retreieve the base id created.
-    $this->basecodeid = db_select('facebook_tracking_pixel_base_codes', 'c')
+    $this->baseCodeID = db_select('facebook_tracking_pixel_base_codes', 'c')
       ->fields('c', ['base_code_id'])
-      ->condition('base_code_fbid', $this->basecodefbid, '=')
+      ->condition('base_code_fbid', $this->baseCodeFBID, '=')
       ->execute()
       ->fetchField();
 
     // Create a Node with a path alias for testing.
     // Create node to edit.
     $node = $this->drupalCreateNode();
-    $this->nodetitle = $node->title;
+    $this->nodeTitle = $node->title;
 
 
     $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid and title %title and path alias', [
@@ -117,7 +117,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $edit['alias'] = 'nodetest';
     $this->drupalPost('admin/config/search/path/add', $edit, t('Save'));
     $this->testFacebookTrackingPixelNodeAlias = $edit['alias'];
-    $this->nodeid = $node->nid;
+    $this->nodeID = $node->nid;
 
     // Visit the system path for the node and confirm a cache entry is
     // created.

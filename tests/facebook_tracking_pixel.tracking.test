@@ -53,7 +53,7 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $this->drupalGet('');
     $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Tracking Code 1 Found in Raw Source'), 'FBTrkPx');
     $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id2 . '.js', t('Tracking Code 2 Found in Raw Source'), 'FBTrkPx');
-    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->basecodefbid . '.js', t('Setup Tracking Code Found in Raw Source'), 'FBTrkPx');
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Setup Tracking Code Found in Raw Source'), 'FBTrkPx');
 
   }
 
@@ -64,8 +64,8 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     // Test to add a path item to the existing node created in the setup.
     $edit = [];
     $edit['event_name'] = $this->randomName(8);
-    $edit['event_path'] = 'node/' . $this->nodeid;
-    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event_path'] = 'node/' . $this->nodeID;
+    $edit['event_base_code_id'] = $this->baseCodeID;
     $edit['event_type[addtocart]'] = TRUE;
     $edit['event_type[lead]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
@@ -76,7 +76,7 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $edit = [];
     $edit['event_name'] = $this->randomName(8);
     $edit['event_path'] = $this->testFacebookTrackingPixelNodeAlias;
-    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event_base_code_id'] = $this->baseCodeID;
     $edit['event_type[search]'] = TRUE;
     $edit['event_type[registration]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
@@ -85,10 +85,10 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     // Attempt to add a path item for the same path as above using system path.
     $edit = [];
     $edit['event_name'] = $this->randomName(8);
-    $this->assert(TRUE, 'Using Node ID ' . $this->nodeid, 'FBTrkPx');
-    $path = 'node/' . $this->nodeid;
+    $this->assert(TRUE, 'Using Node ID ' . $this->nodeID, 'FBTrkPx');
+    $path = 'node/' . $this->nodeID;
     $edit['event_path'] = $path;
-    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event_base_code_id'] = $this->baseCodeID;
     $edit['event_type[search]'] = TRUE;
     $edit['event_type[registration]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
@@ -106,7 +106,7 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $edit = [];
     $edit['event_name'] = $this->randomName(8);
     $edit['event_path'] = 'admin';
-    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event_base_code_id'] = $this->baseCodeID;
     $edit['event_type[addtocart]'] = TRUE;
     $edit['event_type[lead]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
@@ -116,7 +116,7 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $edit = [];
     $edit['event_name'] = $this->randomName(8);
     $edit['event_path'] = 'admin';
-    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event_base_code_id'] = $this->baseCodeID;
     $edit['event_type[search]'] = TRUE;
     $edit['event_type[registration]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
@@ -156,17 +156,17 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
 
     // Load the front page and check for the global and non-global code.
     $this->drupalGet('');
-    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->basecodefbid . '.js', t('Global tracking code JS found in head.'), 'FBTrkPx');
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Global tracking code JS found in head.'), 'FBTrkPx');
     $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.890890890890.js', t('Non-global tracking code JS not found in head.'), 'FBTrkPx');
 
     // Track created node using system path.
-    $this->drupalGet('node/' . $this->nodeid);
-    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->basecodefbid . '.js', t('Global tracking code JS found in head for node system path.'), 'FBTrkPx');
+    $this->drupalGet('node/' . $this->nodeID);
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Global tracking code JS found in head for node system path.'), 'FBTrkPx');
     $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.890890890890.js', t('Non-global tracking code JS found in head for node system path.'), 'FBTrkPx');
 
     // Track created node using alias path.
     $this->drupalGet($this->testFacebookTrackingPixelNodeAlias);
-    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->basecodefbid . '.js', t('Global tracking code JS found in head for node alias path.'), 'FBTrkPx');
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Global tracking code JS found in head for node alias path.'), 'FBTrkPx');
     $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.890890890890.js', t('Non-global tracking code JS found in head for node system path.'), 'FBTrkPx');
 
     // Create a new node and add path tracking to the new node.
@@ -238,7 +238,7 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $edit = [];
     $edit['event_name'] = $this->randomName(8);
     $edit['event_path'] = 'node/' . $node->nid;
-    $edit['event_base_code_id'] = $this->basecodeid;
+    $edit['event_base_code_id'] = $this->baseCodeID;
     $edit['event_type[addtocart]'] = TRUE;
     $edit['event_type[lead]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
@@ -246,14 +246,20 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
 
     // Delete node.
     $this->drupalGet('node/' . $node->nid . '/edit');
+    // Activate the delete button.
     $this->drupalPost(NULL, NULL, t('Delete'));
+    // Activate the confirmation delete button.
     $this->drupalPost(NULL, NULL, t('Delete'));
-    //Basic page hgQUr15u has been deleted.
     $this->assertText(t('Basic page @title has been deleted.', ['@title' => $node->title]), t('Test node deleted'), 'FBTrkPx');
 
     // Check DB to see if tracking item is now showing as disabled.
     $result = db_select('facebook_tracking_pixel_events_path', 'c')
-      ->fields('c', ['event_path_system', 'event_enable', 'event_id'])
+      ->fields('c', [
+        'event_path_system',
+        'event_enable',
+        'event_id',
+        'event_uid',
+      ])
       ->condition('event_path_system', 'node/' . $nid, '=')
       ->execute()
       ->fetchAssoc();
@@ -262,6 +268,64 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     // Check edit page to see if tracking item is now showing as disabled.
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/path/edit/' . $result['event_id']);
     $this->assertText(t('This event is disabled because the path being tracked no longer exists. You may only update the path of this item to provide a new valid path.'), t('Tracking event is disabled in the UI after node delete.'), 'FBTrkPx');
+
+    //  Make sure that the tracking code does not appear on any page.
+    $this->drupalGet('');
+    $this->assertNoRaw($result['event_uid'], t('Disabled tracking code does not appear on any page.'));
+
+
+    // Create node, add an alias, add tracking, and then delete the node.
+    $node = $this->drupalCreateNode();
+    $this->assertTrue(!empty($node->nid), t('A basic page has been created with node ID %nid and title %title and path alias', [
+      '%nid' => $node->nid,
+      '%title' => $node->title,
+    ]), t('FBTrkPx'));
+
+    // Create alias for the node just created above.
+    $edit = [];
+    $edit['source'] = 'node/' . $node->nid;
+    $edit['alias'] = 'testernode';
+    $this->drupalPost('admin/config/search/path/add', $edit, t('Save'));
+
+    $nid = $node->nid;
+    // Add a path tracking to the node created above.
+    $edit = [];
+    $edit['event_name'] = $this->randomName(8);
+    $edit['event_path'] = 'node/' . $node->nid;
+    $edit['event_base_code_id'] = $this->baseCodeID;
+    $edit['event_type[addtocart]'] = TRUE;
+    $edit['event_type[lead]'] = TRUE;
+    $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
+    $this->assertText(t('Path tracking entry added.'), t('Path tracking text confirmation on page displayed after form submit. Path name %name added', ['%name' => $edit['event_name']]), 'FBTrkPx');
+
+    // Delete node.
+    $this->drupalGet('node/' . $node->nid . '/edit');
+    // Activate the delete button.
+    $this->drupalPost(NULL, NULL, t('Delete'));
+    // Activate the confirmation delete button.
+    $this->drupalPost(NULL, NULL, t('Delete'));
+    $this->assertText(t('Basic page @title has been deleted.', ['@title' => $node->title]), t('Test node deleted'), 'FBTrkPx');
+
+    // Check DB to see if tracking item is now showing as disabled.
+    $result = db_select('facebook_tracking_pixel_events_path', 'c')
+      ->fields('c', [
+        'event_path_system',
+        'event_enable',
+        'event_id',
+        'event_uid',
+      ])
+      ->condition('event_path_system', 'node/' . $nid, '=')
+      ->execute()
+      ->fetchAssoc();
+    $this->assertEqual($result['event_enable'], 0, t('Tracking event is disabled in database after node delete'), 'FBTrkPx');
+
+    // Check edit page to see if tracking item is now showing as disabled.
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/path/edit/' . $result['event_id']);
+    $this->assertText(t('This event is disabled because the path being tracked no longer exists. You may only update the path of this item to provide a new valid path.'), t('Tracking event is disabled in the UI after node delete.'), 'FBTrkPx');
+
+    //  Make sure that the tracking code does not appear on any page.
+    $this->drupalGet('');
+    $this->assertNoRaw($result['event_uid'], t('Disabled tracking code does not appear on any page.'));
 
   }
 }
