@@ -278,7 +278,7 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
     ->execute()
     ->fetchAssoc();
   if ($result && $form['#id'] != 'facebook-tracking-pixel-path-edit-form') {
-    form_set_error('event_path', t('The event you are trying to add is the resolved path in Drupal as the event with name (%name).', ['%name' => $result['event_name']]));
+    form_set_error('event_path', t('The tracker event you are trying to add is the resolved path in Drupal as the event with name (%name).', ['%name' => $result['event_name']]));
   }
 
 }
