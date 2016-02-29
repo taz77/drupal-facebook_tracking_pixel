@@ -80,7 +80,7 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $edit['event_type[search]'] = TRUE;
     $edit['event_type[registration]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
-    $this->assertText(t('The event you are trying to add is the resolved path in Drupal as the event with name'), t('Adding path with same alias should fail. This test should pass.'), 'FBTrkPx');
+    $this->assertText(t('The tracker event you are trying to add is the resolved path in Drupal as the event with name'), t('Adding path with same alias should fail. This test should pass.'), 'FBTrkPx');
 
     // Attempt to add a path item for the same path as above using system path.
     $edit = [];
@@ -92,7 +92,7 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $edit['event_type[search]'] = TRUE;
     $edit['event_type[registration]'] = TRUE;
     $this->drupalPost('admin/config/system/facebook_tracking_pixel/path/add', $edit, t('Save'));
-    $this->assertText(t('You cannot add a duplicate event to the same path and base code.'), t('Adding path with same alias should fail. This test should pass.'), 'FBTrkPx');
+    $this->assertText(t('You cannot add a duplicate event to the same path and base code.'), t('Adding path with same system path should fail. This test should pass.'), 'FBTrkPx');
   }
 
   /**
