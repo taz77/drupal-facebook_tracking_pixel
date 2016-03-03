@@ -41,6 +41,8 @@ class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
    */
   function setUp(){
     parent::setUp();
+    // Turn on tracking for all roles.
+    parent::_enable_tracking_all_roles();
 
     // Create a non-global base code to test with user tracking.
     // Test Basecode ID.
@@ -62,12 +64,9 @@ class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
   }
 
   /**
-   * Test to enable user tracking.
+   * Test to enable user tracking on global base code.
    */
-  public function testFacebookTrackingPixelUserRegistration() {
-
-    // Turn on tracking for all roles.
-    parent::_enable_tracking_all_roles();
+  public function testFacebookTrackingPixelUserRegistrationGlobal() {
 
     // Turn on user registration and select test global base code.
     $edit = [];
@@ -91,12 +90,38 @@ class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
     $edit['pass[pass2]'] = $pass;
     $this->drupalPost(NULL, $edit, t('Create new account'));
     $this->assertText(t('Registration successful. You are now logged in.'), t('Created a user using the UI and logged in.'), 'FBTrkPx');
-
     $this->assertRaw('facebook_tracking_pixel/registrationtracking/fb_trk_user_registration.js', t('Path tracking code JS found in head.'), 'FBTrkPx');
-
-
   }
 
+  /**
+   * Test tracking on a non-global tracking code.
+   */
+  public function testFacebookTrackingPixelUserRegistrationNonGlobal() {
 
+    // Turn on user registration and select test global base code.
+    $edit = [];
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/user_registration');
+    $edit['facebook_tracking_pixel_user_registration_enable'] = TRUE;
+    $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_user_registration_enable');
+    $edit['facebook_tracking_pixel_user_registration_basecode'] = $this->userBaseCodeID;
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+    $this->assertText(t('User tracking settings saved.'), t('User registration tracking enabled.'), 'FBTrkPx');
+
+    // Logout and drop into creating a normal user to test user registration.
+    $this->drupalLogout();
+    variable_set('user_email_verification', 0);
+    variable_set('user_register', 1);
+    $this->drupalGet('user/register');
+    $edit = [];
+    $edit['name'] = $this->randomName(8);
+    $edit['mail'] = $edit['name'] . '@example.com';
+    $pass = user_password(12);
+    $edit['pass[pass1]'] = $pass;
+    $edit['pass[pass2]'] = $pass;
+    $this->drupalPost(NULL, $edit, t('Create new account'));
+    $this->assertText(t('Registration successful. You are now logged in.'), t('Created a user using the UI and logged in.'), 'FBTrkPx');
+    $this->assertRaw('facebook_tracking_pixel/registrationtracking/fb_trk_user_registration.js', t('Path tracking code JS found in head.'), 'FBTrkPx');
+
+  }
 
 }
