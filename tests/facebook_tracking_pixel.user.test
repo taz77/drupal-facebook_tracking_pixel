@@ -22,6 +22,46 @@ class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
   }
 
   /**
+   * Basecode ID number for user testing.
+   *
+   * @var int
+   */
+
+  public $userBaseCodeID;
+
+  /**
+   * Fictional FBID for user testing.
+   * @var string
+   */
+
+  public $userBaseCodeFBID = '345345345345';
+
+  /**
+   * {@inheritdoc}
+   */
+  function setUp(){
+    parent::setUp();
+
+    // Create a non-global base code to test with user tracking.
+    // Test Basecode ID.
+    db_insert('facebook_tracking_pixel_base_codes')
+      ->fields([
+        'base_code_name' => 'Test Basecode 2',
+        'base_code_fbid' => $this->userBaseCodeFBID,
+        'base_code_global' => 0,
+        'weight' => 20,
+      ])
+      ->execute();
+
+    // Retreieve the base id created.
+    $this->userBaseCodeID = db_select('facebook_tracking_pixel_base_codes', 'c')
+      ->fields('c', ['base_code_id'])
+      ->condition('base_code_fbid', $this->userBaseCodeFBID, '=')
+      ->execute()
+      ->fetchField();
+  }
+
+  /**
    * Test to enable user tracking.
    */
   public function testFacebookTrackingPixelUserRegistration() {
@@ -54,23 +94,9 @@ class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
 
     $this->assertRaw('facebook_tracking_pixel/registrationtracking/fb_trk_user_registration.js', t('Path tracking code JS found in head.'), 'FBTrkPx');
 
-    // Create a non-global base code to test with user tracking.
-    $basecodefbid = '345345345';
-    // Test Basecode ID.
-    db_insert('facebook_tracking_pixel_base_codes')
-      ->fields([
-        'base_code_name' => 'Test Basecode 2',
-        'base_code_fbid' => $basecodefbid,
-        'base_code_global' => 0,
-        'weight' => 20,
-      ])
-      ->execute();
 
-    // Retreieve the base id created.
-    $baseCodeID = db_select('facebook_tracking_pixel_base_codes', 'c')
-      ->fields('c', ['base_code_id'])
-      ->condition('base_code_fbid', $basecodefbid, '=')
-      ->execute()
-      ->fetchField();
   }
+
+
+
 }
