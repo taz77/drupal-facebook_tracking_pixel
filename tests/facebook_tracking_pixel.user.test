@@ -8,7 +8,7 @@
 /**
  * Test case.
  */
-class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
+class FacebookTrackingPixelTestCaseUser extends FacebookTrackingPixelTestCase {
 
   /**
    * {@inheritdoc}
@@ -39,7 +39,7 @@ class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
   /**
    * {@inheritdoc}
    */
-  function setUp(){
+  function setUp() {
     parent::setUp();
     // Turn on tracking for all roles.
     parent::_enable_tracking_all_roles();
@@ -123,5 +123,4 @@ class FacebookTrackingPixelTestUserCase extends FacebookTrackingPixelTestCase {
     $this->assertRaw('facebook_tracking_pixel/registrationtracking/fb_trk_user_registration.js', t('Path tracking code JS found in head.'), 'FBTrkPx');
 
   }
-
 }
