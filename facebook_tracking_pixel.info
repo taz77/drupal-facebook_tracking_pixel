@@ -5,5 +5,8 @@ php = 5.4
 files[] = tests/facebook_tracking_pixel.test
 files[] = tests/facebook_tracking_pixel.tracking.test
 files[] = tests/facebook_tracking_pixel.user.test
+files[] = tests/facebook_tracking_pixel.commerce.test
 package = Statistics
 configure = admin/config/system/facebook_tracking_pixel
+
+test_dependencies[] = commerce
