@@ -46,8 +46,8 @@ before_install:
 install:
 - drupal-ti install
 before_script:
-- drupal-ti before_script
 - drupal-ti --include before.sh
+- drupal-ti before_script
 #- drush dl commerce
 #- drush en -y commerce
 script:
