@@ -8,7 +8,7 @@
 /**
  * Test case.
  */
-class FacebookTrackingPixelTestCaseCommerce extends FacebookTrackingPixelTestCase {
+class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
 
   /**
    * {@inheritdoc}
@@ -22,16 +22,26 @@ class FacebookTrackingPixelTestCaseCommerce extends FacebookTrackingPixelTestCas
   }
 
   /**
+   * Administrative user.
+   * @var object
+   */
+  protected $adminUser;
+
+  /**
    * {@inheritdoc}
    */
   function setUp() {
     // Call the parent with an array of modules to enable for the test.
     $modules[] = 'commerce';
-    parent::setUp($modules);
+    parent::setUpHelper();
+
+    $permissions = $this->permissionBuilder('site admin');
+    $this->adminUser = $this->drupalCreateUser($permissions);
+
 
   }
 
   function testCommerceBaseTracking() {
-    
+
   }
 }
