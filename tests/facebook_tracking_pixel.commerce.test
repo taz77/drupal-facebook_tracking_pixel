@@ -31,13 +31,12 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
    * {@inheritdoc}
    */
   function setUp() {
-    // Call the parent with an array of modules to enable for the test.
-    $modules[] = 'commerce';
-    parent::setUpHelper();
 
-    $permissions = $this->permissionBuilder('site admin');
-    $this->adminUser = $this->drupalCreateUser($permissions);
+    $modules = parent::setUpHelper('all');
+    parent::setUp($modules);
 
+    $this->site_admin = $this->createSiteAdmin();
+    cache_clear_all(); // Just in case
 
   }
 
