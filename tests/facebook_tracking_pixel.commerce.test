@@ -25,7 +25,19 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
    * Administrative user.
    * @var object
    */
-  protected $adminUser;
+  protected $admin_user;
+
+  /**
+   * Dummy customer account.
+   * @var object
+   */
+  protected $store_customer;
+
+  /**
+   * Dummy product.
+   * @var object
+   */
+  protected $product;
 
   /**
    * {@inheritdoc}
@@ -35,7 +47,10 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     $modules = parent::setUpHelper('all');
     parent::setUp($modules);
 
-    $this->site_admin = $this->createSiteAdmin();
+    $this->admin_user = $this->createSiteAdmin();
+    $this->store_customer = $this->createStoreCustomer();
+    $this->product = $this->createDummyProductType();
+    $this->createDummyProductDisplayContentType('product_display', TRUE, 'field_product', 1);
     cache_clear_all(); // Just in case
 
   }
