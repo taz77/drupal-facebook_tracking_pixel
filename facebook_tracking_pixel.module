@@ -780,8 +780,7 @@ function facebook_tracking_pixel_get_currency_codes() {
  */
 function facebook_tracking_pixel_commerce_cart_product_add($order, $product, $quantity, $line_item) {
   $enable = variable_get('facebook_tracking_pixel_commerce_tracking_enable', NULL);
-  if ($enable) {
-    $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
+  if ($enable && $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection', NULL)) {
     if (array_key_exists('addtocart', $options)) {
       facebook_tracking_pixel_add_session_event('ftpdcaddtocart');
     }
