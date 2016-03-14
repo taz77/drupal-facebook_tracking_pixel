@@ -98,6 +98,9 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
       ->fetchField();
   }
 
+  /**
+   * Test tracking based on starting checkout.
+   */
   function testCommerceBaseTrackingCheckoutStart() {
     $edit = [];
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
@@ -108,4 +111,33 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     $this->drupalPost(NULL, $edit, t('Save configuration'));
     $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
   }
+
+  /**
+   * Test tracking of items added to the cart.
+   */
+  function testCommerceBaseTrackingAddtoCart() {
+    $edit = [];
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
+    $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
+    $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
+    $edit['facebook_tracking_pixel_commerce_tracking_options_selection[addtocart]'] = TRUE;
+    $edit['facebook_tracking_pixel_commerce_tracking_basecode'] = $this->baseCodeID;
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+    $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
+  }
+
+  /**
+   * Test completing a purchase tracking.
+   */
+  function testCommerceBaseTrackingPurchase() {
+    $edit = [];
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
+    $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
+    $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
+    $edit['facebook_tracking_pixel_commerce_tracking_options_selection[purchase]'] = TRUE;
+    $edit['facebook_tracking_pixel_commerce_tracking_basecode'] = $this->baseCodeID;
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+    $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
+  }
+
 }
