@@ -177,5 +177,6 @@ function facebook_tracking_pixel_commerce_form_submit($form, $form_state) {
       }
     }
     variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', $clean);
+    drupal_set_message(t('Commerce Tracking Settings Saved.'), 'status', FALSE);
   }
 }
