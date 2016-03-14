@@ -40,22 +40,72 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   protected $product;
 
   /**
+   * Facebook Basecode database ID number.
+   *
+   * @var string
+   */
+  protected $baseCodeID = '';
+
+  /**
+   * Test base code FB ID number.
+   * @var string
+   */
+  protected $baseCodeFBID = '';
+
+  /**
    * {@inheritdoc}
    */
   function setUp() {
 
     $modules = parent::setUpHelper('all');
+    $modules[] = 'facebook_tracking_pixel';
     parent::setUp($modules);
 
-    $this->admin_user = $this->createSiteAdmin();
+    $permissions = array_merge($this->permissionBuilder('store admin'), [
+      'administer facebook tracking pixels',
+      'access content',
+      'create page content',
+      'edit own page content',
+      'administer url aliases',
+      'create url aliases',
+      'administer users',
+      'administer permissions',
+    ]);
+    $this->admin_user = $this->drupalCreateUser($permissions);
+    $this->drupalLogin($this->admin_user);
     $this->store_customer = $this->createStoreCustomer();
     $this->product = $this->createDummyProductType();
     $this->createDummyProductDisplayContentType('product_display', TRUE, 'field_product', 1);
-    cache_clear_all(); // Just in case
+    // Just in case, we clear all caches.
+    cache_clear_all();
 
+    $this->baseCodeFBID = '789789789';
+    // Test Basecode ID.
+    db_insert('facebook_tracking_pixel_base_codes')
+      ->fields([
+        'base_code_name' => 'Test Basecode',
+        'base_code_fbid' => $this->baseCodeFBID,
+        'base_code_global' => 1,
+        'weight' => 10,
+      ])
+      ->execute();
+
+    // Retreieve the base id created.
+    $this->baseCodeID = db_select('facebook_tracking_pixel_base_codes', 'c')
+      ->fields('c', ['base_code_id'])
+      ->condition('base_code_fbid', $this->baseCodeFBID, '=')
+      ->execute()
+      ->fetchField();
   }
 
-  function testCommerceBaseTracking() {
-
+  function testCommerceBaseTrackingCheckoutStart() {
+    $edit = [];
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
+    $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
+    $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
+    $edit['facebook_tracking_pixel_commerce_tracking_options_selection[checkoutstart]'] = TRUE;
+    $edit['facebook_tracking_pixel_commerce_tracking_basecode'] = $this->baseCodeID;
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+    $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
   }
 }
