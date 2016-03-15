@@ -34,6 +34,12 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   protected $store_customer;
 
   /**
+   * Dummy product type.
+   * @var object
+   */
+  protected $product_type;
+
+  /**
    * Dummy product.
    * @var object
    */
@@ -51,6 +57,24 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
    * @var string
    */
   protected $baseCodeFBID = '';
+
+  /**
+   * Test SKU number.
+   * @var int
+   */
+  protected $product_sku = 555;
+
+  /**
+   * Test product display node id.
+   * @var string
+   */
+  protected $product_node_nid = '';
+
+  /**
+   * Testing product name.
+   * @var string
+   */
+  protected $product_name = 'FB Test Product';
 
   /**
    * {@inheritdoc}
@@ -74,8 +98,16 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     $this->admin_user = $this->drupalCreateUser($permissions);
     $this->drupalLogin($this->admin_user);
     $this->store_customer = $this->createStoreCustomer();
-    $this->product = $this->createDummyProductType();
+    // Create a Dummy product type for testing.
+    $this->product_type = $this->createDummyProductType();
+    // Create a Dummy product using the product type just created with SKU 555.
+    $this->product = $this->createDummyProduct($this->product_sku, $this->product_name, -1, 'USD', 1, $this->product_type['type']);
+    // Create a product display content type and attach a product field to it.
     $this->createDummyProductDisplayContentType('product_display', TRUE, 'field_product', 1);
+    // Create a product display node using the testing SKU.
+    $node = $this->createDummyProductNode([$this->product_sku], 'Test Product Page', 'product_display', 'field_product');
+    $this->product_node_nid = $node->nid;
+
     // Just in case, we clear all caches.
     cache_clear_all();
 
@@ -110,6 +142,9 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     $edit['facebook_tracking_pixel_commerce_tracking_basecode'] = $this->baseCodeID;
     $this->drupalPost(NULL, $edit, t('Save configuration'));
     $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
+    // Order must be created via the UI and not programatically.
+    // Access the product display node.
+    $this->drupalGet('node/' . $this->product_node_nid);
   }
 
   /**
@@ -124,6 +159,12 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     $edit['facebook_tracking_pixel_commerce_tracking_basecode'] = $this->baseCodeID;
     $this->drupalPost(NULL, $edit, t('Save configuration'));
     $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
+    // Order must be created via the UI and not programatically.
+    // Access the product display node.
+    $this->drupalGet('node/' . $this->product_node_nid);
+    $edit = [];
+    $this->drupalPost(NULL, $edit, t('Add to cart'));
+    $this->assertText(t($this->product_name . ' added to your cart'), t('Product added to cart successfully'));
   }
 
   /**
@@ -138,6 +179,9 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     $edit['facebook_tracking_pixel_commerce_tracking_basecode'] = $this->baseCodeID;
     $this->drupalPost(NULL, $edit, t('Save configuration'));
     $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
+    // Order must be created via the UI and not programatically.
+    // Access the product display node.
+    $this->drupalGet('node/' . $this->product_node_nid);
   }
 
 }
