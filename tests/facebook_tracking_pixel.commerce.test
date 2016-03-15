@@ -96,16 +96,16 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
       'administer permissions',
     ]);
     $this->admin_user = $this->drupalCreateUser($permissions);
-    $this->drupalLogin($this->admin_user);
+
     $this->store_customer = $this->createStoreCustomer();
     // Create a Dummy product type for testing.
     $this->product_type = $this->createDummyProductType();
     // Create a Dummy product using the product type just created with SKU 555.
     $this->product = $this->createDummyProduct($this->product_sku, $this->product_name, -1, 'USD', 1, $this->product_type['type']);
     // Create a product display content type and attach a product field to it.
-    $this->createDummyProductDisplayContentType('product_display', TRUE, 'field_product', 1);
+    $this->createDummyProductDisplayContentType();
     // Create a product display node using the testing SKU.
-    $node = $this->createDummyProductNode([$this->product_sku], 'Test Product Page', 'product_display', 'field_product');
+    $node = $this->createDummyProductNode([$this->product->product_id], 'Test Product Page');
     $this->product_node_nid = $node->nid;
 
     // Just in case, we clear all caches.
@@ -131,9 +131,31 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   }
 
   /**
+   * Test tracking of items added to the cart.
+   */
+  function testCommerceBaseTrackingAddtoCart() {
+    $this->drupalLogin($this->admin_user);
+    $edit = [];
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
+    $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
+    $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
+    $edit['facebook_tracking_pixel_commerce_tracking_options_selection[addtocart]'] = TRUE;
+    $edit['facebook_tracking_pixel_commerce_tracking_basecode'] = $this->baseCodeID;
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+    $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
+    // Order must be created via the UI and not programatically.
+    // Access the product display node.
+    $this->drupalGet('node/' . $this->product_node_nid);
+    $edit = [];
+    $this->drupalPost(NULL, $edit, t('Add to cart'));
+    $this->assertText(t($this->product_name . ' added to your cart'), t('Product added to cart successfully.'));
+  }
+
+  /**
    * Test tracking based on starting checkout.
    */
   function testCommerceBaseTrackingCheckoutStart() {
+    $this->drupalLogin($this->admin_user);
     $edit = [];
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
     $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
@@ -148,29 +170,10 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   }
 
   /**
-   * Test tracking of items added to the cart.
-   */
-  function testCommerceBaseTrackingAddtoCart() {
-    $edit = [];
-    $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
-    $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
-    $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
-    $edit['facebook_tracking_pixel_commerce_tracking_options_selection[addtocart]'] = TRUE;
-    $edit['facebook_tracking_pixel_commerce_tracking_basecode'] = $this->baseCodeID;
-    $this->drupalPost(NULL, $edit, t('Save configuration'));
-    $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
-    // Order must be created via the UI and not programatically.
-    // Access the product display node.
-    $this->drupalGet('node/' . $this->product_node_nid);
-    $edit = [];
-    $this->drupalPost(NULL, $edit, t('Add to cart'));
-    $this->assertText(t($this->product_name . ' added to your cart'), t('Product added to cart successfully'));
-  }
-
-  /**
    * Test completing a purchase tracking.
    */
   function testCommerceBaseTrackingPurchase() {
+    $this->drupalLogin($this->admin_user);
     $edit = [];
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
     $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
