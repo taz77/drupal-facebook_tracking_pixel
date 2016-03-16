@@ -130,11 +130,14 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
     $this->drupalGet($edit['alias']);
     $this->assertTrue(cache_get($edit['source'], 'cache_path'), 'Cache entry was created.');
   }
+}
 
-  protected function _enable_tracking_all_roles() {
+class FacebookTrackingPixelTestHelper {
+  public function _enable_tracking_all_roles() {
     // Turn on tracking for roles.
     variable_set('facebook_tracking_pixel_roles_administrator', 1);
     variable_set('facebook_tracking_pixel_roles_anonymous_user', 1);
     variable_set('facebook_tracking_pixel_roles_authenticated_user', 1);
   }
 }
+

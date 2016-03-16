@@ -41,8 +41,9 @@ class FacebookTrackingPixelTestCaseUser extends FacebookTrackingPixelTestCase {
    */
   function setUp() {
     parent::setUp();
-    // Turn on tracking for all roles.
-    parent::_enable_tracking_all_roles();
+    // Enable all roles for tracking.
+    $this->fbHelper = new FacebookTrackingPixelTestHelper;
+    $this->fbHelper->_enable_tracking_all_roles();
 
     // Create a non-global base code to test with user tracking.
     // Test Basecode ID.
