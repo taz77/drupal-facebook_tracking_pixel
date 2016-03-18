@@ -130,9 +130,19 @@ function facebook_tracking_pixel_uninstall() {
   file_unmanaged_delete_recursive($path);
   db_drop_table('facebook_tracking_pixel_events_path');
   db_drop_table('facebook_tracking_pixel_base_codes');
-  variable_del('facebook_tracking_pixel_path');
-  variable_del('facebook_tracking_pixel_aggregation');
-  variable_del('facebook_tracking_pixel_commerce_tracking_basecode');
-  variable_del('facebook_tracking_pixel_commerce_tracking_enable');
-  variable_del('facebook_tracking_pixel_commerce_tracking_options_selection');
+
+  // Delete all variables via an SQL query.
+  $prefix = 'facebook_tracking_pixel';
+  $result = db_select('variable', 'v')
+    ->fields('v')
+    ->condition('name', db_like($prefix) . '%', 'LIKE')
+    ->execute()
+    ->fetchAll();
+  foreach ($result as $item) {
+    db_delete('variable')
+      ->condition('name', $item->name)
+      ->execute();
+  }
+
+
 }
