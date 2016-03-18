@@ -9,7 +9,7 @@ page. This module also takes the code from Facebook as it is supplied by them
 and optimizes it for loading on pages so it can be aggregated, compressed, and
 pushed via a CDN if you wish.
 
-Travic-CI Build status:
+Travis-CI Build status:
 [![BuildStatus](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel.svg?branch=7.x-1.x)](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel)
 
 Basic Setup
@@ -56,7 +56,7 @@ Purge
 
 Provided for troubleshooting and "when all else fails" scenarios, there is a
 purge function (admin/config/system/facebook_tracking_pixel/purge). By clicking
-Purge All every code on the site and ever path tracking event will be erased.
+Purge All every code on the site and every path tracking event will be erased.
 This removes everything from the database and deletes all files that have been
 created. It will return the module to a state of initial installation.
 
