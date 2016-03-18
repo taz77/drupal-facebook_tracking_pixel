@@ -548,21 +548,29 @@ function facebook_tracking_pixel_form_purge($form, &$form_state) {
 
 function facebook_tracking_pixel_form_purge_submit() {
   $status = TRUE;
+  $error_msg = '';
   $sql = 'TRUNCATE {facebook_tracking_pixel_events_path}';
   if (!db_query($sql)) {
     $status = FALSE;
+    $error_msg .= 'Truncating Events Path table failed.';
   }
   $sql = 'TRUNCATE {facebook_tracking_pixel_base_codes}';
   if (!db_query($sql)) {
     $status = FALSE;
+    $error_msg .= 'Truncating Base Codes table failed.';
   }
   $path = variable_get('facebook_tracking_pixel_path', 'public://facebook_tracking_pixel');
-  if (!file_unmanaged_delete_recursive($path)) {
-    $status = FALSE;
+  // Only attempt a delete if the folder has been created.
+  if (is_dir($path)) {
+    if (is_dir($path) && !file_unmanaged_delete_recursive($path)) {
+      $status = FALSE;
+      $error_msg .= 'Deleting path for codes failed.';
+    }
   }
   // Delete the enable variables.
   if (!variable_del('facebook_tracking_pixel_commerce_tracking_enable') && !variable_del('facebook_tracking_pixel_user_registration_enable')) {
     $status = FALSE;
+    $error_msg .= 'Deleting enable variables failed.';
   }
 
   // Delete all user role tracking.
@@ -580,6 +588,7 @@ function facebook_tracking_pixel_form_purge_submit() {
 
   if (!$status) {
     drupal_set_message(t('Purging failed check your PHP logs on your server.'), 'error', FALSE);
+    drupal_set_message(t($error_msg), 'error', FALSE);
   }
   else {
     drupal_flush_all_caches();
