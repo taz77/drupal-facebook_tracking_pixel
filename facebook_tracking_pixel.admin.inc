@@ -52,10 +52,11 @@ function facebook_tracking_pixel_settings_form($form_state) {
     $role_varname = str_replace(' ', '_', $role_name);
     $form['facebook_tracking_pixel_roles']['facebook_tracking_pixel_roles_' . $role_varname] = [
       '#type' => 'checkbox',
-      '#title' => t($role_name),
+      '#title' => t(ucfirst($role_name)),
       '#default_value' => variable_get('facebook_tracking_pixel_roles_' . $role_varname, FALSE),
     ];
   }
+  $form['facebook_tracking_pixel_roles']['tip']['#markup'] = t('Tip: Drupal roles have some level of inheritance. Refer to the') . ' ' . l('Beginners Cookbook', 'https://www.drupal.org/node/120614', ['external' => TRUE]) . ' ' . t('for detailed information.');
 
 
   return system_settings_form($form);
