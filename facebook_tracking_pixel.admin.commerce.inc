@@ -31,7 +31,7 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
     $currencycodes[$key] = $value['name'] . ' (' . $key . ')';
   }
   $form['intro0'] = [
-    '#markup' => t('Enabliing this will track user registration for the entire site. To not track users added by admins, do not enable tracking for their roles.'),
+    '#markup' => t('Enabling this will track user registration for the entire site. To not track users added by admins, do not enable tracking for their roles.'),
   ];
   //Check to see if there are base codes.
   $resultcountbasecode = db_select('facebook_tracking_pixel_base_codes', 'c')
