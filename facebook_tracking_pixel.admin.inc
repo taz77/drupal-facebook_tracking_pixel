@@ -560,6 +560,24 @@ function facebook_tracking_pixel_form_purge_submit() {
   if (!file_unmanaged_delete_recursive($path)) {
     $status = FALSE;
   }
+  // Delete the enable variables.
+  if (!variable_del('facebook_tracking_pixel_commerce_tracking_enable') && !variable_del('facebook_tracking_pixel_user_registration_enable')) {
+    $status = FALSE;
+  }
+
+  // Delete all user role tracking.
+  $prefix = 'facebook_tracking_pixel_roles_';
+  $result = db_select('variable', 'v')
+    ->fields('v')
+    ->condition('name', db_like($prefix) . '%', 'LIKE')
+    ->execute()
+    ->fetchAll();
+  foreach ($result as $item) {
+    db_delete('variable')
+      ->condition('name', $item->name)
+      ->execute();
+  }
+
   if (!$status) {
     drupal_set_message(t('Purging failed check your PHP logs on your server.'), 'error', FALSE);
   }
