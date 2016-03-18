@@ -569,10 +569,8 @@ function facebook_tracking_pixel_form_purge_submit() {
     }
   }
   // Delete the enable variables.
-  if (!variable_del('facebook_tracking_pixel_commerce_tracking_enable') && !variable_del('facebook_tracking_pixel_user_registration_enable')) {
-    $status = FALSE;
-    $error_msg .= 'Deleting enable variables failed.';
-  }
+  variable_del('facebook_tracking_pixel_commerce_tracking_enable');
+  variable_del('facebook_tracking_pixel_user_registration_enable');
 
   // Delete all user role tracking.
   $prefix = 'facebook_tracking_pixel_roles_';
