@@ -797,8 +797,8 @@ function facebook_tracking_pixel_commerce_cart_product_add($order, $product, $qu
  */
 function facebook_tracking_pixel_commerce_checkout_router($order, $checkout_page) {
   $enable = variable_get('facebook_tracking_pixel_commerce_tracking_enable', NULL);
-  if ($enable) {
-    $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection');
+  $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection', NULL);
+  if ($enable && !empty($options)) {
     if (array_key_exists('checkoutstart', $options)) {
       if ($checkout_page['page_id'] == 'checkout') {
         facebook_tracking_pixel_add_session_event('ftpdcinitiatecheckout');
