@@ -153,8 +153,6 @@ function facebook_tracking_pixel_page_build(&$page) {
 
     // Process anything that could be stored in the session.
     if (!empty($_SESSION['facebook_tracking_pixel'])) {
-      // We need the source code since some of these are dynamic.
-      $fb_script_src = facebook_tracking_pixel_base_code_js();
       // We use this foreach to step through the session variables for special
       // case codes.
       foreach ($_SESSION['facebook_tracking_pixel'] as $key => $value) {
