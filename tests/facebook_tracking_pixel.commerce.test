@@ -210,6 +210,20 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     $edit = [];
     $this->drupalPost(NULL, $edit, t('Add to cart'));
     $this->assertText(t($this->product_name . ' added to your cart'), t('Product added to cart successfully.'));
+    // Go to checkout.
+    $this->drupalGet('checkout');
+    // Fill out the address form and submit.
+    $edit = [];
+    // Using a US address because of familiarity.
+    $edit['customer_profile_billing[commerce_customer_address][und][0][country]'] = 'US';
+    $this->drupalPostAJAX(NULL, $edit, 'customer_profile_billing[commerce_customer_address][und][0][country]');
+    $edit['customer_profile_billing[commerce_customer_address][und][0][name_line]'] = $this->randomString();
+    $edit['customer_profile_billing[commerce_customer_address][und][0][thoroughfare]'] = '123 Main Street';
+    $edit['customer_profile_billing[commerce_customer_address][und][0][locality]'] = 'Smallville';
+    $edit['customer_profile_billing[commerce_customer_address][und][0][administrative_area]'] = 'AK';
+    $edit['customer_profile_billing[commerce_customer_address][und][0][postal_code]'] = '12345';
+    $this->drupalPost(NULL, $edit, t('Continue to next step'));
+    $this->assertText(t('Review order'), t('Arrived on review order page.'));
 
 
     // @todo change this
