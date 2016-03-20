@@ -89,7 +89,7 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
 
     // Enable all roles for tracking.
     $this->fbHelper = new FacebookTrackingPixelTestHelper;
-    $this->fbHelper->_enable_tracking_all_roles();
+    $this->fbHelper->enable_tracking_all_roles();
 
     $permissions = array_merge($this->permissionBuilder('store admin'), [
       'administer facebook tracking pixels',
@@ -141,6 +141,8 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   function testCommerceBaseTrackingAddtoCart() {
     $this->drupalLogin($this->admin_user);
     $edit = [];
+    // Clear variable that holds the tracking options.
+    variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', []);
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
     $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
     $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
@@ -154,7 +156,7 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     $edit = [];
     $this->drupalPost(NULL, $edit, t('Add to cart'));
     $this->assertText(t($this->product_name . ' added to your cart'), t('Product added to cart successfully.'));
-    $this->assertRaw('facebook_tracking_pixel/commercetracking/fb_trk_addtocart_' . $this->baseCodeFBID . '.js', t('Path tracking code JS found in head.'), 'FBTrkPx');
+    $this->assertRaw('facebook_tracking_pixel/commercetracking/fb_trk_addtocart_' . $this->baseCodeFBID . '.js', t('Add to cart tracking code JS found in head.'), 'FBTrkPx');
 
   }
 
@@ -164,6 +166,8 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   function testCommerceBaseTrackingCheckoutStart() {
     $this->drupalLogin($this->admin_user);
     $edit = [];
+    // Clear variable that holds the tracking options.
+    variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', []);
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
     $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
     $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
@@ -174,6 +178,14 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     // Order must be created via the UI and not programatically.
     // Access the product display node.
     $this->drupalGet('node/' . $this->product_node_nid);
+    // Add product to the shopping cart.
+    $edit = [];
+    $this->drupalPost(NULL, $edit, t('Add to cart'));
+    $this->assertText(t($this->product_name . ' added to your cart'), t('Product added to cart successfully.'));
+
+    $this->drupalGet('checkout');
+    $this->assertRaw('facebook_tracking_pixel/commercetracking/fb_trk_checkoutstart_' . $this->baseCodeFBID . '.js', t('Checkout start tracking code JS found in head.'), 'FBTrkPx');
+
   }
 
   /**
@@ -182,6 +194,8 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   function testCommerceBaseTrackingPurchase() {
     $this->drupalLogin($this->admin_user);
     $edit = [];
+    // Clear variable that holds the tracking options.
+    variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', []);
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
     $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
     $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
@@ -192,6 +206,42 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     // Order must be created via the UI and not programatically.
     // Access the product display node.
     $this->drupalGet('node/' . $this->product_node_nid);
+    // Add product to the shopping cart.
+    $edit = [];
+    $this->drupalPost(NULL, $edit, t('Add to cart'));
+    $this->assertText(t($this->product_name . ' added to your cart'), t('Product added to cart successfully.'));
+
+
+    // @todo change this
+    //$this->assertRaw('facebook_tracking_pixel/commercetracking/fb_trk_addtocart_' . $this->baseCodeFBID . '.js', t('Checkout tracking code JS found in head.'), 'FBTrkPx');
+  }
+
+  /**
+   * Test to make sure nothing fires when no options are selected.
+   */
+  function testCommerceBaseTrackingNoOptions() {
+    // Setup this test.
+    $this->drupalLogin($this->admin_user);
+    $edit = [];
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
+    $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
+    $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
+    $edit['facebook_tracking_pixel_commerce_tracking_basecode'] = $this->baseCodeID;
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+    $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
+    // Order must be created via the UI and not programatically.
+    // Access the product display node.
+    $this->drupalGet('node/' . $this->product_node_nid);
+    $edit = [];
+    // Add product to cart and make sure event does NOT fire.
+    $this->drupalPost(NULL, $edit, t('Add to cart'));
+    $this->assertText(t($this->product_name . ' added to your cart'), t('Product added to cart successfully.'));
+    $this->assertNoRaw('facebook_tracking_pixel/commercetracking/fb_trk_addtocart_' . $this->baseCodeFBID . '.js', t('Path tracking code JS found in head.'), 'FBTrkPx');
+    // Go to checkout page and make sure event does NOT fire.
+    $this->drupalGet('checkout');
+    $this->assertNoRaw('facebook_tracking_pixel/commercetracking/fb_trk_checkoutstart_' . $this->baseCodeFBID . '.js', t('Checkout start tracking code JS found in head.'), 'FBTrkPx');
+
+
   }
 
 }
