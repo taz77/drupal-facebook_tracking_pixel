@@ -133,7 +133,7 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
 }
 
 class FacebookTrackingPixelTestHelper {
-  public function _enable_tracking_all_roles() {
+  public function enable_tracking_all_roles() {
     // Turn on tracking for roles.
     variable_set('facebook_tracking_pixel_roles_administrator', 1);
     variable_set('facebook_tracking_pixel_roles_anonymous_user', 1);

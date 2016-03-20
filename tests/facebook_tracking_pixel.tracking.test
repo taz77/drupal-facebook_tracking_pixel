@@ -49,7 +49,7 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
 
     // Enable all roles for tracking.
     $this->fbHelper = new FacebookTrackingPixelTestHelper;
-    $this->fbHelper->_enable_tracking_all_roles();
+    $this->fbHelper->enable_tracking_all_roles();
     // With two base codes set to global they should both appear on a page.
     $this->drupalGet('');
     $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Tracking Code 1 Found in Raw Source'), 'FBTrkPx');
