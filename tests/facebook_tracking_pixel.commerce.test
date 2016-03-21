@@ -268,7 +268,55 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
     $this->drupalPost(NULL, [], t('Continue to next step'));
     $this->assertNoRaw('fbq(\'init\', \'' . $this->baseCodeFBID, t('Checkout tracking code JS NOT found in head.'), 'FBTrkPx');
     $this->assertNoRaw('fbq(\'track\', \'Purchase\'', t('Purchase complete JS NOT found'), 'FBTrkPx');
-
   }
 
+  /**
+   * Test disabling tracking with options still selected.
+   */
+  function testCommerceBaseTrackingDisable() {
+    $this->drupalLogin($this->admin_user);
+    $edit = [];
+    // Clear variable that holds the tracking options.
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
+    $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
+    $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
+    // Turn on all tracking.
+    $edit['facebook_tracking_pixel_commerce_tracking_options_selection[addtocart]'] = TRUE;
+    $edit['facebook_tracking_pixel_commerce_tracking_options_selection[checkoutstart]'] = TRUE;
+    $edit['facebook_tracking_pixel_commerce_tracking_options_selection[purchase]'] = TRUE;
+    $edit['facebook_tracking_pixel_commerce_tracking_basecode'] = $this->baseCodeID;
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+    $this->assertText(t('Commerce Tracking Settings Saved.'), t('Commerce checkout start settings saved.'), 'FBTrkPx');
+    // Visit the homepage.
+    $this->drupalGet('');
+    // Return to admin page and disable commerce tracking.
+    $edit = [];
+    $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
+    $edit['facebook_tracking_pixel_commerce_tracking_enable'] = FALSE;
+    $this->drupalPost(NULL, $edit, t('Save configuration'));
+    $this->drupalGet('node/' . $this->product_node_nid);
+    $edit = [];
+    // Add product to cart and make sure event does NOT fire.
+    $this->drupalPost(NULL, $edit, t('Add to cart'));
+    $this->assertText(t($this->product_name . ' added to your cart'), t('Product added to cart successfully.'));
+    $this->assertNoRaw('facebook_tracking_pixel/commercetracking/fb_trk_addtocart_' . $this->baseCodeFBID . '.js', t('Path tracking code JS NOT found in head.'), 'FBTrkPx');
+    // Go to checkout page and make sure event does NOT fire.
+    $this->drupalGet('checkout');
+    $this->assertNoRaw('facebook_tracking_pixel/commercetracking/fb_trk_checkoutstart_' . $this->baseCodeFBID . '.js', t('Checkout start tracking code JS NOT found in head.'), 'FBTrkPx');
+    // Fill out the address form and submit.
+    $edit = [];
+    // Using a US address because of familiarity.
+    $edit['customer_profile_billing[commerce_customer_address][und][0][country]'] = 'US';
+    $this->drupalPostAJAX(NULL, $edit, 'customer_profile_billing[commerce_customer_address][und][0][country]');
+    $edit['customer_profile_billing[commerce_customer_address][und][0][name_line]'] = $this->randomString();
+    $edit['customer_profile_billing[commerce_customer_address][und][0][thoroughfare]'] = '123 Main Street';
+    $edit['customer_profile_billing[commerce_customer_address][und][0][locality]'] = 'Smallville';
+    $edit['customer_profile_billing[commerce_customer_address][und][0][administrative_area]'] = 'AK';
+    $edit['customer_profile_billing[commerce_customer_address][und][0][postal_code]'] = '12345';
+    $this->drupalPost(NULL, $edit, t('Continue to next step'));
+    $this->assertText(t('Review order'), t('Arrived on review order page.'));
+    $this->drupalPost(NULL, [], t('Continue to next step'));
+    $this->assertNoRaw('fbq(\'init\', \'' . $this->baseCodeFBID, t('Checkout tracking code JS NOT found in head.'), 'FBTrkPx');
+    $this->assertNoRaw('fbq(\'track\', \'Purchase\'', t('Purchase complete JS NOT found'), 'FBTrkPx');
+  }
 }
