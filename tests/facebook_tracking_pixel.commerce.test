@@ -83,8 +83,8 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
    * {@inheritdoc}
    */
   function setUp() {
-    $modules = parent::setUpHelper('all');
-    $modules[] = 'facebook_tracking_pixel';
+    // Setup the modules needed for testing.
+    $modules = parent::setUpHelper('all', ['facebook_tracking_pixel']);
     parent::setUp($modules);
 
     // Enable all roles for tracking.
