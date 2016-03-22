@@ -62,11 +62,24 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
       $basecodes[$item->base_code_id] = $item->base_code_name;
     }
   }
-  $enable = variable_get('facebook_tracking_pixel_commerce_tracking_enable', 0);
+  $enable = 0;
+  if (variable_get('facebook_tracking_pixel_commerce_tracking_enable')) {
+    $enable = 1;
+  }
+  if (!empty($form_state['values'])) {
+    if (variable_get('facebook_tracking_pixel_commerce_tracking_enable') && empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_enable'])) {
+      $enable = 0;
+    }
+  }
+
+  if (!variable_get('facebook_tracking_pixel_commerce_tracking_enable') && !empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_enable'])) {
+    $enable = 1;
+  }
+
   $form['facebook_tracking_pixel_commerce_tracking_enable'] = [
     '#title' => t('Enable the tracking of Drupal Commerce sales.'),
     '#type' => 'checkbox',
-    '#default_value' => $enable,
+    '#default_value' => variable_get('facebook_tracking_pixel_commerce_tracking_enable'),
     '#ajax' => [
       'callback' => 'facebook_tracking_pixel_commerce_tracking_ajax',
       'wrapper' => 'replace-facebook-tracking-pixel-commerce-tracking-basecodes',
@@ -79,7 +92,7 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
     '#prefix' => '<div id="replace-facebook-tracking-pixel-commerce-tracking-basecodes">',
     '#suffix' => '</div>',
   ];
-  if ((!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_enable']) && $form_state['values']['facebook_tracking_pixel_commerce_tracking_enable']) || $enable == 1) {
+  if ($enable) {
     $form['facebook_tracking_pixel_commerce_tracking_options']['#title'] = t('Commerce tracking options.');
     $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection', []);
     $form['facebook_tracking_pixel_commerce_tracking_options']['facebook_tracking_pixel_commerce_tracking_options_selection'] = [
@@ -145,7 +158,7 @@ function facebook_tracking_pixel_commerce_form_submit($form, $form_state) {
     // Storing the currency selection.
     variable_set('facebook_tracking_pixel_commerce_tracking_currency_selection', check_plain($form_state['values']['facebook_tracking_pixel_commerce_tracking_currency_selection']));
   }
-  if (!empty(array_filter($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection']))) {
+  if (!empty($form_state['values']['facebook_tracking_pixel_commerce_tracking_options_selection'])) {
     $fb_script_src = facebook_tracking_pixel_base_code_js();
     $events = facebook_tracking_pixel_events_reserved();
     $subdir = variable_get('facebook_tracking_pixel_commerce_js_subdir', 'commercetracking');
@@ -157,6 +170,7 @@ function facebook_tracking_pixel_commerce_form_submit($form, $form_state) {
     }
 
     // We santizie form input since this data will get saved to the DB.
+    $clean = [];
     foreach ($selectedoptions as $key => $val) {
       $clean[check_plain($key)] = check_plain($val);
       switch ($key) {
