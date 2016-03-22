@@ -5,6 +5,8 @@
  * Contains tests for the Facebook Tracking Pixel module.
  */
 
+require_once('facebook_tracking_pixel.helper.php');
+
 /**
  * Test case.
  */
@@ -48,8 +50,8 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $this->assertText(t('Facebook Base Tracking Code Added'), t('Add new base code through the admin UI'));
 
     // Enable all roles for tracking.
-    $this->fbHelper = new FacebookTrackingPixelTestHelper;
-    $this->fbHelper->enable_tracking_all_roles();
+    $fbHelper = new facebookTrackingPixel\FacebookTrackingPixelTestHelper;
+    $fbHelper->enable_tracking_all_roles();
     // With two base codes set to global they should both appear on a page.
     $this->drupalGet('');
     $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Tracking Code 1 Found in Raw Source'), 'FBTrkPx');

@@ -8,6 +8,9 @@
 /**
  * Test case.
  */
+
+require_once('facebook_tracking_pixel.helper.php');
+
 class FacebookTrackingPixelTestCaseUser extends FacebookTrackingPixelTestCase {
 
   /**
@@ -42,8 +45,8 @@ class FacebookTrackingPixelTestCaseUser extends FacebookTrackingPixelTestCase {
   function setUp() {
     parent::setUp();
     // Enable all roles for tracking.
-    $this->fbHelper = new FacebookTrackingPixelTestHelper;
-    $this->fbHelper->enable_tracking_all_roles();
+    $fbHelper = new facebookTrackingPixel\FacebookTrackingPixelTestHelper;
+    $fbHelper->enable_tracking_all_roles();
 
     // Create a non-global base code to test with user tracking.
     // Test Basecode ID.

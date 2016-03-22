@@ -5,6 +5,8 @@
  * Contains tests for the Facebook Tracking Pixel module commerce testing.
  */
 
+require_once('facebook_tracking_pixel.helper.php');
+
 /**
  * Test case.
  */
@@ -76,20 +78,18 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
    */
   protected $product_name = 'FB Test Product';
 
-  private $fbHelper;
 
   /**
    * {@inheritdoc}
    */
   function setUp() {
-
     $modules = parent::setUpHelper('all');
     $modules[] = 'facebook_tracking_pixel';
     parent::setUp($modules);
 
     // Enable all roles for tracking.
-    $this->fbHelper = new FacebookTrackingPixelTestHelper;
-    $this->fbHelper->enable_tracking_all_roles();
+    $fbHelper = new facebookTrackingPixel\FacebookTrackingPixelTestHelper;
+    $fbHelper->enable_tracking_all_roles();
 
     $permissions = array_merge($this->permissionBuilder('store admin'), [
       'administer facebook tracking pixels',
