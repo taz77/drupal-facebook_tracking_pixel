@@ -141,8 +141,6 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   public function testCommerceBaseTrackingAddtoCart() {
     $this->drupalLogin($this->admin_user);
     $edit = [];
-    // Clear variable that holds the tracking options.
-    variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', []);
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
     $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
     $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
@@ -166,8 +164,6 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   public function testCommerceBaseTrackingCheckoutStart() {
     $this->drupalLogin($this->admin_user);
     $edit = [];
-    // Clear variable that holds the tracking options.
-    variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', []);
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
     $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
     $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
@@ -193,8 +189,6 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   public function testCommerceBaseTrackingPurchase() {
     $this->drupalLogin($this->admin_user);
     $edit = [];
-    // Clear variable that holds the tracking options.
-    variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', []);
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
     $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
     $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
@@ -234,8 +228,6 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   public function testCommerceBaseTrackingNoOptions() {
     $this->drupalLogin($this->admin_user);
     $edit = [];
-    // Clear variable that holds the tracking options.
-    //variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', []);
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
     $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
     $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
@@ -274,8 +266,6 @@ class FacebookTrackingPixelTestCaseCommerce extends CommerceBaseTestCase {
   public function testCommerceBaseTrackingDisable() {
     $this->drupalLogin($this->admin_user);
     $edit = [];
-    // Clear variable that holds the tracking options.
-    //variable_set('facebook_tracking_pixel_commerce_tracking_options_selection', []);
     $this->drupalGet('admin/config/system/facebook_tracking_pixel/commercetracking');
     $edit['facebook_tracking_pixel_commerce_tracking_enable'] = TRUE;
     $this->drupalPostAJAX(NULL, $edit, 'facebook_tracking_pixel_commerce_tracking_enable');
