@@ -571,6 +571,8 @@ function facebook_tracking_pixel_form_purge_submit() {
   // Delete the enable variables.
   variable_del('facebook_tracking_pixel_commerce_tracking_enable');
   variable_del('facebook_tracking_pixel_user_registration_enable');
+  // Clear the commerce tracking options.
+  variable_del('facebook_tracking_pixel_commerce_tracking_options_selection');
 
   // Delete all user role tracking.
   $prefix = 'facebook_tracking_pixel_roles_';
