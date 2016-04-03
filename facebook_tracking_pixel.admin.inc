@@ -37,7 +37,7 @@ function facebook_tracking_pixel_settings_form($form_state) {
   ];
 
   // Render the role overview.
-  $result = db_query('SELECT * FROM {role} ORDER BY rid');
+  $result = db_query('SELECT * FROM {role} ORDER BY weight');
 
   $form['facebook_tracking_pixel_roles'] = [
     '#type' => 'fieldset',
