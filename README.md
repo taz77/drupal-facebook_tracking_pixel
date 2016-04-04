@@ -12,6 +12,8 @@ pushed via a CDN if you wish.
 Travis-CI Build status:
 [![BuildStatus](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel.svg?branch=7.x-1.x)](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel)
 
+Comprehensive documentation including screenshots is [published](https://www.drupal.org/node/2697911) on Drupal.org
+
 Basic Setup
 ================================================================================
 
@@ -57,8 +59,9 @@ Purge
 Provided for troubleshooting and "when all else fails" scenarios, there is a
 purge function (admin/config/system/facebook_tracking_pixel/purge). By clicking
 Purge All every code on the site and every path tracking event will be erased.
-This removes everything from the database and deletes all files that have been
-created. It will return the module to a state of initial installation.
+All Commerce tracking settings will be removed and all role settings will be
+removed. This removes everything from the database and deletes all files that 
+have been created. It will return the module to a state of initial installation.
 
 You have been warned!
 
