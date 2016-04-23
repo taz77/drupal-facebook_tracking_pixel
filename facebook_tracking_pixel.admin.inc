@@ -711,3 +711,18 @@ function facebook_tracking_pixel_user_registration_submit($form, $form_state) {
     drupal_set_message(t('User tracking settings saved.'), 'status');
   }
 }
+
+/**
+ * Form builder for enhanced tracking feature.
+ *
+ * @param $form
+ * @param $form_state
+ * @return array
+ */
+function facebook_tracking_pixel_form_enhanced($form, &$form_state) {
+  $form['intro_0'] = [
+    '#markup' => '<p>' . t('Place holder for admin page') . '</p>',
+  ];
+
+  return $form;
+}

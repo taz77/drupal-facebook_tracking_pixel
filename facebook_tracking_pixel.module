@@ -107,6 +107,15 @@ function facebook_tracking_pixel_menu() {
     'file' => 'facebook_tracking_pixel.admin.commerce.inc',
     'type' => MENU_LOCAL_TASK,
   ];
+  $items['admin/config/system/facebook_tracking_pixel/enhanced'] = [
+    'title' => 'Enhanced Tracking',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['facebook_tracking_pixel_form_enhanced'],
+    'access arguments' => ['administer facebook tracking pixels'],
+    'file' => 'facebook_tracking_pixel.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 35,
+  ];
   return $items;
 }
 
