@@ -46,6 +46,16 @@ function facebook_tracking_pixel_settings_form($form_state) {
     '#description' => t('Define what user roles should be tracked with a Facebook pixel.'),
   ];
 
+  $form['facebook_tracking_pixel_roles']['facebook_tracking_pixel_visibility_roles'] = [
+    '#type' => 'radios',
+    '#title' => t('Add tracking for specific roles'),
+    '#options' => [
+      t('Add to the selected roles only'),
+      t('Add to every role except the selected ones'),
+    ],
+    '#default_value' => variable_get('facebook_tracking_pixel_visibility_roles', 0),
+  ];
+
   foreach ($result as $role) {
     // Can't use empty spaces in varname.
     $role_name = $role->name;
