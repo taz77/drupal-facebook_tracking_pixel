@@ -56,6 +56,12 @@ function facebook_tracking_pixel_settings_form($form_state) {
     '#default_value' => variable_get('facebook_tracking_pixel_visibility_roles', 0),
   ];
 
+  $form['facebook_tracking_pixel_roles']['facebook_tracking_pixel_roles_info'] = [
+    '#markup' => t('Roles'),
+    '#prefix' => '<p><strong>',
+    '#suffix' => '</p></strong>',
+  ];
+
   foreach ($result as $role) {
     // Can't use empty spaces in varname.
     $role_name = $role->name;
