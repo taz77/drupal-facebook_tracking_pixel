@@ -137,10 +137,22 @@ function facebook_tracking_pixel_page_build(&$page) {
   // Default to no tracking.
   $trackable = 0;
   if (is_array($user->roles)) {
-    foreach ($user->roles as $role) {
+    foreach ($user->roles as $key => $value) {
+      switch ($key) {
+        case 1:
+          $role_name = 'anonymous user';
+          break;
+        case 2:
+          $role_name = 'authenticated user';
+          break;
+        case 3:
+          $role_name = 'administrator';
+        default:
+          $role_name = $value;
+      }
       // Replace spaces with underscores.
-      $role = str_replace(' ', '_', $role);
-      $trackable += variable_get('facebook_tracking_pixel_roles_' . $role, FALSE);
+      $role_name = str_replace(' ', '_', $role_name);
+      $trackable += variable_get('facebook_tracking_pixel_roles_' . $role_name, FALSE);
     }
   }
 

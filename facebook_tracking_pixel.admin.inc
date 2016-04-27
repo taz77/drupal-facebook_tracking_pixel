@@ -63,8 +63,21 @@ function facebook_tracking_pixel_settings_form($form_state) {
   ];
 
   foreach ($result as $role) {
+    // In order to address issues with foreign language installations, we hard
+    // code the names of user 1, 2, and 3.
+    switch ($role->rid) {
+      case 1:
+        $role_name = 'anonymous user';
+        break;
+      case 2:
+        $role_name = 'authenticated user';
+        break;
+      case 3:
+        $role_name = 'administrator';
+      default:
+        $role_name = $role->name;
+    }
     // Can't use empty spaces in varname.
-    $role_name = $role->name;
     $role_varname = str_replace(' ', '_', $role_name);
     $form['facebook_tracking_pixel_roles']['facebook_tracking_pixel_roles_' . $role_varname] = [
       '#type' => 'checkbox',
