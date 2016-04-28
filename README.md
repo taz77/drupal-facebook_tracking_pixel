@@ -32,6 +32,29 @@ given page. Beyond that, the pixels may not execute.
 When adding a base tracking pixel you can choose to have the pixel show over the
 entire site or not, this is accomplished via the "global" setting.
 
+Role Tracking Information
+--------------------------------------------------------------------------------
+Globally, tracking is controlled via roles. However, due to an oversight in
+Drupal 7 with the system of user roles, you are able to create a role that has
+a machine name containing non-ASCII characters. non-ASCII characters cause a lot
+of problems with software when used in a functional way within code. This small
+oversight has been corrected in Drupal 8, you cannot create a machine name of a 
+role with non-ASCII characters. 
+
+Typically Drupal 7 modules use the role ID number instead of the role name, but 
+this causes problems with portability because the role ID is an incremental
+field. This problem usually comes to light when you are doing site deployments
+or replications of a code base across multiple sites. The role ID issue is
+something we have had to deal with in the past and therefore never code a module
+that relies on role ID numbers.
+
+In the admin UI, you will not see roles that have non-ASCII characters. If this
+is a role you need to track you will have to create a new role that does not
+have non-ASCII characters in the name and apply that role to your users. This
+can be done pragmatically without writing code  using tools such as Views and
+Views Bulk Operations (build a view of people with the old role and use VBO to
+add your new role).
+
 Tracking By Path
 ================================================================================
 
