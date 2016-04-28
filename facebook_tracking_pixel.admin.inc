@@ -77,6 +77,15 @@ function facebook_tracking_pixel_settings_form($form_state) {
       default:
         $role_name = $role->name;
     }
+
+    // Convert the role name to ASCII characters.
+    $conv_role_name = iconv('UTF-8', 'ASCII//TRANSLIT', $role_name);
+    if ($conv_role_name != $role_name) {
+      // If the strings are not equal it means we have non ASCII characters.
+      // Do not show the role and continue.
+      continue;
+    }
+
     // Can't use empty spaces in varname.
     $role_varname = str_replace(' ', '_', $role_name);
     $form['facebook_tracking_pixel_roles']['facebook_tracking_pixel_roles_' . $role_varname] = [
@@ -85,7 +94,13 @@ function facebook_tracking_pixel_settings_form($form_state) {
       '#default_value' => variable_get('facebook_tracking_pixel_roles_' . $role_varname, FALSE),
     ];
   }
-  $form['facebook_tracking_pixel_roles']['tip']['#markup'] = t('Tip: Drupal roles have some level of inheritance. Refer to the') . ' ' . l('Beginners Cookbook', 'https://www.drupal.org/node/120614', ['external' => TRUE]) . ' ' . t('for detailed information.');
+  $form['facebook_tracking_pixel_roles']['tip'] = [
+    '#markup' => t('Do not see a role here? If a role is not displayed that means it cannot be used due to non ASCII characters in the name. Refer to the documentation in the README.md of the module.'),
+    '#prefix' => '<p>',
+    '#suffix' => '</p>',
+  ];
+
+  $form['facebook_tracking_pixel_roles']['tip1']['#markup'] = t('Tip: Drupal roles have some level of inheritance. Refer to the') . ' ' . l('Beginners Cookbook', 'https://www.drupal.org/node/120614', ['external' => TRUE]) . ' ' . t('for detailed information.');
 
 
   return system_settings_form($form);
