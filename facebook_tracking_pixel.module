@@ -136,25 +136,7 @@ function facebook_tracking_pixel_page_build(&$page) {
   global $user;
   // Default to no tracking.
   $trackable = 0;
-  if (is_array($user->roles)) {
-    foreach ($user->roles as $key => $value) {
-      switch ($key) {
-        case 1:
-          $role_name = 'anonymous user';
-          break;
-        case 2:
-          $role_name = 'authenticated user';
-          break;
-        case 3:
-          $role_name = 'administrator';
-        default:
-          $role_name = $value;
-      }
-      // Replace spaces with underscores.
-      $role_name = str_replace(' ', '_', $role_name);
-      $trackable += variable_get('facebook_tracking_pixel_roles_' . $role_name, FALSE);
-    }
-  }
+  $trackable += _facebook_tracking_pixel_roles($user);
 
   // Only process tracking codes if the user is trackable.
   if ($trackable > 0) {
@@ -912,4 +894,37 @@ function facebook_tracking_pixel_node_delete($node) {
       ->condition('event_id', $result['event_id'], '=')
       ->execute();
   }
+}
+
+/**
+ * Internal function to handle the visibility of tracking to a user.
+ *
+ * @param object $account
+ *  user object
+ *
+ * @return int
+ *  Integer value, anything greater than 0 is trackable.
+ */
+function _facebook_trackin_pixel_user_tracking($account) {
+  $track = 0;
+  if (is_array($account->roles)) {
+    foreach ($account->roles as $key => $value) {
+      switch ($key) {
+        case 1:
+          $role_name = 'anonymous user';
+          break;
+        case 2:
+          $role_name = 'authenticated user';
+          break;
+        case 3:
+          $role_name = 'administrator';
+        default:
+          $role_name = $value;
+      }
+      // Replace spaces with underscores.
+      $role_name = str_replace(' ', '_', $role_name);
+      $track += variable_get('facebook_tracking_pixel_roles_' . $role_name, FALSE);
+    }
+  }
+  return $track;
 }
