@@ -136,6 +136,7 @@ function facebook_tracking_pixel_page_build(&$page) {
   global $user;
   // Default to no tracking.
   $trackable = 0;
+  // Determin if the user is trackable based on roles assigned.
   $trackable += _facebook_tracking_pixel_roles($user);
 
   // Only process tracking codes if the user is trackable.
@@ -525,78 +526,50 @@ function facebook_tracking_pixel_path_codes() {
  * @return bool
  */
 function _facebook_tracking_pixel_roles($account) {
-  $sql = 'select * from {variable} where name LIKE :name and value = :value';
+  // Pull role information from database.
+  $sql = 'select * from {variable} where name like :name';
   $result = db_query($sql, [
-    ':name' => 'facebook_tracking_pixel_roles_',
-    ':value' => 'i:1;',
-  ]);
+    ':name' => 'facebook_tracking_pixel_roles_%',
+  ])
+    ->fetchAll();
 
-  $track = 0;
-  $reverse = intval(variable_get('facebook_tracking_pixel_visibility_roles', 0));
-  if (is_array($account->roles)) {
-    foreach ($account->roles as $key => $value) {
-      switch ($key) {
-        case 1:
-          $role_name = 'anonymous user';
-          break;
-        case 2:
-          $role_name = 'authenticated user';
-          break;
-        case 3:
-          $role_name = 'administrator';
-        default:
-          $role_name = $value;
-      }
-      // Replace spaces with underscores.
-      $role_name = str_replace(' ', '_', $role_name);
-      $role_value = variable_get('facebook_tracking_pixel_roles_' . $role_name, 0);
-      if ($reverse == 1) {
-        $role_value = ($role_value - 1) * -1;
-      }
-      //$track += variable_get('facebook_tracking_pixel_roles_' . $role_name, 0);
-      $track += $role_value;
-    }
-  }
-  return $track;
-
-
-  /*
-
+  // Pull the visibility setting. A value of 1 means the roles are inverted in
+  // the selection UI.
   $visibility = variable_get('facebook_tracking_pixel_visibility_roles', 0);
+  // If the selection is inverted we enable visibility. Otherwise default is
+  // no tracking.
   $enabled = $visibility;
-  $roles = variable_get('googleanalytics_roles', []);
-
-  $sql = 'select * from {variable} where name LIKE @name and value = "i:1;"';
-  $result = db_query($sql, ['@name' => 'facebook_tracking_pixel_roles_']);
-
+  $roles = [];
+  // Build array of role information.
   if (!empty($result)) {
-    foreach ($result as $key => $value) {
-      if ($value == 1) {
-        $roles[$key] = $value;
+    foreach ($result as $item) {
+      if ($item->value == 'i:1;') {
+        $roles[$item->name] = 1;
+      }
+      elseif ($item->value == 'i:0;') {
+        $roles[$item->name] = 0;
       }
     }
   }
-  else {
-    $roles = [];
-  }
-
   if (array_sum($roles) > 0) {
     // One or more roles are selected.
-    foreach (array_keys($account->roles) as $rid) {
+    foreach ($account->roles as $rid => $rname) {
+      // Fixup the role name.
+      $rname = str_replace(' ', '_', $rname);
+      $rname = 'facebook_tracking_pixel_roles_' . $rname;
       // Is the current user a member of one of these roles?
-      if (isset($roles[$rid]) && $rid == $roles[$rid]) {
-        // Current user is a member of a role that should be tracked/excluded from tracking.
+      if (isset($roles[$rname])) {
+        // Current user is a member of a role that should be tracked/excluded
+        // from tracking. The visibility variable is used and inverted. This
+        // accounts for the settings in the UI of tracking only selected or
+        // tracking all but selected.
         $enabled = !$visibility;
         break;
       }
     }
   }
-  else {
-    // No role is selected for tracking, therefore all roles should be tracked.
-    $enabled = TRUE;
-  }
 
-  return $enabled;*/
+  return $enabled;
 }
 
 /**
