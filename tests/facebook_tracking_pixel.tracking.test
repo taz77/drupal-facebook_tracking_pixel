@@ -357,6 +357,13 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Tracking Code 1 Found in Raw Source'), 'FBTrkPx');
     $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Setup Tracking Code Found in Raw Source'), 'FBTrkPx');
 
+    $fbHelper->remove_role_from_user($this->webUser, 'fb pixel tester');
+
+    $this->drupalGet('');
+    $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Tracking Code 1 Found in Raw Source'), 'FBTrkPx');
+    $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Setup Tracking Code Found in Raw Source'), 'FBTrkPx');
+
+
     // confirm user is tracked then remove role from user and confirm not tracking.
 
   }
