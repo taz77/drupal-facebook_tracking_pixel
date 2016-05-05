@@ -359,18 +359,15 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $this->drupalLogin($this->webUser);
 
     $this->drupalGet('');
-    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Web User - Tracking Code 1 Found in Raw Source'), 'FBTrkPx');
-    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Web User - Setup Tracking Code Found in Raw Source'), 'FBTrkPx');
+    $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Web User - Tracking Code NOT Found in Raw Source'), 'FBTrkPx');
+    $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Web User - Setup Tracking Code NOT Found in Raw Source'), 'FBTrkPx');
 
     // Remove role and test
     $fbHelper->remove_role_from_user($this->webUser, 'fb pixel tester');
     cache_clear_all('*', 'cache_page', TRUE);
     $this->drupalGet('');
-    $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Web User - Tracking Code 1 NOT Found in Raw Source'), 'FBTrkPx');
-    $this->assertNoRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Web User - Setup Tracking Code NOT Found in Raw Source'), 'FBTrkPx');
-
-
-    // confirm user is tracked then remove role from user and confirm not tracking.
-
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Web User - Tracking Code Found in Raw Source'), 'FBTrkPx');
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Web User - Setup Tracking Code Found in Raw Source'), 'FBTrkPx');
+    
   }
 }
