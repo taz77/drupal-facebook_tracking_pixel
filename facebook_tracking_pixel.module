@@ -558,7 +558,7 @@ function _facebook_tracking_pixel_roles($account) {
       $rname = str_replace(' ', '_', $rname);
       $rname = 'facebook_tracking_pixel_roles_' . $rname;
       // Is the current user a member of one of these roles?
-      if (isset($roles[$rname])) {
+      if (isset($roles[$rname]) && $roles[$rname] == 1) {
         // Current user is a member of a role that should be tracked/excluded
         // from tracking. The visibility variable is used and inverted. This
         // accounts for the settings in the UI of tracking only selected or
