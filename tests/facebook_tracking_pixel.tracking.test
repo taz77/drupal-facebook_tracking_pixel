@@ -368,6 +368,13 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
     $this->drupalGet('');
     $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Web User - Tracking Code Found in Raw Source'), 'FBTrkPx');
     $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Web User - Setup Tracking Code Found in Raw Source'), 'FBTrkPx');
-    
+
+    // Log out and back in as admin and check tracking codes.
+    $this->drupalLogout();
+    $this->drupalLogin($this->adminUser);
+    $this->drupalGet('');
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $id1 . '.js', t('Admin User - Tracking Code Found in Raw Source'), 'FBTrkPx');
+    $this->assertRaw('facebook_tracking_pixel/fb_tkpx.' . $this->baseCodeFBID . '.js', t('Admin User - Setup Tracking Code Found in Raw Source'), 'FBTrkPx');
+
   }
 }
