@@ -100,6 +100,11 @@ Commerce Tracking
 Not finished... 
 admin/config/system/facebook_tracking_pixel/commercetracking
 
+Detailed Instructions
+================================================================================
+Additional documentation in greater detail can be found here:
+https://www.drupal.org/node/2697911
+
 Developers - Hooks provided
 ================================================================================
 
