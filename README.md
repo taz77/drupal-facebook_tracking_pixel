@@ -29,6 +29,12 @@ arrangment of the codes in the UI is the order in which they are added to the
 site. Facebook recommends that you do not use more than three pixels on any
 given page. Beyond that, the pixels may not execute.
 
+Define what roles should be tracked. Out of the box, this module tracks no one.
+The administrator must make a conscious decision of who to track on the website.
+Go to Configuration -> System -> Administer Facebook Tracking Pixel 
+(its at url admin/config/system/facebook_tracking_pixel) to configure what users
+are tracked.
+
 When adding a base tracking pixel you can choose to have the pixel show over the
 entire site or not, this is accomplished via the "global" setting.
 
