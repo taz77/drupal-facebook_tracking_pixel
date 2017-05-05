@@ -97,8 +97,14 @@ You have been warned!
 Commerce Tracking
 ================================================================================
 
-Not finished... 
+There are two methods of Commerce tracking: manually and via Drupal Commmerce.
+If you are using Ubercart you will need to track eCommerce actions manually via
+the path function. If you are using Drupal Commerce you can turn on the Commerce
+integration in the module located at: 
 admin/config/system/facebook_tracking_pixel/commercetracking
+
+When enabled, the module takes advantages of the hooks provided by Drupal
+Commerce to automatically track eCommerce actions.
 
 Detailed Instructions
 ================================================================================
