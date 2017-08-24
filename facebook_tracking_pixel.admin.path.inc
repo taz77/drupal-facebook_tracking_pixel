@@ -349,7 +349,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
       drupal_set_message(t('Path tracking entry added.'), 'status', FALSE);
       // Clear caches.
       facebook_tracking_pixel_clear_cache();
-      drupal_goto('admin/config/system/facebook_tracking_pixel/path');
+      $form_state['redirect'] = 'admin/config/system/facebook_tracking_pixel/path';
     }
     catch (Exception $e) {
       drupal_set_message(t('Path tracking entry failed to write to database.'), 'error', FALSE);
@@ -360,7 +360,6 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
     drupal_set_message(t('Path tracking entry failed to write JS to file system.'), 'error', FALSE);
     watchdog('facebook_tracking_pixel', 'Failed writing path tracking JS files for Facebook Tracking Pixel. Check PHP logs.', [], WATCHDOG_ERROR, NULL);
   }
-  return TRUE;
 }
 
 /**
