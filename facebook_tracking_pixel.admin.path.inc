@@ -244,10 +244,13 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
   }
 
   // Compare paths
-  if (!(drupal_lookup_path('source', $path) || drupal_valid_path($path))) {
+  if (!(drupal_lookup_path('source', $path) || drupal_valid_path($path)) &&
+    (!url_is_external($path) && strpos($path, '*') === FALSE)) {
     form_set_error('event_path', t('The path you have entered (:path) does not appear to be a valid path.', [':path' => $path]));
     return;
   }
+
+  $systemsource = NULL;
   // Store the system source path to use for comparison.
   if (drupal_lookup_path('source', $path)) {
     $systemsource = drupal_lookup_path('source', $path);
@@ -272,15 +275,17 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
     form_set_error('event_path', t('You cannot add a duplicate event to the same path and base code.'));
   }
   unset($result);
-  $result = db_select('facebook_tracking_pixel_events_path', 'c')
-    ->fields('c')
-    ->condition('event_path_system', $systemsource, '=')
-    ->execute()
-    ->fetchAssoc();
-  if ($result && $form['#id'] != 'facebook-tracking-pixel-path-edit-form') {
-    form_set_error('event_path', t('The tracker event you are trying to add is the resolved path in Drupal as the event with name (%name).', ['%name' => $result['event_name']]));
-  }
 
+  if (!is_null($systemsource)) {
+    $result = db_select('facebook_tracking_pixel_events_path', 'c')
+      ->fields('c')
+      ->condition('event_path_system', $systemsource, '=')
+      ->execute()
+      ->fetchAssoc();
+    if ($result && $form['#id'] != 'facebook-tracking-pixel-path-edit-form') {
+      form_set_error('event_path', t('The tracker event you are trying to add is the resolved path in Drupal as the event with name (%name).', ['%name' => $result['event_name']]));
+    }
+  }
 }
 
 
