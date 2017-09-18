@@ -11,6 +11,7 @@ pushed via a CDN if you wish.
 
 Travis-CI Build status:
 [![BuildStatus](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel.svg?branch=7.x-1.x)](https://travis-ci.org/taz77/drupal-facebook_tracking_pixel)
+[![ScanStatus](https://img.shields.io/coverity/scan/11182.svg)](https://scan.coverity.com/projects/taz77-drupal-facebook_tracking_pixel)
 
 Comprehensive documentation including screenshots is [published](https://www.drupal.org/node/2697911) on Drupal.org
 
