@@ -34,6 +34,7 @@ class FacebookTrackingPixelTestCaseUser extends FacebookTrackingPixelTestCase {
 
   /**
    * Fictional FBID for user testing.
+   *
    * @var string
    */
 

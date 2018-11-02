@@ -134,6 +134,7 @@ function facebook_tracking_pixel_track_by_path_form() {
  * Theme callback for the facebook_tracking_pixel_track_by_path_form form.
  *
  * @param $variables
+ *
  * @return string
  * @throws \Exception
  */
@@ -294,6 +295,7 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
  *
  * @param $form
  * @param $form_state
+ *
  * @return bool
  * @throws \Exception
  */
@@ -373,6 +375,7 @@ function facebook_tracking_pixel_path_add_form_submit($form, &$form_state) {
  * @param $form
  * @param $form_state
  * @param $tid
+ *
  * @return array
  */
 function facebook_tracking_pixel_path_delete_form($form, $form_state, $tid) {
@@ -405,6 +408,7 @@ function facebook_tracking_pixel_path_delete_form($form, $form_state, $tid) {
  *
  * @param $form
  * @param $form_state
+ *
  * @return bool
  */
 function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
@@ -453,6 +457,7 @@ function facebook_tracking_pixel_path_delete_form_submit($form, &$form_state) {
  * @param array $form
  * @param array $form_state
  * @param string $tid
+ *
  * @return array
  */
 function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
@@ -535,6 +540,7 @@ function facebook_tracking_pixel_path_edit_form($form, $form_state, $tid) {
  *
  * @param $form
  * @param $form_state
+ *
  * @return bool
  */
 function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
@@ -628,6 +634,7 @@ function facebook_tracking_pixel_path_edit_form_submit($form, $form_state) {
  *
  * @param $form
  * @param $form_state
+ *
  * @return array
  */
 function facebook_tracking_pixel_path_add_form($form, $form_state) {

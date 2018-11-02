@@ -108,6 +108,7 @@ function facebook_tracking_pixel_settings_form($form_state) {
 
 /**
  * Validation for setting form.
+ *
  * @param $form
  * @param $form_state
  */
@@ -222,6 +223,7 @@ function facebook_tracking_pixel_base_codes_form() {
  * Submit callback for the Facebook Base Codes.
  *
  * Saves the weights of the items.
+ *
  * @param $form
  * @param $form_state
  */
@@ -242,6 +244,7 @@ function facebook_tracking_pixel_base_codes_form_submit($form, &$form_state) {
  * Theme callback for the base code settings form.
  *
  * @param $variables
+ *
  * @return string
  */
 function theme_facebook_tracking_pixel_base_codes_form($variables) {
@@ -317,6 +320,7 @@ function theme_facebook_tracking_pixel_base_codes_form($variables) {
 
 /**
  * Validation function to make sure the FB Id is an integer.
+ *
  * @param $form
  * @param $form_state
  */
@@ -346,8 +350,10 @@ function facebook_tracking_pixel_base_codes_add_fbid_validate($form, &$form_stat
 
 /**
  * Submit handler for the new base code tracking id form.
+ *
  * @param $form
  * @param $form_state
+ *
  * @return array
  */
 function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state) {
@@ -394,6 +400,7 @@ function facebook_tracking_pixel_base_codes_add_form_submit($form, &$form_state)
  * @param $form
  * @param $form_state
  * @param $tid
+ *
  * @return array
  */
 function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid) {
@@ -438,6 +445,7 @@ function facebook_tracking_pixel_base_codes_delete_form($form, $form_state, $tid
  * Submit handler to delete a base code.
  *
  * @param $form_state
+ *
  * @return bool
  */
 function facebook_tracking_pixel_base_codes_delete_form_submit($form, &$form_state) {
@@ -455,6 +463,7 @@ function facebook_tracking_pixel_base_codes_delete_form_submit($form, &$form_sta
  * @param $form
  * @param $form_state
  * @param $tid
+ *
  * @return array
  */
 function facebook_tracking_pixel_base_codes_edit_form($form, $form_state, $tid) {
@@ -506,6 +515,7 @@ function facebook_tracking_pixel_base_codes_edit_form($form, $form_state, $tid) 
  *
  * @param $form
  * @param $form_state
+ *
  * @return bool
  */
 function facebook_tracking_pixel_base_codes_edit_form_submit($form, &$form_state) {
@@ -568,6 +578,7 @@ function facebook_tracking_pixel_base_codes_edit_form_validate($form, &$form_sta
  *
  * @param $form
  * @param $form_state
+ *
  * @return array
  */
 function facebook_tracking_pixel_form_purge($form, &$form_state) {
@@ -718,6 +729,7 @@ function facebook_tracking_pixel_user_registration($form, &$form_state) {
  *
  * @param $form
  * @param $form_state
+ *
  * @return mixed
  */
 function facebook_tracking_pixel_user_registration_ajax($form, $form_state) {
@@ -761,6 +773,7 @@ function facebook_tracking_pixel_user_registration_submit($form, $form_state) {
  *
  * @param $form
  * @param $form_state
+ *
  * @return array
  */
 function facebook_tracking_pixel_form_enhanced($form, &$form_state) {

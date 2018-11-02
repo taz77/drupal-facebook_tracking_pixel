@@ -40,18 +40,21 @@ class FacebookTrackingPixelTestCase extends DrupalWebTestCase {
 
   /**
    * Test base code FB ID number.
+   *
    * @var string
    */
   protected $baseCodeFBID = '';
 
   /**
    * Test node id number.
+   *
    * @var int
    */
   protected $nodeID = 0;
 
   /**
    * Test node title.
+   *
    * @var string
    */
   protected $nodeTitle = '';

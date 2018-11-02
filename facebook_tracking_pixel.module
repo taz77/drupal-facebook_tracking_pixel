@@ -280,10 +280,10 @@ function facebook_tracking_pixel_page_build(&$page) {
 
           // If an alter hook has been created. Allow it to be displayed.
           default:
-            $context = array(
+            $context = [
               'fb_script_src' => $fb_script_src,
-              'fb_noscript_src' => $fb_noscript_src
-            );
+              'fb_noscript_src' => $fb_noscript_src,
+            ];
             drupal_alter('facebook_tracking_pixel_event_' . $key, $value, $page, $context);
             // Delete session variable for the custom tracking code.
             unset($_SESSION['facebook_tracking_pixel'][$key]);
@@ -308,15 +308,15 @@ function facebook_tracking_pixel_page_build(&$page) {
 
         // Assemble code.
         if (isset($basecodes[$code['event_base_code_id']])) {
-        $fb_base_code_nojs = $fb_noscript_src[0] . $basecodes[$code['event_base_code_id']]->base_code_fbid . $fb_noscript_src[1];
-        drupal_add_html_head([
-          '#type' => 'markup',
-          '#markup' => $fb_base_code_nojs,
-          '#weight' => 150 + $i,
-        ], 'facebook_tracking_pixel_path_noscript_' . $i);
+          $fb_base_code_nojs = $fb_noscript_src[0] . $basecodes[$code['event_base_code_id']]->base_code_fbid . $fb_noscript_src[1];
+          drupal_add_html_head([
+            '#type' => 'markup',
+            '#markup' => $fb_base_code_nojs,
+            '#weight' => 150 + $i,
+          ], 'facebook_tracking_pixel_path_noscript_' . $i);
 
-        $i++;
-      }
+          $i++;
+        }
         // If we have a tracking path with the same base code id, we must drop
         // the base code ID so it is not loaded below. Preventing duplicate codes
         // loading on the same page since the path code will contain the base code
@@ -417,6 +417,7 @@ function facebook_tracking_pixel_facebook_tracking_pixel_events() {
 
 /**
  * Returns the events reserved for this module.
+ *
  * @return array
  */
 function facebook_tracking_pixel_events_reserved() {
@@ -473,6 +474,7 @@ function facebook_tracking_pixel_theme() {
 
 /**
  * Returns the pieces of the FB tracking JS script.
+ *
  * @return array
  */
 
@@ -505,6 +507,7 @@ function facebook_tracking_pixel_base_code_nojs() {
 
 /**
  * Returns all the path codes and allows other modules to alter them.
+ *
  * @return array
  */
 function facebook_tracking_pixel_path_codes() {
@@ -632,6 +635,7 @@ function facebook_tracking_pixel_facebook_tracking_pixel_alter(&$trackingpaths) 
  *
  * @param int $tid
  * @param int $fbid
+ *
  * @return bool
  */
 function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
@@ -723,6 +727,7 @@ function facebook_tracking_pixel_base_code_delete($tid, $fbid) {
  *
  * @param null $filename
  * @param null $subdir
+ *
  * @return bool
  */
 function facebook_tracking_pixel_delete_file($filename = NULL, $subdir = NULL) {
@@ -755,6 +760,7 @@ function facebook_tracking_pixel_delete_file($filename = NULL, $subdir = NULL) {
  * @param $data
  * @param $filename
  * @param null $subdir
+ *
  * @return bool|null|string
  */
 function facebook_tracking_pixel_save_file($data, $filename, $subdir = NULL) {

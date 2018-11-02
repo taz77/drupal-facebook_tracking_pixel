@@ -12,6 +12,7 @@
  *
  * @param $form
  * @param $form_state
+ *
  * @return mixed
  */
 function facebook_tracking_pixel_commerce_form($form, &$form_state) {
@@ -126,6 +127,7 @@ function facebook_tracking_pixel_commerce_form($form, &$form_state) {
  *
  * @param $form
  * @param $form_state
+ *
  * @return mixed
  */
 function facebook_tracking_pixel_commerce_tracking_ajax($form, $form_state) {

@@ -129,6 +129,7 @@ class FacebookTrackingPixelTestTrackingCase extends FacebookTrackingPixelTestCas
 
   /**
    * Testing various scenarios for tracking pages.
+   *
    * @throws \Exception
    */
   public function testFacebookTrackingPixelTrackPages() {
