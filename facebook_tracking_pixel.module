@@ -273,10 +273,11 @@ function facebook_tracking_pixel_page_build(&$page) {
             }
 
             // Prepare an array of arguments to do text replacements.
+            // Add the order contents to the replace array.
             $argreplace = [
-              '@contents' => $order_contents,   // Add to the order contents to the replace array.
-              '@cur'      => $currency_code,
-              '@val'      => $total,
+              '@contents' => $order_contents,
+              '@cur' => $currency_code,
+              '@val' => $total,
             ];
             // This event will require the JS to be inline in the page.
             $reservedevents = facebook_tracking_pixel_events_reserved();
@@ -882,10 +883,10 @@ function facebook_tracking_pixel_commerce_cart_product_add($order, $product, $qu
 
       // I am using the node ID as the product ID.
       $value = [
-        'content_id'    => $line_item->data['context']['entity']['entity_id'],
+        'content_id' => $line_item->data['context']['entity']['entity_id'],
         'currency_code' => $line_item->commerce_unit_price['und'][0]['currency_code'],
-        'quantity'      => $quantity,
-        'value'         => commerce_currency_amount_to_decimal($line_item->commerce_unit_price['und'][0]['amount'], $line_item->commerce_unit_price['und'][0]['currency_code']),
+        'quantity' => $quantity,
+        'value' => commerce_currency_amount_to_decimal($line_item->commerce_unit_price['und'][0]['amount'], $line_item->commerce_unit_price['und'][0]['currency_code']),
       ];
       facebook_tracking_pixel_add_session_event('ftpdcaddtocart', $value);
 
