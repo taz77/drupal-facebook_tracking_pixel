@@ -190,13 +190,22 @@ function facebook_tracking_pixel_page_build(&$page) {
               ->condition('base_code_id', $ftpdcbasecodeid, '=')
               ->execute()
               ->fetchField();
-            $subdir = variable_get('facebook_tracking_pixel_commerce_js_subdir', 'commercetracking');
-            $ftpdcfilname = $path . '/' . $subdir . '/' . 'fb_trk_addtocart_' . $ftpdcfbid . '.js';
+            // Prepare an array of arguments to do text replacements.
+            $argreplace = [
+              '@cur' => $value['currency_code'],
+              '@id' => $value['content_id'],
+              '@quantity' => $value['quantity'],
+              '@val' => $value['value'],
+            ];
+            // This event will require the JS to be inline in the page.
+            $reservedevents = facebook_tracking_pixel_events_reserved();
+            $ftpdcpurcode = format_string($reservedevents['ftpdcaddtocart']['code'], $argreplace);
+            $inlinejs = $fb_script_src[0] . $ftpdcfbid . $fb_script_src[1] . $ftpdcpurcode;
             // JS to load into page header.
             $page['content']['#attached']['js']['facebook_tracking_pixel_path_drupal_commerce_addtocart'] = [
-              'type' => 'file',
+              'type' => 'inline',
               'group' => JS_THEME,
-              'data' => $ftpdcfilname,
+              'data' => $inlinejs,
               'preprocess' => (bool) variable_get('facebook_tracking_pixel_aggregation', FALSE),
             ];
             // Noscript for header.
@@ -208,7 +217,6 @@ function facebook_tracking_pixel_page_build(&$page) {
             ], 'facebook_tracking_pixel_path_drupal_commerce_addtocart');
             // Delete session variable.
             unset($_SESSION['facebook_tracking_pixel']['ftpdcaddtocart']);
-            unset($subdir);
             break;
 
           case 'ftpdcinitiatecheckout':
@@ -252,10 +260,23 @@ function facebook_tracking_pixel_page_build(&$page) {
             $currency_code = $wrapper->commerce_order_total->currency_code->value();
             $total = $wrapper->commerce_order_total->amount->value();
             $total = sprintf('%.2f', $total / 100);
+
+
+            // Add the products to the contents parameter, I am using the node ID as the product ID.
+
+            $order_contents = '';
+            foreach ($order->commerce_line_items['und'] as $order_line_item) {
+              $line_item = commerce_line_item_load($order_line_item['line_item_id']);
+              if ($line_item && $line_item->type == 'product') {
+                $order_contents .= '{"id":' . $line_item->data['context']['entity']['entity_id'] . ', "quantity":' . $line_item->quantity . '}';
+              }
+            }
+
             // Prepare an array of arguments to do text replacements.
             $argreplace = [
-              '@val' => $total,
-              '@cur' => $currency_code,
+              '@contents' => $order_contents,   // Add to the order contents to the replace array.
+              '@cur'      => $currency_code,
+              '@val'      => $total,
             ];
             // This event will require the JS to be inline in the page.
             $reservedevents = facebook_tracking_pixel_events_reserved();
@@ -432,11 +453,11 @@ function facebook_tracking_pixel_events_reserved() {
   ];
   $events['ftpdcaddtocart'] = [
     'name' => t('Add to Cart'),
-    'code' => 'fbq(\'track\', \'AddToCart\');',
+    'code' => 'fbq(\'track\', \'AddToCart\', {contents: [{"id":@id, "quantity":@quantity}], content_type: \'product\', value: \'@val\', currency: \'@cur\'});',
   ];
   $events['ftpdcpurchase'] = [
     'name' => t('Make Purchase'),
-    'code' => 'fbq(\'track\', \'Purchase\', {value: \'@val\', currency: \'@cur\'});',
+    'code' => 'fbq(\'track\', \'Purchase\', {contents: [@contents], content_type: \'product\', value: \'@val\', currency: \'@cur\'});',
   ];
   return $events;
 }
@@ -858,7 +879,16 @@ function facebook_tracking_pixel_commerce_cart_product_add($order, $product, $qu
   $enable = variable_get('facebook_tracking_pixel_commerce_tracking_enable', NULL);
   if ($enable && $options = variable_get('facebook_tracking_pixel_commerce_tracking_options_selection', NULL)) {
     if (array_key_exists('addtocart', $options)) {
-      facebook_tracking_pixel_add_session_event('ftpdcaddtocart');
+
+      // I am using the node ID as the product ID.
+      $value = [
+        'content_id'    => $line_item->data['context']['entity']['entity_id'],
+        'currency_code' => $line_item->commerce_unit_price['und'][0]['currency_code'],
+        'quantity'      => $quantity,
+        'value'         => commerce_currency_amount_to_decimal($line_item->commerce_unit_price['und'][0]['amount'], $line_item->commerce_unit_price['und'][0]['currency_code']),
+      ];
+      facebook_tracking_pixel_add_session_event('ftpdcaddtocart', $value);
+
     }
   }
 }
