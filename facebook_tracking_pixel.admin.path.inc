@@ -280,7 +280,9 @@ function facebook_tracking_pixel_path_add_validate($form, &$form_state) {
   if (!is_null($systemsource)) {
     $result = db_select('facebook_tracking_pixel_events_path', 'c')
       ->fields('c')
-      ->condition('event_path_system', $systemsource, '=')
+      ->condition(db_and()
+        ->condition('event_base_code_id', $base_code_id, '=')
+        ->condition('event_path_system', $systemsource, '='))
       ->execute()
       ->fetchAssoc();
     if ($result && $form['#id'] != 'facebook-tracking-pixel-path-edit-form') {
